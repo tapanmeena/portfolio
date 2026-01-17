@@ -1,0 +1,157 @@
+---
+import { getAuthorByName } from "@data/authors";
+import { formatReadTime } from "@utils/readTime";
+import { Calendar, Clock, Folder, Tag } from "@lucide/astro";
+import { tagToUrl } from "@utils/tags";
+import { categoryToUrl } from "@utils/category";
+
+interface Props {
+  author: string;
+  publishedAt: Date;
+  updatedAt?: Date;
+  category: string;
+  tags: string[];
+  readTime: number;
+}
+
+const { author, publishedAt, updatedAt, category, tags, readTime } = Astro.props;
+
+const authorData = getAuthorByName(author);
+
+const formattedDate = publishedAt.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+const formattedUpdatedDate = updatedAt?.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<div class="blog-meta">
+  <!-- Author Row -->
+  <div class="meta-author">
+    <img src={authorData.avatar} alt={authorData.name} class="author-avatar" onerror="this.src='/images/authors/default.svg'" />
+    <div class="author-info">
+      <span class="author-name">{authorData.name}</span>
+      <div class="meta-details">
+        <span class="meta-item">
+          <Calendar size={14} />
+          <time datetime={publishedAt.toISOString()}>{formattedDate}</time>
+        </span>
+        {
+          updatedAt && (
+            <span class="meta-item" title="Last updated">
+              (Updated: {formattedUpdatedDate})
+            </span>
+          )
+        }
+        <span class="meta-item">
+          <Clock size={14} />
+          <span>{formatReadTime(readTime)}</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category & Tags Row -->
+  <div class="meta-taxonomy">
+    <a href={categoryToUrl(category)} class="category-badge">
+      <Folder size={14} />
+      {category}
+    </a>
+    {
+      tags.length > 0 && (
+        <div class="tags-list">
+          <Tag size={14} class="tag-icon" />
+          {tags.map((tag) => (
+            <a href={tagToUrl(tag)} class="tag-pill">
+              {tag}
+            </a>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  @reference "tailwindcss";
+
+  @layer components {
+    .blog-meta {
+      @apply mt-6 space-y-4;
+    }
+
+    /* Author Row */
+    .meta-author {
+      @apply flex items-center gap-3;
+    }
+
+    .author-avatar {
+      @apply h-12 w-12 rounded-full object-cover;
+      border: 2px solid var(--color-border);
+    }
+
+    .author-info {
+      @apply flex flex-col;
+    }
+
+    .author-name {
+      @apply font-semibold;
+      color: var(--color-text);
+    }
+
+    .meta-details {
+      @apply flex flex-wrap items-center gap-3 text-sm;
+      color: var(--color-muted);
+    }
+
+    .meta-item {
+      @apply flex items-center gap-1;
+    }
+
+    /* Category & Tags */
+    .meta-taxonomy {
+      @apply flex flex-wrap items-center gap-3;
+    }
+
+    .category-badge {
+      @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium no-underline;
+      background-color: var(--color-accent);
+      color: white;
+      transition: background-color 0.2s ease;
+    }
+
+    .category-badge:hover {
+      background-color: var(--color-accent-hover);
+    }
+
+    .tags-list {
+      @apply flex flex-wrap items-center gap-2;
+    }
+
+    .tag-icon {
+      color: var(--color-muted);
+    }
+
+    .tag-pill {
+      @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-medium no-underline;
+      background-color: var(--color-surface);
+      color: var(--color-muted);
+      border: 1px solid var(--color-border);
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .tag-pill:hover {
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+  }
+</style>
