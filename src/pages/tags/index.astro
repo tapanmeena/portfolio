@@ -1,0 +1,22 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { collectUniqueTags, tagToUrl } from "@utils/tags";
+
+const allPosts = await getCollection("blog");
+const uniqueTags = collectUniqueTags(allPosts);
+
+const pageTitle = "Tag Index";
+---
+
+<BaseLayout pageTitle={pageTitle}>
+  <ul>
+    {
+      uniqueTags.map((tag) => (
+          <li>
+            <a href={tagToUrl(tag)}>{tag}</a>
+          </li>
+        ))
+    }
+  </ul>
+</BaseLayout>

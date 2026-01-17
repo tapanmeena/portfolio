@@ -9,6 +9,7 @@ export const blogCollection = defineCollection({
     updatedAt: z.date().optional(),
     category: z.string(),
     tags: z.array(z.string()).default([]),
+    author: z.string(),
     coverImage: z.string().optional(),
     draft: z.boolean().default(true),
   }),

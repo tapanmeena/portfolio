@@ -1,0 +1,22 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { collectUniqueCategory, categoryToUrl } from "@utils/category";
+
+const allPosts = await getCollection("blog");
+const uniqueCategories = collectUniqueCategory(allPosts);
+
+const pageTitle = "Category Index";
+---
+
+<BaseLayout pageTitle={pageTitle}>
+  <ul>
+    {
+      uniqueCategories.map((category) => (
+        <li>
+          <a href={categoryToUrl(category)}>{category}</a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

@@ -1,31 +1,19 @@
 ---
+import BaseLayout from "@layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
-import Navigation from "@components/Navigation.astro";
 
-console.log("This runs in your terminal, not the browser!");
 const allPosts = await getCollection("blog");
 ---
 
-<html>
-  <body>
-    <Navigation />
-    <h1>Hello, World!</h1>
-    Blog post links:
-    <ul>
-      {
-        allPosts
-          .filter((post) => !post.data.draft)
-          .map((post) => (
-            <li>
-              <a href={`/blog/${post.slug}`}>{post.data.title}</a>
-            </li>
-          ))
-      }
-    </ul>
-  </body>
-</html>
-<style>
-  h1 {
-    color: orange;
+<BaseLayout pageTitle="Home Page">
+  <p>Welcome to the home page!</p>
+  {
+    allPosts
+      .filter((post) => !post.data.draft)
+      .map((post) => (
+        <li>
+          <a href={`/blog/${post.slug}`}>{post.data.title}</a>
+        </li>
+      ))
   }
-</style>
+</BaseLayout>
