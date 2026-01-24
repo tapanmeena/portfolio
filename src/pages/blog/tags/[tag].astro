@@ -64,57 +64,55 @@ const tagLabel = posts?.[0]?.data?.tags?.find((t) => normalizeTag(t) === tag) ??
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .tag-page {
-      @apply mx-auto max-w-6xl px-4;
-    }
+  .tag-page {
+    @apply mx-auto max-w-6xl px-4;
+  }
 
-    .back-link {
-      @apply mb-6 inline-flex items-center gap-2 text-sm no-underline;
-      color: var(--color-muted);
-      transition: color 0.2s ease;
-    }
+  .back-link {
+    @apply mb-6 inline-flex items-center gap-2 text-sm no-underline;
+    color: var(--color-muted);
+    transition: color 0.2s ease;
+  }
 
-    .back-link:hover {
-      color: var(--color-accent);
-    }
+  .back-link:hover {
+    color: var(--color-accent);
+  }
 
-    .page-header {
-      @apply mb-10 text-center;
-    }
+  .page-header {
+    @apply mb-10 text-center;
+  }
 
-    .tag-badge {
-      @apply mx-auto mb-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium;
-      background-color: var(--color-surface);
-      color: var(--color-text);
-      border: 1px solid var(--color-border);
-    }
+  .tag-badge {
+    @apply mx-auto mb-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
 
-    .page-header h1 {
-      @apply mb-2 text-4xl font-bold;
-      font-family: var(--font-sans);
-      color: var(--color-text);
-    }
+  .page-header h1 {
+    @apply mb-2 text-4xl font-bold;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
 
-    .post-count {
-      @apply text-lg;
-      color: var(--color-muted);
-    }
+  .post-count {
+    @apply text-lg;
+    color: var(--color-muted);
+  }
 
-    .empty-state {
-      @apply flex flex-col items-center gap-4 py-16 text-center;
-      color: var(--color-muted);
-    }
+  .empty-state {
+    @apply flex flex-col items-center gap-4 py-16 text-center;
+    color: var(--color-muted);
+  }
 
-    .back-button {
-      @apply rounded-lg px-4 py-2 text-sm font-medium no-underline;
-      background-color: var(--color-accent);
-      color: white;
-      transition: background-color 0.2s ease;
-    }
+  .back-button {
+    @apply rounded-lg px-4 py-2 text-sm font-medium no-underline;
+    background-color: var(--color-accent);
+    color: white;
+    transition: background-color 0.2s ease;
+  }
 
-    .back-button:hover {
-      background-color: var(--color-accent-hover);
-    }
+  .back-button:hover {
+    background-color: var(--color-accent-hover);
   }
 </style>

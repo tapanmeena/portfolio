@@ -1,5 +1,6 @@
 ---
 import { Moon, Sun, Search, Menu, X } from "@lucide/astro";
+import "@styles/global.css";
 
 const pathname = Astro.url.pathname;
 const navLinks = [
@@ -11,7 +12,10 @@ const navLinks = [
 ---
 
 <header id="site-header" class="site-header fixed z-50 transition-all duration-500">
-  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+  <!-- Scroll Progress bar -->
+  <div class="scroll-progress" id="scroll-progress"></div>
+
+  <div class="header-content mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
     <!-- Logo -->
     <a href="/" class="logo group flex items-center gap-2 no-underline">
       <span class="logo-monogram">TM</span>
@@ -49,7 +53,7 @@ const navLinks = [
       </button>
 
       <!-- Mobile Menu Toggle -->
-      <button id="menu-toggle" aria-label="Toggle menu" aria-expanded="false" class="icon-btn md:hidden">
+      <button id="menu-toggle" aria-label="Toggle menu" aria-expanded="false" class="icon-btn md:hidden!">
         <Menu size={20} class="menu-open-icon" />
         <X size={20} class="menu-close-icon" />
       </button>
@@ -57,7 +61,7 @@ const navLinks = [
   </div>
 
   <!-- Mobile nav -->
-  <nav id="mobile-nav" class="mobile-nav md:hidden">
+  <nav id="mobile-nav" class="mobile-nav md:hidden!">
     {
       navLinks.map((link) => (
         <a href={link.href} class:list={["mobile-nav-link", { active: pathname.startsWith(link.href) }]}>
@@ -68,15 +72,28 @@ const navLinks = [
   </nav>
 </header>
 
+<!-- Mobile menu backdrop -->
+<div id="menu-backdrop" class="menu-backdrop"></div>
+
 <script is:inline>
   const header = document.getElementById("site-header");
   const menuToggle = document.getElementById("menu-toggle");
   const mobileNav = document.getElementById("mobile-nav");
+  const menuBackdrop = document.getElementById("menu-backdrop");
+  const scrollProgress = document.getElementById("scroll-progress");
 
   const getScrollThreshold = () => (window.innerWidth < 600 ? 32 : 64);
 
+  // Update scroll progress and header state
   const onScroll = () => {
+    // Header glass effect
     header.classList.toggle("is-scrolled", window.scrollY > getScrollThreshold());
+
+    // Scroll progress bar
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    scrollProgress.style.width = progress + "%";
   };
 
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -88,144 +105,282 @@ const navLinks = [
     localStorage.setItem("theme", isDark ? "dark" : "light");
   });
 
+  // Mobile menu helper function
+  const openMobileMenu = () => {
+    header.classList.add("menu-open");
+    mobileNav.classList.add("menu-open");
+    menuToggle.classList.add("menu-open");
+    menuBackdrop.classList.add("visible");
+    menuToggle.setAttribute("aria-expanded", "true");
+  };
+
+  const closeMobileMenu = () => {
+    header.classList.remove("menu-open");
+    mobileNav.classList.remove("menu-open");
+    menuToggle.classList.remove("menu-open");
+    menuBackdrop.classList.remove("visible");
+    menuToggle.setAttribute("aria-expanded", "false");
+  };
+
   // Mobile menu toggle
   menuToggle.addEventListener("click", () => {
-    const isOpen = mobileNav.classList.toggle("menu-open");
-    menuToggle.classList.toggle("menu-open");
-    menuToggle.setAttribute("aria-expanded", isOpen);
+    const isOpen = mobileNav.classList.contains("menu-open");
+    if (isOpen) {
+      closeMobileMenu();
+    } else {
+      openMobileMenu();
+    }
   });
+
+  // Close mobile menu on backdrop click
+  menuBackdrop.addEventListener("click", closeMobileMenu);
 
   // Close mobile menu on link click
   mobileNav.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      mobileNav.classList.remove("menu-open");
-      menuToggle.classList.remove("menu-open");
-      menuToggle.setAttribute("aria-expanded", "false");
-    });
+    link.addEventListener("click", closeMobileMenu);
   });
 </script>
 
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    /* Header base */
-    .site-header {
-      @apply top-0 left-0 w-full bg-transparent;
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .site-header,
+    .scroll-progress,
+    .icon-btn,
+    .logo-monogram,
+    .menu-open-icon,
+    .menu-close-icon {
+      transition: none !important;
     }
+  }
 
-    /* Glass header on scroll */
-    .site-header.is-scrolled {
-      @apply top-4
-        left-4
+  /* Header base */
+  .site-header {
+    @apply top-0 left-1/2 -translate-x-1/2 w-full bg-transparent overflow-hidden;
+  }
+
+  /* Header background when mobile menu is open */
+  .site-header.menu-open {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+  }
+
+  :global(.dark) .site-header.menu-open {
+    background-color: rgba(30, 30, 30, 0.95);
+  }
+
+  /* Scroll progress bar */
+  .scroll-progress {
+    @apply absolute bottom-0 left-0 h-0.5;
+    width: 0%;
+    background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+    transition: width 0.1s linear;
+    z-index: 10;
+  }
+
+  .site-header:not(.is-scrolled) .scroll-progress {
+    @apply opacity-0;
+  }
+
+  .site-header.is-scrolled .scroll-progress {
+    @apply opacity-100;
+    transition:
+      width 0.1s linear,
+      opacity 0.3s ease;
+  }
+
+  /* Glass header on scroll */
+  .site-header.is-scrolled {
+    @apply top-4
         w-[calc(100%-32px)]
+        md:max-w-6xl
         rounded-[18px]
         shadow-sm
         backdrop-blur
         backdrop-saturate-150
         transition-all;
 
-      background-color: var(--color-surface);
-      @apply bg-black/25 dark:bg-(--color-surface)/20;
-    }
+    background-color: var(--color-surface);
+    @apply bg-black/25 dark:bg-(--color-surface)/20;
+  }
 
-    /* LOGO */
-    .logo {
-      color: var(--color-text);
-    }
+  /* LOGO */
+  .logo {
+    color: var(--color-text);
+  }
 
-    .logo-monogram {
-      @apply flex h-8 w-8 items-center justify-center
+  .logo-monogram {
+    @apply flex h-8 w-8 items-center justify-center
       rounded-lg
       bg-linear-to-br from-blue-500 to-sky-700
-      text-xs font-bold text-white
-      transition-transform
-      group-hover:scale-105;
-    }
+      text-xs font-bold text-white;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
 
-    .logo-text {
-      @apply text-lg font-bold hidden sm:inline;
-      color: var(--color-text);
-    }
+  .logo:hover .logo-monogram {
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  }
 
-    /* Desktop nav */
-    .nav-link {
-      @apply relative px-3 py-2 text-sm font-medium
-      rounded-lg
-      transition-colors;
-      color: var(--color-text);
-    }
+  .logo-text {
+    @apply text-lg font-bold hidden sm:inline;
+    color: var(--color-text);
+    transition: color 0.2s ease;
+  }
 
-    .nav-link:hover {
-      color: var(--color-accent);
-      background-color: var(--color-surface);
-    }
+  .logo:hover .logo-text {
+    color: var(--color-accent);
+  }
 
-    .nav-link.active {
-      color: var(--color-accent);
-      font-weight: 600;
-    }
-
-    .nav-link.active::after {
-      content: "";
-      @apply absolute bottom-0 left-1/2 -translate-x-1/2
-      h-0.5 w-4 rounded-full
-      bg-blue-500 dark:bg-blue-400;
-    }
-
-    /* icon buttons */
-    .icon-btn {
-      @apply relative flex h-9 w-9 items-center justify-center
-        rounded-full
-        border border-gray-600 dark:border-gray-300
-        text-gray-600 dark:text-gray-300
-        backdrop-blur
-        transition
-        hover:scale-105
-        hover:text-gray-900 dark:hover:text-white;
-    }
-
-    /* Mobile menu button icons */
-    .menu-close-icon {
-      @apply hidden;
-    }
-
-    .menu-open .menu-open-icon {
-      @apply hidden;
-    }
-
-    .menu-open .menu-close-icon {
-      @apply block;
-    }
-
-    /* Mobile nav */
-    .mobile-nav {
-      @apply max-h-0 overflow-hidden
-      px-4
-      transition-all duration-300 ease-in-out;
-    }
-
-    .mobile-nav.menu-open {
-      @apply max-h-64 pb-4;
-    }
-
-    .mobile-nav-link {
-      @apply block py-3 px-4
-      text-base font-medium
-      text-gray-600 dark:text-gray-300
-      border-b border-gray-100 dark:border-white/10
-      transition-colors
-      hover:text-gray-900 dark:hover:text-white
-      hover:bg-gray-50 dark:hover:bg-white/5
+  /* Desktop nav */
+  .nav-link {
+    @apply relative px-3 py-2 text-sm font-medium
       rounded-lg;
-    }
+    color: var(--color-text);
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
+  }
 
-    .mobile-nav-link:last-child {
-      @apply border-b-0;
-    }
+  .nav-link:hover {
+    color: var(--color-accent);
+    background-color: var(--color-surface);
+  }
 
-    .mobile-nav-link.active {
-      @apply text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10;
-    }
+  .nav-link.active {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .nav-link::after {
+    content: "";
+    @apply absolute bottom-0 left-1/2
+      h-0.5 w-0 rounded-full
+      bg-blue-500 dark:bg-blue-400;
+    transform: translateX(-50%);
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-link.active::after {
+    @apply w-4;
+  }
+
+  .nav-link:hover::after {
+    @apply w-3;
+  }
+
+  /* Icon buttons with enhanced interactions */
+  .icon-btn {
+    @apply relative flex h-9 w-9 items-center justify-center
+        rounded-full
+        border border-gray-300 dark:border-gray-600
+        text-gray-600 dark:text-gray-300
+        backdrop-blur-sm
+        overflow-hidden;
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .icon-btn:hover {
+    transform: scale(1.08);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .icon-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Mobile menu button icons with rotation animation */
+  .menu-open-icon,
+  .menu-close-icon {
+    transition:
+      transform 0.3s ease,
+      opacity 0.3s ease;
+  }
+
+  .menu-open-icon {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+
+  .menu-close-icon {
+    position: absolute;
+    opacity: 0;
+    transform: rotate(-90deg);
+  }
+
+  .menu-open .menu-open-icon {
+    opacity: 0;
+    transform: rotate(90deg);
+  }
+
+  .menu-open .menu-close-icon {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+
+  /* Mobile nav */
+  .mobile-nav {
+    @apply max-h-0 overflow-hidden
+      px-4;
+    background-color: rgba(255, 255, 255, 0.95);
+    transition:
+      max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      padding 0.3s ease;
+  }
+
+  :global(.dark) .mobile-nav {
+    background-color: rgba(30, 30, 30, 0.95);
+  }
+
+  .mobile-nav.menu-open {
+    @apply max-h-80 pb-4;
+  }
+
+  .mobile-nav-link {
+    @apply block py-3 px-4
+      text-base font-medium
+      text-gray-800 dark:text-gray-200
+      border-b border-gray-200 dark:border-white/10
+      rounded-lg;
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .mobile-nav-link:hover {
+    @apply text-gray-900 dark:text-white
+      bg-gray-100 dark:bg-white/10;
+    transform: translateX(4px);
+  }
+
+  .mobile-nav-link:last-child {
+    @apply border-b-0;
+  }
+
+  .mobile-nav-link.active {
+    @apply text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10;
+  }
+
+  /* Mobile menu backdrop */
+  .menu-backdrop {
+    @apply fixed inset-0 z-40
+      bg-black/0
+      pointer-events-none
+      md:hidden;
+    transition: background-color 0.3s ease;
+  }
+
+  .menu-backdrop.visible {
+    @apply bg-black/30
+      pointer-events-auto;
   }
 </style>

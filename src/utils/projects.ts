@@ -79,8 +79,9 @@ export const groupProjectsByYear = (
   projects.forEach((project) => {
     const year = new Date(project.data.startDate).getFullYear();
     if (!grouped.has(year)) {
-      grouped.get(year)!.push(project);
+      grouped.set(year, []);
     }
+    grouped.get(year)!.push(project);
   });
 
   // Sort map by year descending

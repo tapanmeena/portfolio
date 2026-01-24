@@ -2,6 +2,7 @@
 import Footer from "@components/Footer.astro";
 import Header from "../components/Header.astro";
 const { pageTitle } = Astro.props;
+import "@styles/global.css";
 ---
 
 <html lang="en">
@@ -19,7 +20,7 @@ const { pageTitle } = Astro.props;
       rel="stylesheet"
     />
 
-    <link rel="stylesheet" href="/src/styles/global.css" />
+    <!-- <link rel="stylesheet" href="/src/styles/global.css" /> -->
     <title>{pageTitle}</title>
     <script is:inline>
       const theme = localStorage.getItem("theme") ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");

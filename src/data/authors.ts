@@ -49,8 +49,8 @@ export const authors: Record<string, Author> = {
         name: "Languages",
         skills: [
           "C#",
-          "Typescript",
-          "Javascript",
+          "TypeScript",
+          "JavaScript",
           "Python",
           "SQL",
           "PowerShell",
@@ -60,9 +60,18 @@ export const authors: Record<string, Author> = {
         name: "Frontend",
         skills: ["React", "HTML5", "CSS3", "Tailwind CSS", "Astro"],
       },
-      { name: "Backend", skills: [".NET", "ASp.NET", "Node.JS", "REST APIs"] },
-      { name: "Cloud & DevOps", skills: ["Azure", "Docker", "Azure DevOps"] },
-      { name: "Databases", skills: ["SQL Server", "PostgreSQL", "MongoDB"] },
+      {
+        name: "Backend",
+        skills: [".NET", "ASP.NET", "Node.js", "REST APIs"],
+      },
+      {
+        name: "Cloud & DevOps",
+        skills: ["Azure", "Docker", "Azure DevOps"],
+      },
+      {
+        name: "Databases",
+        skills: ["SQL Server", "PostgreSQL", "MongoDB"],
+      },
     ],
     experience: [
       {

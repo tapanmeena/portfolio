@@ -81,122 +81,120 @@ const formattedDate = publishedAt.toLocaleDateString("en-US", {
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .blog-card {
-      @apply overflow-hidden rounded-xl;
-      background-color: var(--color-surface);
-      border: 1px solid var(--color-border);
-      transition:
-        transform 0.3s ease,
-        box-shadow 0.3s ease,
-        border-color 0.3s ease,
-        opacity 0.3s ease;
-    }
+  .blog-card {
+    @apply overflow-hidden rounded-xl;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease,
+      opacity 0.3s ease;
+  }
 
-    .blog-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
-      border-color: var(--color-accent);
-    }
+  .blog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-accent);
+  }
 
-    :global(.dark) .blog-card:hover {
-      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.4);
-    }
+  :global(.dark) .blog-card:hover {
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.4);
+  }
 
-    .card-link {
-      @apply block no-underline;
-      color: inherit;
-    }
+  .card-link {
+    @apply block no-underline;
+    color: inherit;
+  }
 
-    .card-image {
-      @apply relative aspect-video w-full overflow-hidden;
-      background-color: var(--color-bg);
-    }
+  .card-image {
+    @apply relative aspect-video w-full overflow-hidden;
+    background-color: var(--color-bg);
+  }
 
-    .cover-img {
-      @apply h-full w-full object-cover;
-      transition: transform 0.4s ease;
-    }
+  .cover-img {
+    @apply h-full w-full object-cover;
+    transition: transform 0.4s ease;
+  }
 
-    :global(.dark) .cover-img {
-      filter: brightness(0.9);
-    }
+  :global(.dark) .cover-img {
+    filter: brightness(0.9);
+  }
 
-    :global(.dark) .blog-card:hover .cover-img {
-      filter: brightness(1);
-    }
+  :global(.dark) .blog-card:hover .cover-img {
+    filter: brightness(1);
+  }
 
-    .blog-card:hover .cover-img {
-      transform: scale(1.05);
-    }
+  .blog-card:hover .cover-img {
+    transform: scale(1.05);
+  }
 
-    .cover-placeholder {
-      @apply flex h-full w-full items-center justify-center;
-      background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-      color: white;
-      opacity: 0.7;
-    }
+  .cover-placeholder {
+    @apply flex h-full w-full items-center justify-center;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    color: white;
+    opacity: 0.7;
+  }
 
-    .updated-badge {
-      @apply absolute right-3 top-3 flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: white;
-      backdrop-filter: blur(4px);
-    }
+  .updated-badge {
+    @apply absolute right-3 top-3 flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    backdrop-filter: blur(4px);
+  }
 
-    .card-content {
-      @apply flex flex-col gap-3 p-5;
-    }
+  .card-content {
+    @apply flex flex-col gap-3 p-5;
+  }
 
-    .card-meta {
-      @apply flex flex-wrap items-center gap-3 text-xs;
-      color: var(--color-muted);
-    }
+  .card-meta {
+    @apply flex flex-wrap items-center gap-3 text-xs;
+    color: var(--color-muted);
+  }
 
-    .meta-item {
-      @apply flex items-center gap-1;
-    }
+  .meta-item {
+    @apply flex items-center gap-1;
+  }
 
-    .card-title {
-      @apply line-clamp-2 text-lg font-semibold leading-tight;
-      font-family: var(--font-sans);
-      color: var(--color-text);
-      margin: 0;
-      transition: color 0.2s ease;
-    }
+  .card-title {
+    @apply line-clamp-2 text-lg font-semibold leading-tight;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    margin: 0;
+    transition: color 0.2s ease;
+  }
 
-    .blog-card:hover .card-title {
-      color: var(--color-accent);
-    }
+  .blog-card:hover .card-title {
+    color: var(--color-accent);
+  }
 
-    .card-description {
-      @apply line-clamp-2 text-sm leading-relaxed;
-      color: var(--color-muted);
-      margin: 0;
-    }
+  .card-description {
+    @apply line-clamp-2 text-sm leading-relaxed;
+    color: var(--color-muted);
+    margin: 0;
+  }
 
-    .card-footer {
-      @apply flex items-center justify-between gap-3 pt-2;
-    }
+  .card-footer {
+    @apply flex items-center justify-between gap-3 pt-2;
+  }
 
-    .card-author {
-      @apply flex items-center gap-2;
-    }
+  .card-author {
+    @apply flex items-center gap-2;
+  }
 
-    .author-avatar {
-      @apply h-7 w-7 rounded-full object-cover;
-      border: 1.5px solid var(--color-border);
-    }
+  .author-avatar {
+    @apply h-7 w-7 rounded-full object-cover;
+    border: 1.5px solid var(--color-border);
+  }
 
-    .author-name {
-      @apply text-xs font-medium;
-      color: var(--color-text);
-    }
+  .author-name {
+    @apply text-xs font-medium;
+    color: var(--color-text);
+  }
 
-    .category-badge {
-      @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
-      background-color: var(--color-accent);
-      color: white;
-    }
+  .category-badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+    background-color: var(--color-accent);
+    color: white;
   }
 </style>

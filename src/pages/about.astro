@@ -1,0 +1,332 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { authors } from "@data/authors";
+import ProjectCard from "@components/projects/ProjectCard.astro";
+import Button from "@components/ui/Button.astro";
+import { Github, Linkedin, Twitter, Globe, MapPin, Briefcase } from "@lucide/astro";
+import { getPublishedProjects } from "@utils/projects";
+
+const author = authors["tapan-meena"];
+
+// Get projects for "What I'm Working On" section
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const featuredProjects = projects.slice(0, 3);
+---
+
+<BaseLayout pageTitle="About">
+  <div class="about-page">
+    <!-- Hero Section -->
+    <section class="about-hero">
+      <div class="hero-content">
+        <img src={author.avatar} alt={author.name} class="hero-avatar" />
+        <div class="hero-info">
+          <h1 class="hero-name">{author.name}</h1>
+          <p class="hero-title">
+            <Briefcase size={18} />
+            {author.title}
+          </p>
+          <p class="hero-location">
+            <MapPin size={16} />
+            {author.location}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bio Section -->
+    <section class="about-section">
+      <h2 class="section-title">About Me</h2>
+      <div class="bio-content">
+        <p>{author.bio}</p>
+      </div>
+    </section>
+
+    <!-- Skills Section -->
+    {
+      author.skills && (
+        <section class="about-section">
+          <h2 class="section-title">Skills & Technologies</h2>
+          <div class="skills-grid">
+            {author.skills.map((category) => (
+              <div class="skill-category">
+                <h3 class="skill-category-title">{category.name}</h3>
+                <div class="skill-tags">
+                  {category.skills.map((skill) => (
+                    <span class="skill-tag">{skill}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Experience Section -->
+    {
+      author.experience && (
+        <section class="about-section">
+          <h2 class="section-title">Experience</h2>
+          <div class="experience-timeline">
+            {author.experience.map((exp, index) => (
+              <div class="experience-item">
+                <div class="experience-marker" />
+                {index < author.experience!.length - 1 && <div class="experience-line" />}
+                <div class="experience-content">
+                  <h3 class="experience-title">{exp.title}</h3>
+                  <p class="experience-company">{exp.company}</p>
+                  <p class="experience-period">{exp.period}</p>
+                  {exp.description && <p class="experience-description">{exp.description}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- What I'm Working On Section -->
+    {
+      featuredProjects.length > 0 && (
+        <section class="about-section">
+          <h2 class="section-title">What I'm Working On</h2>
+          <p class="section-description">Here are some projects I'm currently building or have recently completed.</p>
+          <div class="projects-grid">
+            {featuredProjects.map((project) => (
+              <ProjectCard project={project} />
+            ))}
+          </div>
+          <div class="view-all-projects">
+            <Button href="/projects" variant="outline">
+              View All Projects
+            </Button>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Connect Section -->
+    <section class="about-section">
+      <h2 class="section-title">Let's Connect</h2>
+      <p class="section-description">I'm always open to discussing new projects, creative ideas, or opportunities to be part of your visions.</p>
+      <div class="social-links">
+        {
+          author.social?.github && (
+            <a href={author.social.github} class="social-link" target="_blank" rel="noopener noreferrer">
+              <Github size={24} />
+              <span>GitHub</span>
+            </a>
+          )
+        }
+        {
+          author.social?.linkedin && (
+            <a href={author.social.linkedin} class="social-link" target="_blank" rel="noopener noreferrer">
+              <Linkedin size={24} />
+              <span>LinkedIn</span>
+            </a>
+          )
+        }
+        {
+          author.social?.twitter && (
+            <a href={author.social.twitter} class="social-link" target="_blank" rel="noopener noreferrer">
+              <Twitter size={24} />
+              <span>Twitter</span>
+            </a>
+          )
+        }
+        {
+          author.social?.website && (
+            <a href={author.social.website} class="social-link" target="_blank" rel="noopener noreferrer">
+              <Globe size={24} />
+              <span>Website</span>
+            </a>
+          )
+        }
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  @reference "tailwindcss";
+
+  .about-page {
+    @apply mx-auto max-w-6xl px-4 pb-16;
+  }
+
+  /* Hero Section */
+  .about-hero {
+    @apply py-12 border-b;
+    border-color: var(--color-border);
+  }
+
+  .hero-content {
+    @apply flex flex-col items-center gap-6 text-center md:flex-row md:text-left;
+  }
+
+  .hero-avatar {
+    @apply h-32 w-32 rounded-full border-4 shadow-lg;
+    border-color: var(--color-accent);
+  }
+
+  .hero-info {
+    @apply flex flex-col gap-2;
+  }
+
+  .hero-name {
+    @apply text-4xl font-bold;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
+
+  .hero-title {
+    @apply flex items-center justify-center gap-2 text-xl font-medium md:justify-start;
+    color: var(--color-accent);
+  }
+
+  .hero-location {
+    @apply flex items-center justify-center gap-2 text-sm md:justify-start;
+    color: var(--color-muted);
+  }
+
+  /* Section Styles */
+  .about-section {
+    @apply py-10 border-b;
+    border-color: var(--color-border);
+  }
+
+  .about-section:last-child {
+    @apply border-b-0;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold mb-4;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
+
+  .section-description {
+    @apply text-base mb-6;
+    color: var(--color-muted);
+  }
+
+  /* Bio */
+  .bio-content {
+    @apply text-lg leading-relaxed;
+    color: var(--color-text);
+  }
+
+  .bio-content p {
+    @apply mb-4;
+  }
+
+  .bio-content p:last-child {
+    @apply mb-0;
+  }
+
+  /* Skills */
+  .skills-grid {
+    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .skill-category {
+    @apply p-4 rounded-lg;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .skill-category-title {
+    @apply text-sm font-semibold uppercase tracking-wider mb-3;
+    color: var(--color-muted);
+  }
+
+  .skill-tags {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .skill-tag {
+    @apply rounded-full px-3 py-1 text-sm font-medium;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    transition: all 0.2s ease;
+  }
+
+  .skill-tag:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  /* Experience Timeline */
+  .experience-timeline {
+    @apply relative flex flex-col gap-8;
+  }
+
+  .experience-item {
+    @apply relative pl-8;
+  }
+
+  .experience-marker {
+    @apply absolute left-0 top-1 h-4 w-4 rounded-full;
+    background-color: var(--color-accent);
+  }
+
+  .experience-line {
+    @apply absolute left-1.75 top-5 w-0.5;
+    height: calc(100% + 2rem);
+    background-color: var(--color-border);
+  }
+
+  .experience-content {
+    @apply flex flex-col gap-1;
+  }
+
+  .experience-title {
+    @apply text-lg font-semibold;
+    color: var(--color-text);
+  }
+
+  .experience-company {
+    @apply text-base font-medium;
+    color: var(--color-accent);
+  }
+
+  .experience-period {
+    @apply text-sm;
+    color: var(--color-muted);
+  }
+
+  .experience-description {
+    @apply mt-2 text-sm leading-relaxed;
+    color: var(--color-muted);
+  }
+
+  /* Projects Grid */
+  .projects-grid {
+    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .view-all-projects {
+    @apply mt-6 text-center;
+  }
+
+  /* Social Links */
+  .social-links {
+    @apply flex flex-wrap gap-4;
+  }
+
+  .social-link {
+    @apply flex items-center gap-3 rounded-lg px-5 py-3 text-sm font-medium no-underline transition-all duration-200;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .social-link:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+</style>

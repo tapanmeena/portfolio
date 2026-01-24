@@ -1,0 +1,220 @@
+---
+import type { CollectionEntry } from "astro:content";
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import { ExternalLink, Github, Folder, ArrowRight } from "@lucide/astro";
+import { isOngoing } from "@utils/projects";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+}
+
+const { project } = Astro.props;
+const { title, description, techStack, coverImage, liveUrl, repoUrl, status } = project.data;
+
+const imageSrc = coverImage as ImageMetadata | undefined;
+const ongoing = isOngoing(project);
+
+const statusConfig = {
+  "in-progress": { label: "In Progress", icon: "🔵", class: "status-ongoing" },
+  completed: { label: "Completed", icon: "⚪", class: "status-completed" },
+  archived: { label: "Archived", icon: "🔴", class: "status-archived" },
+};
+
+const currentStatus = statusConfig[status];
+---
+
+<article class="project-card">
+  <a href={`/projects/${project.slug}`} class="card-link">
+    <div class="card-image">
+      {
+        imageSrc ? (
+          <Image src={imageSrc} alt={`Cover image for ${title}`} class="cover-img" width={400} height={225} />
+        ) : (
+          <div class="cover-placeholder">
+            <Folder size={32} />
+          </div>
+        )
+      }
+      {
+        ongoing && (
+          <span class="ongoing-badge">
+            <span class="ongoing-dot" />
+            Currently working on
+          </span>
+        )
+      }
+    </div>
+
+    <div class="card-content">
+      <h3 class="card-title">{title}</h3>
+
+      {description && <p class="card-description">{description}</p>}
+
+      <div class="tech-stack">
+        {techStack.slice(0, 4).map((tech) => <span class="tech-badge">{tech}</span>)}
+        {techStack.length > 4 && <span class="tech-badge tech-more">+{techStack.length - 4}</span>}
+      </div>
+
+      <div class="card-footer">
+        <span class="view-project">
+          View Project
+          <ArrowRight size={14} />
+        </span>
+
+        <div class="card-links">
+          {
+            liveUrl && (
+              <span class="card-link-icon" title="Has live demo">
+                <ExternalLink size={14} />
+              </span>
+            )
+          }
+          {
+            repoUrl && (
+              <span class="card-link-icon" title="Has source code">
+                <Github size={14} />
+              </span>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </a>
+</article>
+
+<style>
+  @reference "tailwindcss";
+
+  .project-card {
+    @apply overflow-hidden rounded-xl;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+  }
+
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-accent);
+  }
+
+  :global(.dark) .project-card:hover {
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.4);
+  }
+
+  .card-link {
+    @apply block no-underline;
+    color: inherit;
+  }
+
+  .card-image {
+    @apply relative aspect-video w-full overflow-hidden;
+    background-color: var(--color-bg);
+  }
+
+  .cover-img {
+    @apply h-full w-full object-cover;
+    transition: transform 0.4s ease;
+  }
+
+  :global(.dark) .cover-img {
+    filter: brightness(0.9);
+  }
+
+  :global(.dark) .project-card:hover .cover-img {
+    filter: brightness(1);
+  }
+
+  .project-card:hover .cover-img {
+    transform: scale(1.05);
+  }
+
+  .cover-placeholder {
+    @apply flex h-full w-full items-center justify-center;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    color: white;
+    opacity: 0.7;
+  }
+
+  .ongoing-badge {
+    @apply absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    backdrop-filter: blur(4px);
+  }
+
+  .ongoing-dot {
+    @apply h-2 w-2 rounded-full;
+    background-color: var(--color-accent);
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .card-content {
+    @apply flex flex-col gap-3 p-5;
+  }
+
+  .card-title {
+    @apply line-clamp-2 text-lg font-semibold leading-tight;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    margin: 0;
+    transition: color 0.2s ease;
+  }
+
+  .project-card:hover .card-title {
+    color: var(--color-accent);
+  }
+
+  .card-description {
+    @apply line-clamp-2 text-sm leading-relaxed;
+    color: var(--color-muted);
+    margin: 0;
+  }
+
+  .tech-stack {
+    @apply flex flex-wrap gap-1.5;
+  }
+
+  .tech-badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+    background-color: var(--color-bg);
+    color: var(--color-muted);
+    border: 1px solid var(--color-border);
+  }
+
+  .tech-more {
+    color: var(--color-accent);
+  }
+
+  .card-footer {
+    @apply flex items-center justify-between gap-3 pt-2;
+  }
+
+  .view-project {
+    @apply inline-flex items-center gap-1 text-sm font-medium;
+    color: var(--color-accent);
+  }
+
+  .card-links {
+    @apply flex items-center gap-2;
+  }
+
+  .card-link-icon {
+    @apply flex items-center justify-center;
+    color: var(--color-muted);
+  }
+</style>

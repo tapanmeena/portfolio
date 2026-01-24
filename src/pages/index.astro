@@ -1,12 +1,428 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { authors } from "@data/authors";
+import BlogCardHero from "@components/blog/BlogCardHero.astro";
+import BlogCard from "@components/blog/BlogCard.astro";
+import FeaturedProjects from "@components/projects/FeaturedProjects.astro";
+import Button from "@components/ui/Button.astro";
+import { Github, Linkedin, Twitter, ArrowRight, Mail, BookOpen, Briefcase } from "@lucide/astro";
+
+const author = authors["tapan-meena"];
+
+// Fetch latest blog posts
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((post) => !post.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const [featuredPost, ...remainingPosts] = posts;
+const recentPosts = remainingPosts.slice(0, 2);
+
+// Extract top skills for the skills snapshot (flatten and pick key ones)
+const topSkills = author.skills ? author.skills.flatMap((cat) => cat.skills).slice(0, 12) : [];
 ---
 
-<BaseLayout pageTitle="Home Page">
-  <p class="font-bold text-9xl">Welcome to the home page!</p>
-  <p class="font-bold text-9xl">Welcome to the home page!</p>
-  <p class="font-bold text-9xl">Welcome to the home page!</p>
-  <p class="font-bold text-9xl">Welcome to the home page!</p>
-  <p class="font-bold text-9xl">Welcome to the home page!</p>
-  <p class="font-bold text-9xl">Welcome to the home page!</p>
+<BaseLayout pageTitle="Home">
+  <div class="home-page">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <!-- Glass Card -->
+      <div class="hero-content">
+        <div class="avatar-wrapper">
+          <img src={author.avatar} alt={author.name} class="hero-avatar" />
+        </div>
+        <h1 class="hero-name">{author.name}</h1>
+        <p class="hero-title">
+          <Briefcase size={18} />
+          {author.title}
+        </p>
+        <p class="hero-tagline">Building scalable solutions & developer tools. Passionate about cloud computing, DevOps, and mentoring developers.</p>
+
+        <!-- Social Links -->
+        <div class="hero-social">
+          {
+            author.social?.github && (
+              <a href={author.social.github} class="social-icon" target="_blank" rel="noopener noreferrer" aria-label="GitHub" style="--i: 0">
+                <Github size={20} />
+              </a>
+            )
+          }
+          {
+            author.social?.linkedin && (
+              <a href={author.social.linkedin} class="social-icon" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" style="--i: 1">
+                <Linkedin size={20} />
+              </a>
+            )
+          }
+          {
+            author.social?.twitter && (
+              <a href={author.social.twitter} class="social-icon" target="_blank" rel="noopener noreferrer" aria-label="Twitter" style="--i: 2">
+                <Twitter size={20} />
+              </a>
+            )
+          }
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="hero-cta">
+          <Button href="/blog" variant="primary" size="lg">
+            <BookOpen slot="icon-left" size={18} />
+            Read Blog
+          </Button>
+          <Button href="/projects" variant="outline" size="lg">
+            <Briefcase slot="icon-left" size={18} />
+            View Projects
+          </Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Latest Posts Section -->
+    {
+      posts.length > 0 && (
+        <section class="section">
+          <div class="section-header">
+            <h2 class="section-title">Latest from the Blog</h2>
+            <a href="/blog" class="view-all-link">
+              View All Posts
+              <ArrowRight size={16} />
+            </a>
+          </div>
+
+          <div class="posts-layout">
+            {featuredPost && (
+              <div class="featured-post">
+                <BlogCardHero post={featuredPost} />
+              </div>
+            )}
+
+            {recentPosts.length > 0 && (
+              <div class="recent-posts-grid">
+                {recentPosts.map((post) => (
+                  <BlogCard post={post} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Featured Projects Section -->
+    <section class="section">
+      <FeaturedProjects maxProjects={3} />
+    </section>
+
+    <!-- Skills Snapshot Section -->
+    {
+      topSkills.length > 0 && (
+        <section class="section skills-section">
+          <div class="section-header">
+            <h2 class="section-title">What I Work With</h2>
+            <a href="/about" class="view-all-link">
+              More about me
+              <ArrowRight size={16} />
+            </a>
+          </div>
+
+          <div class="skills-cloud">
+            {topSkills.map((skill, index) => (
+              <span class="skill-badge" style={`--index: ${index}`}>
+                {skill}
+              </span>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Connect CTA Section -->
+    <section class="cta-section">
+      <div class="cta-card">
+        <h2 class="cta-title">Let's Build Something Together</h2>
+        <p class="cta-description">Have a project in mind, need technical consultation, or just want to say hello? I'd love to hear from you.</p>
+        <Button href="/contact" variant="primary" size="lg">
+          <Mail slot="icon-left" size={18} />
+          Get in Touch
+        </Button>
+      </div>
+    </section>
+  </div>
 </BaseLayout>
+
+<style>
+  @reference "tailwindcss";
+
+  .home-page {
+    @apply mx-auto max-w-6xl px-4 pb-16;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    @apply relative py-10 md:py-16 flex items-center justify-center;
+  }
+
+  @keyframes cardFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .hero-content {
+    @apply flex flex-col items-center text-center;
+  }
+
+  /* Avatar with glow */
+  .avatar-wrapper {
+    @apply relative mb-4;
+    animation: elementFadeIn 0.5s ease-out 0.1s forwards;
+    opacity: 0;
+  }
+
+  .hero-avatar {
+    @apply h-24 w-24 md:h-28 md:w-28 rounded-full;
+    border: 4px solid var(--color-accent);
+    box-shadow:
+      0 0 0 4px rgba(49, 130, 206, 0.2),
+      0 0 40px rgba(49, 130, 206, 0.3);
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+
+  :global(.dark) .hero-avatar {
+    box-shadow:
+      0 0 0 4px rgba(99, 179, 237, 0.2),
+      0 0 50px rgba(99, 179, 237, 0.35);
+  }
+
+  @keyframes pulseGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 4px rgba(49, 130, 206, 0.2),
+        0 0 40px rgba(49, 130, 206, 0.25);
+    }
+    50% {
+      box-shadow:
+        0 0 0 4px rgba(49, 130, 206, 0.3),
+        0 0 60px rgba(49, 130, 206, 0.4);
+    }
+  }
+
+  :global(.dark) .hero-avatar {
+    animation-name: pulseGlowDark;
+  }
+
+  @keyframes pulseGlowDark {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 4px rgba(99, 179, 237, 0.2),
+        0 0 40px rgba(99, 179, 237, 0.3);
+    }
+    50% {
+      box-shadow:
+        0 0 0 4px rgba(99, 179, 237, 0.3),
+        0 0 70px rgba(99, 179, 237, 0.45);
+    }
+  }
+
+  .hero-name {
+    @apply text-3xl md:text-4xl font-bold mb-1;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    animation: elementFadeIn 0.5s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  .hero-title {
+    @apply flex items-center gap-2 text-lg md:text-xl font-medium mb-3;
+    color: var(--color-accent);
+    animation: elementFadeIn 0.5s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  .hero-tagline {
+    @apply text-base max-w-md mb-5 leading-relaxed;
+    color: var(--color-muted);
+    animation: elementFadeIn 0.5s ease-out 0.4s forwards;
+    opacity: 0;
+  }
+
+  @keyframes elementFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hero-social {
+    @apply flex items-center gap-3 mb-5;
+    animation: elementFadeIn 0.5s ease-out 0.5s forwards;
+    opacity: 0;
+  }
+
+  .social-icon {
+    @apply flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: var(--color-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  :global(.dark) .social-icon {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .social-icon:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(49, 130, 206, 0.2);
+  }
+
+  :global(.dark) .social-icon:hover {
+    box-shadow: 0 8px 25px rgba(99, 179, 237, 0.25);
+  }
+
+  .hero-cta {
+    @apply flex flex-wrap justify-center gap-4;
+    animation: elementFadeIn 0.5s ease-out 0.6s forwards;
+    opacity: 0;
+  }
+
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .orb {
+      animation: none;
+    }
+    .hero-glass-card,
+    .avatar-wrapper,
+    .hero-name,
+    .hero-title,
+    .hero-tagline,
+    .hero-social,
+    .hero-cta {
+      animation: none;
+      opacity: 1;
+    }
+    .hero-avatar {
+      animation: none;
+    }
+  }
+
+  /* Section Styles */
+  .section {
+    @apply py-12 border-t;
+    border-color: var(--color-border);
+  }
+
+  .section-header {
+    @apply flex flex-wrap items-center justify-between gap-4 mb-8;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .view-all-link {
+    @apply inline-flex items-center gap-1.5 text-sm font-medium;
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: gap 0.2s ease;
+  }
+
+  .view-all-link:hover {
+    gap: 0.75rem;
+  }
+
+  /* Posts Layout */
+  .posts-layout {
+    @apply flex flex-col gap-8;
+  }
+
+  .featured-post {
+    @apply w-full;
+  }
+
+  .recent-posts-grid {
+    @apply grid gap-6 md:grid-cols-2;
+  }
+
+  /* Skills Section */
+  .skills-section {
+    @apply overflow-hidden;
+  }
+
+  .skills-cloud {
+    @apply flex flex-wrap justify-center gap-3;
+  }
+
+  .skill-badge {
+    @apply rounded-full px-4 py-2 text-sm font-medium cursor-default;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    opacity: 0;
+    animation: fadeInUp 0.4s ease forwards;
+    animation-delay: calc(var(--index) * 0.05s);
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .skill-badge:hover {
+    transform: scale(1.08);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 16px rgba(99, 179, 237, 0.25);
+  }
+
+  :global(.dark) .skill-badge:hover {
+    box-shadow: 0 0 16px rgba(99, 179, 237, 0.35);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* CTA Section */
+  .cta-section {
+    @apply py-12;
+  }
+
+  .cta-card {
+    @apply text-center p-8 md:p-12 rounded-2xl;
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg) 100%);
+    border: 1px solid var(--color-border);
+  }
+
+  .cta-title {
+    @apply text-2xl md:text-3xl font-bold mb-4;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
+
+  .cta-description {
+    @apply text-base md:text-lg max-w-xl mx-auto mb-6;
+    color: var(--color-muted);
+  }
+</style>

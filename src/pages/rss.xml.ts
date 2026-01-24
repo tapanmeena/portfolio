@@ -5,8 +5,8 @@ export async function GET(context) {
   const posts = await getCollection("blog");
   const siteBase = String(context.site).replace(/\/$/, "");
   return rss({
-    title: "Astro Learner | Blog",
-    description: "My journey learning Astro",
+    title: "Tapan Meena's Blog",
+    description: "Thoughts, stories and ideas.",
     site: context.site,
     items: posts.map((post) => ({
       title: post.data.title,

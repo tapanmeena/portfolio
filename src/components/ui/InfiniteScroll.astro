@@ -63,119 +63,117 @@ const { initialCount = 6, loadCount = 6 } = Astro.props;
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .infinite-scroll-container {
-      @apply w-full;
-    }
+  .infinite-scroll-container {
+    @apply w-full;
+  }
 
-    .infinite-scroll-grid {
-      @apply grid gap-6;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    }
+  .infinite-scroll-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
 
-    .infinite-scroll-grid > :global(*) {
-      display: none;
-    }
+  .infinite-scroll-grid > :global(*) {
+    display: none;
+  }
 
-    .infinite-scroll-grid > :global(.visible) {
-      display: block;
-    }
+  .infinite-scroll-grid > :global(.visible) {
+    display: block;
+  }
 
-    .infinite-scroll-sentinel {
-      @apply h-1 w-full;
-    }
+  .infinite-scroll-sentinel {
+    @apply h-1 w-full;
+  }
 
-    .infinite-scroll-loader {
-      @apply hidden py-8;
-    }
+  .infinite-scroll-loader {
+    @apply hidden py-8;
+  }
 
-    .infinite-scroll-loader.loading {
-      @apply block;
-    }
+  .infinite-scroll-loader.loading {
+    @apply block;
+  }
 
-    /* Skeleton Styles */
-    .skeleton-grid {
-      @apply grid gap-6;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    }
+  /* Skeleton Styles */
+  .skeleton-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
 
-    .skeleton-card {
-      @apply overflow-hidden rounded-xl;
-      background-color: var(--color-surface);
-      border: 1px solid var(--color-border);
-    }
+  .skeleton-card {
+    @apply overflow-hidden rounded-xl;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
 
-    .skeleton-image {
-      @apply aspect-video w-full;
-      background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
+  .skeleton-image {
+    @apply aspect-video w-full;
+    background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
 
-    .skeleton-content {
-      @apply flex flex-col gap-3 p-5;
-    }
+  .skeleton-content {
+    @apply flex flex-col gap-3 p-5;
+  }
 
-    .skeleton-meta {
-      @apply h-4 w-32 rounded;
-      background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
+  .skeleton-meta {
+    @apply h-4 w-32 rounded;
+    background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
 
-    .skeleton-title {
-      @apply h-6 w-3/4 rounded;
-      background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      animation-delay: 0.1s;
-    }
+  .skeleton-title {
+    @apply h-6 w-3/4 rounded;
+    background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    animation-delay: 0.1s;
+  }
 
-    .skeleton-desc {
-      @apply h-4 w-full rounded;
-      background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      animation-delay: 0.2s;
-    }
+  .skeleton-desc {
+    @apply h-4 w-full rounded;
+    background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    animation-delay: 0.2s;
+  }
 
-    .skeleton-footer {
-      @apply flex items-center justify-between pt-2;
-    }
+  .skeleton-footer {
+    @apply flex items-center justify-between pt-2;
+  }
 
-    .skeleton-avatar {
-      @apply h-7 w-24 rounded-full;
-      background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      animation-delay: 0.3s;
-    }
+  .skeleton-avatar {
+    @apply h-7 w-24 rounded-full;
+    background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    animation-delay: 0.3s;
+  }
 
-    .skeleton-badge {
-      @apply h-6 w-16 rounded-full;
-      background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      animation-delay: 0.4s;
-    }
+  .skeleton-badge {
+    @apply h-6 w-16 rounded-full;
+    background: linear-gradient(90deg, var(--color-bg) 25%, var(--color-border) 50%, var(--color-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    animation-delay: 0.4s;
+  }
 
-    @keyframes shimmer {
-      0% {
-        background-position: 200% 0;
-      }
-      100% {
-        background-position: -200% 0;
-      }
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
     }
+    100% {
+      background-position: -200% 0;
+    }
+  }
 
-    .infinite-scroll-end {
-      @apply hidden items-center justify-center py-8 text-sm;
-      color: var(--color-muted);
-    }
+  .infinite-scroll-end {
+    @apply hidden items-center justify-center py-8 text-sm;
+    color: var(--color-muted);
+  }
 
-    .infinite-scroll-end.show {
-      @apply flex;
-    }
+  .infinite-scroll-end.show {
+    @apply flex;
   }
 </style>
 

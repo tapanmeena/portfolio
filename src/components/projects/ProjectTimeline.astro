@@ -1,0 +1,78 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ProjectTimelineItem from "./ProjectTimelineItem.astro";
+import { groupProjectsByYear } from "@utils/projects";
+
+interface Props {
+  projects: CollectionEntry<"projects">[];
+}
+
+const { projects } = Astro.props;
+const projectsByYear = groupProjectsByYear(projects);
+---
+
+<div class="project-timeline">
+  {
+    [...projectsByYear.entries()].map(([year, yearProjects]) => (
+      <div class="timeline-year-group" data-year={year}>
+        <div class="year-divider">
+          <span class="year-label">{year}</span>
+          <span class="year-line" />
+        </div>
+
+        <div class="year-projects">
+          {yearProjects.map((project) => (
+            <ProjectTimelineItem project={project} />
+          ))}
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  @reference "tailwindcss";
+
+  .project-timeline {
+    @apply flex flex-col gap-0;
+  }
+
+  .timeline-year-group {
+    @apply flex flex-col;
+  }
+
+  .year-divider {
+    @apply flex items-center gap-4 py-6;
+  }
+
+  .year-label {
+    @apply text-2xl font-bold;
+    color: var(--color-text);
+    font-family: var(--font-sans);
+  }
+
+  .year-line {
+    @apply flex-1 h-px;
+    background-color: var(--color-border);
+  }
+
+  .year-projects {
+    @apply flex flex-col;
+  }
+
+  /* Hide timeline items when filtered out */
+  :global(.timeline-item.hidden) {
+    display: none !important;
+  }
+
+  /* Hide year groups when all their items are filtered out */
+  .timeline-year-group:has(.year-projects:empty),
+  .timeline-year-group:has(.year-projects > .timeline-item.hidden:only-child) {
+    display: none;
+  }
+
+  /* Also hide year groups where ALL children are hidden */
+  .timeline-year-group:not(:has(.timeline-item:not(.hidden))) {
+    display: none;
+  }
+</style>

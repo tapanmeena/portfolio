@@ -1,0 +1,293 @@
+---
+import type { CollectionEntry } from "astro:content";
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import { Calendar, ExternalLink, Github, FileText } from "@lucide/astro";
+import { formatProjectDate, isOngoing, getProjectDateRange, normalizeTech } from "@utils/projects";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+}
+
+const { project } = Astro.props;
+const { title, description, techStack, coverImage, liveUrl, repoUrl, blogUrl, startDate, status } = project.data;
+
+const imageSrc = coverImage as ImageMetadata | undefined;
+const ongoing = isOngoing(project);
+const dateDisplay = formatProjectDate(new Date(startDate));
+
+const statusConfig = {
+  "in-progress": {
+    label: "Currently working on",
+    icon: "🔵",
+    class: "status-ongoing",
+  },
+  completed: { label: "Completed", icon: "⚪", class: "status-completed" },
+  archived: { label: "Archived", icon: "🔴", class: "status-archived" },
+};
+
+const currentStatus = statusConfig[status];
+---
+
+<article class="timeline-item" data-tech-stack={techStack.map(normalizeTech).join(",")}>
+  <div class="timeline-node">
+    <span class={`node-dot ${ongoing ? "node-dot-ongoing" : ""}`}></span>
+    <span class="node-line"></span>
+  </div>
+
+  <div class="timeline-card">
+    <a href={`/projects/${project.slug}`} class="card-link">
+      {
+        imageSrc && (
+          <div class="card-image">
+            <Image src={imageSrc} alt={`Cover image for ${title}`} class="cover-img" width={400} height={225} />
+          </div>
+        )
+      }
+
+      <div class="card-content">
+        <div class="card-header">
+          <span class="card-date">{dateDisplay}</span>
+          <span class={`status-badge ${currentStatus.class}`}>
+            <span class="status-icon">{currentStatus.icon}</span>
+            {currentStatus.label}
+          </span>
+        </div>
+
+        <h3 class="card-title">{title}</h3>
+
+        {description && <p class="card-description">{description}</p>}
+
+        <div class="card-footer">
+          <div class="tech-stack">
+            {techStack.map((tech) => <span class="tech-badge">{tech}</span>)}
+          </div>
+
+          <div class="card-links">
+            {
+              liveUrl && (
+                <a
+                  href={liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="card-link-btn"
+                  title="View live"
+                  onclick="event.stopPropagation();"
+                >
+                  <ExternalLink size={14} />
+                  <span>Live</span>
+                </a>
+              )
+            }
+            {
+              repoUrl && (
+                <a
+                  href={repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="card-link-btn"
+                  title="View code"
+                  onclick="event.stopPropagation();"
+                >
+                  <Github size={14} />
+                  <span>Code</span>
+                </a>
+              )
+            }
+            {
+              blogUrl && (
+                <a href={blogUrl} class="card-link-btn" title="Read blog post" onclick="event.stopPropagation();">
+                  <FileText size={14} />
+                  <span>Blog</span>
+                </a>
+              )
+            }
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+</article>
+
+<style>
+  @reference "tailwindcss";
+
+  .timeline-item {
+    @apply grid gap-4;
+    grid-template-columns: 40px 1fr;
+    min-height: 180px;
+  }
+
+  @media (min-width: 768px) {
+    .timeline-item {
+      grid-template-columns: 40px 1fr;
+      gap: 1.5rem;
+    }
+  }
+
+  /* Node/line column */
+  .timeline-node {
+    @apply relative flex flex-col items-center;
+  }
+
+  .node-dot {
+    @apply relative z-10 mt-4 h-4 w-4 rounded-full;
+    background-color: var(--color-accent);
+    border: 3px solid var(--color-surface);
+    box-shadow: 0 0 0 2px var(--color-border);
+  }
+
+  .node-dot-ongoing {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 2px var(--color-border);
+    }
+    50% {
+      box-shadow:
+        0 0 0 2px var(--color-accent),
+        0 0 0 6px rgba(var(--color-accent-rgb, 59, 130, 246), 0.3);
+    }
+  }
+
+  .node-line {
+    @apply flex-1 w-0.5;
+    background-color: var(--color-border);
+  }
+
+  /* Card column */
+  .timeline-card {
+    @apply overflow-hidden rounded-xl;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+    margin-bottom: 1rem;
+  }
+
+  .timeline-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-accent);
+  }
+
+  :global(.dark) .timeline-card:hover {
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.4);
+  }
+
+  .card-link {
+    @apply block no-underline;
+    color: inherit;
+  }
+
+  .card-image {
+    @apply relative aspect-video w-full overflow-hidden;
+    background-color: var(--color-bg);
+  }
+
+  .cover-img {
+    @apply h-full w-full object-cover;
+    transition: transform 0.4s ease;
+  }
+
+  :global(.dark) .cover-img {
+    filter: brightness(0.9);
+  }
+
+  :global(.dark) .timeline-card:hover .cover-img {
+    filter: brightness(1);
+  }
+
+  .timeline-card:hover .cover-img {
+    transform: scale(1.05);
+  }
+
+  .card-content {
+    @apply flex flex-col gap-3 p-5;
+  }
+
+  .card-header {
+    @apply flex items-center justify-between gap-2 flex-wrap;
+  }
+
+  .card-date {
+    @apply text-sm font-medium;
+    color: var(--color-muted);
+  }
+
+  .card-title {
+    @apply line-clamp-2 text-lg font-semibold leading-tight;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    margin: 0;
+    transition: color 0.2s ease;
+  }
+
+  .timeline-card:hover .card-title {
+    color: var(--color-accent);
+  }
+
+  .card-description {
+    @apply line-clamp-2 text-sm leading-relaxed;
+    color: var(--color-muted);
+    margin: 0;
+  }
+
+  .tech-stack {
+    @apply flex flex-wrap gap-1.5;
+  }
+
+  .tech-badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+
+  .card-footer {
+    @apply flex flex-wrap items-center justify-between gap-3 pt-2;
+  }
+
+  .card-links {
+    @apply flex items-center gap-2;
+  }
+
+  .card-link-btn {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium;
+    color: var(--color-muted);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .card-link-btn:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background-color: var(--color-surface);
+  }
+
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium;
+    color: var(--color-muted);
+  }
+
+  .status-icon {
+    font-size: 10px;
+  }
+
+  .status-ongoing {
+    color: var(--color-accent);
+  }
+
+  .status-archived {
+    opacity: 0.6;
+  }
+</style>

@@ -1,7 +1,9 @@
 ---
 import { Github, Twitter, Linkedin, Rss, ArrowUp, Mail } from "@lucide/astro";
+import { authors } from "@data/authors";
 
 const currentYear = new Date().getFullYear();
+const author = authors["tapan-meena"];
 
 const quickLinks = [
   { href: "/blog", label: "Blog" },
@@ -11,15 +13,16 @@ const quickLinks = [
 ];
 
 const socialLinks = [
-  { href: "https://github.com/tapanmeena", label: "GitHub", icon: Github },
-  { href: "https://twitter.com/tapanmeena3", label: "Twitter", icon: Twitter },
+  { href: author.social?.github, label: "GitHub", icon: Github },
+  { href: author.social?.twitter, label: "Twitter", icon: Twitter },
+  { href: author.social?.linkedin, label: "LinkedIn", icon: Linkedin },
   {
-    href: "https://linkedin.com/in/tapanmeena",
-    label: "LinkedIn",
-    icon: Linkedin,
+    href: author.email ? `mailto:${author.email}` : undefined,
+    label: "Email",
+    icon: Mail,
   },
   { href: "/rss.xml", label: "RSS Feed", icon: Rss },
-];
+].filter((link) => link.href);
 ---
 
 <footer class="footer">
@@ -30,7 +33,7 @@ const socialLinks = [
       <div class="footer-brand">
         <a href="/" class="footer-logo">
           <span class="footer-monogram">TM</span>
-          <span class="footer-name">Tapan Meena</span>
+          <span class="footer-name">{author.name}</span>
         </a>
         <p class="footer-tagline">Software engineer sharing thoughts on web development, cloud, and developer tools.</p>
       </div>
@@ -49,22 +52,19 @@ const socialLinks = [
         </nav>
       </div>
 
-      <!-- Newsletter Column -->
+      <!-- Connect Column -->
       <div class="footer-section">
-        <h3 class="footer-heading">Newsletter</h3>
-        <p class="footer-newsletter-text">Get notified about new posts and projects.</p>
-        <form class="newsletter-form" action="#" method="POST">
-          <div class="newsletter-input-wrapper">
-            <Mail class="newsletter-icon" size={16} />
-            <input type="email" name="email" placeholder="your@email.com" required class="newsletter-input" />
-          </div>
-          <button type="submit" class="newsletter-btn">Subscribe</button>
-        </form>
+        <h3 class="footer-heading">Get in Touch</h3>
+        <p class="footer-connect-text">Feel free to reach out for collaborations or just a friendly chat.</p>
+        <a href="/contact" class="footer-contact-btn">
+          <Mail size={16} />
+          Contact Me
+        </a>
       </div>
 
       <!-- Social Column -->
       <div class="footer-section">
-        <h3 class="footer-heading">Connect</h3>
+        <h3 class="footer-heading">Follow</h3>
         <div class="footer-social">
           {
             socialLinks.map((link) => (
@@ -72,8 +72,8 @@ const socialLinks = [
                 href={link.href}
                 class="social-link"
                 aria-label={link.label}
-                target={link.href.startsWith("http") ? "_blank" : undefined}
-                rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                target={link.href?.startsWith("http") ? "_blank" : undefined}
+                rel={link.href?.startsWith("http") ? "noopener noreferrer" : undefined}
               >
                 <link.icon size={20} />
               </a>
@@ -86,7 +86,8 @@ const socialLinks = [
     <!-- Bottom Bar -->
     <div class="footer-bottom">
       <p class="footer-copyright">
-        © {currentYear} Tapan Meena. All rights reserved.
+        © {currentYear}
+        {author.name}. All rights reserved.
       </p>
       <button id="back-to-top" class="back-to-top" aria-label="Back to top">
         <ArrowUp size={18} />
@@ -104,116 +105,95 @@ const socialLinks = [
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .footer {
-      @apply mt-auto
+  .footer {
+    @apply mt-auto
         border-t border-(--color-border)
         bg-(--color-surface);
-    }
+  }
 
-    .footer-container {
-      @apply mx-auto max-w-6xl px-6 py-12;
-    }
+  .footer-container {
+    @apply mx-auto max-w-6xl px-6 py-12;
+  }
 
-    .footer-grid {
-      @apply grid gap-8
+  .footer-grid {
+    @apply grid gap-8
         grid-cols-1
         sm:grid-cols-2
         lg:grid-cols-4;
-    }
+  }
 
-    /* Brand */
-    .footer-brand {
-      @apply sm:col-span-2 lg:col-span-1;
-    }
+  /* Brand */
+  .footer-brand {
+    @apply sm:col-span-2 lg:col-span-1;
+  }
 
-    .footer-logo {
-      @apply flex items-center gap-2 no-underline mb-3;
-    }
+  .footer-logo {
+    @apply flex items-center gap-2 no-underline mb-3;
+  }
 
-    .footer-monogram {
-      @apply flex h-8 w-8 items-center justify-center
+  .footer-monogram {
+    @apply flex h-8 w-8 items-center justify-center
         rounded-lg
         bg-linear-to-br from-blue-500 to-sky-700
         text-xs font-bold text-white;
-    }
+  }
 
-    .footer-name {
-      @apply text-lg font-bold text-(--color-text);
-    }
+  .footer-name {
+    @apply text-lg font-bold text-(--color-text);
+  }
 
-    .footer-tagline {
-      @apply text-sm text-(--color-muted) leading-relaxed;
-    }
+  .footer-tagline {
+    @apply text-sm text-(--color-muted) leading-relaxed;
+  }
 
-    /* Sections */
-    .footer-section {
-      @apply flex flex-col;
-    }
+  /* Sections */
+  .footer-section {
+    @apply flex flex-col;
+  }
 
-    .footer-heading {
-      @apply text-sm font-semibold uppercase tracking-wider
+  .footer-heading {
+    @apply text-sm font-semibold uppercase tracking-wider
         text-(--color-text)
         mb-4;
-    }
+  }
 
-    .footer-links {
-      @apply flex flex-col gap-2;
-    }
+  .footer-links {
+    @apply flex flex-col gap-2;
+  }
 
-    .footer-link {
-      @apply text-sm text-(--color-muted)
+  .footer-link {
+    @apply text-sm text-(--color-muted)
         no-underline
         transition-colors
         hover:text-(--color-text);
-    }
+  }
 
-    /* Newsletter */
-    .footer-newsletter-text {
-      @apply text-sm text-(--color-muted) mb-3;
-    }
+  /* Connect Section */
+  .footer-connect-text {
+    @apply text-sm text-(--color-muted) mb-3 leading-relaxed;
+  }
 
-    .newsletter-form {
-      @apply flex flex-col gap-2;
-    }
-
-    .newsletter-input-wrapper {
-      @apply relative;
-    }
-
-    .newsletter-icon {
-      @apply absolute left-3 top-1/2 -translate-y-1/2
-        text-(--color-muted);
-    }
-
-    .newsletter-input {
-      @apply w-full pl-9 pr-3 py-2
-        text-sm
+  .footer-contact-btn {
+    @apply inline-flex items-center gap-2
+        px-4 py-2
+        text-sm font-medium
+        text-(--color-text)
         bg-(--color-bg)
         border border-(--color-border)
         rounded-lg
-        text-(--color-text)
-        placeholder:text-(--color-muted)
-        focus:outline-none focus:ring-2 focus:ring-(--color-accent)
-        transition;
-    }
-
-    .newsletter-btn {
-      @apply px-4 py-2
-        text-sm font-medium text-white
-        bg-(--color-accent)
-        rounded-lg
+        no-underline
         transition
-        hover:bg-(--color-accent-hover);
-    }
+        hover:border-(--color-accent)
+        hover:text-(--color-accent);
+  }
 
-    /* Social */
-    .footer-social {
-      @apply flex gap-3;
-    }
+  /* Social */
+  .footer-social {
+    @apply flex gap-3;
+  }
 
-    .social-link {
-      @apply flex h-10 w-10 items-center justify-center
+  .social-link {
+    @apply flex h-10 w-10 items-center justify-center
         rounded-full
         border border-(--color-border)
         text-(--color-muted)
@@ -221,22 +201,22 @@ const socialLinks = [
         hover:text-(--color-text)
         hover:border-(--color-muted)
         hover:scale-105;
-    }
+  }
 
-    /* Bottom */
-    .footer-bottom {
-      @apply flex flex-col sm:flex-row items-center justify-between
+  /* Bottom */
+  .footer-bottom {
+    @apply flex flex-col sm:flex-row items-center justify-between
         gap-4
         mt-10 pt-6
         border-t border-(--color-border);
-    }
+  }
 
-    .footer-copyright {
-      @apply text-sm text-(--color-muted);
-    }
+  .footer-copyright {
+    @apply text-sm text-(--color-muted);
+  }
 
-    .back-to-top {
-      @apply flex items-center gap-2
+  .back-to-top {
+    @apply flex items-center gap-2
         px-4 py-2
         text-sm font-medium
         text-(--color-muted)
@@ -245,6 +225,5 @@ const socialLinks = [
         transition
         hover:text-(--color-text)
         hover:border-(--color-muted);
-    }
   }
 </style>

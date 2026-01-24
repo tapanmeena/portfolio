@@ -1,14 +1,14 @@
 ---
 title: "AZPIM CLI"
-description: "A command-line tool for managing Azure Privileged Identity Management (PIM) roles. Streamline the process of activating, deactivating, and listing PIM role assignments."
+description: "A command-line tool for managing Azure Privileged Identity Management (PIM) roles. Streamlines the process of activating, deactivating, and listing PIM role assignments."
 techStack:
   - TypeScript
   - Node.js
   - Azure SDK
   - Commander.js
-category: CLI tools
+category: "CLI Tools"
 repoUrl: "https://github.com/tapanmeena/azpim-cli"
-startDate: 2025-01-10
+startDate: 2025-10-15
 status: "in-progress"
 featured: true
 draft: false
@@ -16,11 +16,15 @@ draft: false
 
 ## Overview
 
-AZPM CLI is a command-line interface tool designed to simplify Azure Privileged Identity Management operations.
+AZPIM CLI is a command-line interface tool designed to simplify Azure Privileged Identity Management operations. It provides a fast and efficient way to manage PIM role assignments without navigating through the Azure Portal.
 
 ## Features
 
 - **Quick Role Activation**: Activate eligible PIM roles with a single command
+- **Role Listing**: View all eligible and active role assignments
+- **Deactivation Support**: Easily deactivate roles when no longer needed
+- **Multi-subscription Support**: Manage roles across multiple Azure subscriptions
+- **Interactive Mode**: User-friendly prompts for role selection
 
 ## Challenges
 
@@ -28,7 +32,7 @@ Building this tool required deep understanding of Azure's PIM APIs and authentic
 
 1. Handling token refresh for long-running operations
 2. Managing complex permission hierarchies
-3. Providing meaningful errr messages for common failure scenarios
+3. Providing meaningful error messages for common failure scenarios
 
 ## Outcomes
 

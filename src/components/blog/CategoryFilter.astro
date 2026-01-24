@@ -34,57 +34,55 @@ const { categories, totalCount } = Astro.props;
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .category-filter-wrapper {
-      @apply sticky top-16 z-40 -mx-4 mb-8 overflow-hidden px-4 md:top-20;
-    }
+  .category-filter-wrapper {
+    @apply sticky top-16 z-40 -mx-4 mb-8 overflow-hidden px-4 md:top-20;
+  }
 
-    .category-filter {
-      @apply flex gap-2 overflow-x-auto py-4;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
+  .category-filter {
+    @apply flex gap-2 overflow-x-auto py-4;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 
-    .category-filter::-webkit-scrollbar {
-      display: none;
-    }
+  .category-filter::-webkit-scrollbar {
+    display: none;
+  }
 
-    .filter-pill {
-      @apply inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium;
-      background-color: var(--color-surface);
-      border-color: var(--color-border);
-      color: var(--color-text);
-      transition:
-        background-color 0.5s ease,
-        border-color 0.5s ease,
-        color 0.5s ease,
-        transform 0.5s ease;
-    }
+  .filter-pill {
+    @apply inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium;
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text);
+    transition:
+      background-color 0.5s ease,
+      border-color 0.5s ease,
+      color 0.5s ease,
+      transform 0.5s ease;
+  }
 
-    .filter-pill:hover {
-      border-color: var(--color-accent);
-      transform: translateY(-1px);
-    }
+  .filter-pill:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-1px);
+  }
 
-    .filter-pill.active {
-      background-color: var(--color-accent);
-      border-color: var(--color-accent);
-      color: white;
-    }
+  .filter-pill.active {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+  }
 
-    .filter-pill.active .pill-count {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: white;
-    }
+  .filter-pill.active .pill-count {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
 
-    .pill-count {
-      @apply rounded-full px-2 py-0.5 text-xs;
-      background-color: var(--color-bg);
-      color: var(--color-muted);
-      transition:
-        background-color 0.5s ease,
-        color 0.5s ease;
-    }
+  .pill-count {
+    @apply rounded-full px-2 py-0.5 text-xs;
+    background-color: var(--color-bg);
+    color: var(--color-muted);
+    transition:
+      background-color 0.5s ease,
+      color 0.5s ease;
   }
 </style>
 

@@ -83,133 +83,131 @@ const formattedDate = publishedAt.toLocaleDateString("en-US", {
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .hero-card {
-      @apply relative overflow-hidden rounded-2xl;
-      background-color: var(--color-surface);
-      border: 1px solid var(--color-border);
-      transition:
-        transform 0.3s ease,
-        box-shadow 0.3s ease,
-        border-color 0.3s ease;
-    }
+  .hero-card {
+    @apply relative overflow-hidden rounded-2xl;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+  }
 
-    .hero-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
-      border-color: var(--color-accent);
-    }
+  .hero-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-accent);
+  }
 
-    .hero-link {
-      @apply grid gap-0 no-underline md:grid-cols-2;
-      color: inherit;
-    }
+  .hero-link {
+    @apply grid gap-0 no-underline md:grid-cols-2;
+    color: inherit;
+  }
 
-    .hero-image-wrapper {
-      @apply relative aspect-video overflow-hidden md:aspect-auto md:h-full;
-    }
+  .hero-image-wrapper {
+    @apply relative aspect-video overflow-hidden md:aspect-auto md:h-full;
+  }
 
-    .hero-image {
-      @apply h-full w-full object-cover;
-      transition: transform 0.5s ease;
-    }
+  .hero-image {
+    @apply h-full w-full object-cover;
+    transition: transform 0.5s ease;
+  }
 
-    .hero-card:hover .hero-image {
-      transform: scale(1.05);
-    }
+  .hero-card:hover .hero-image {
+    transform: scale(1.05);
+  }
 
-    .hero-placeholder {
-      @apply flex h-full min-h-75 w-full items-center justify-center;
-      background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-      color: white;
-      opacity: 0.8;
-    }
+  .hero-placeholder {
+    @apply flex h-full min-h-75 w-full items-center justify-center;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    color: white;
+    opacity: 0.8;
+  }
 
-    .hero-overlay {
-      @apply pointer-events-none absolute inset-0;
-      background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
-    }
+  .hero-overlay {
+    @apply pointer-events-none absolute inset-0;
+    background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+  }
 
-    .hero-content {
-      @apply flex flex-col justify-center gap-4 p-6 md:p-8;
-    }
+  .hero-content {
+    @apply flex flex-col justify-center gap-4 p-6 md:p-8;
+  }
 
-    .hero-meta {
-      @apply flex flex-wrap items-center gap-2 text-sm;
-      color: var(--color-muted);
-    }
+  .hero-meta {
+    @apply flex flex-wrap items-center gap-2 text-sm;
+    color: var(--color-muted);
+  }
 
-    .hero-category {
-      @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
-      background-color: var(--color-accent);
-      color: white;
-    }
+  .hero-category {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+    background-color: var(--color-accent);
+    color: white;
+  }
 
-    .meta-separator {
-      color: var(--color-border);
-    }
+  .meta-separator {
+    color: var(--color-border);
+  }
 
-    .meta-item {
-      @apply flex items-center gap-1;
-    }
+  .meta-item {
+    @apply flex items-center gap-1;
+  }
 
-    .hero-title {
-      @apply text-2xl font-bold leading-tight md:text-3xl lg:text-4xl;
-      font-family: var(--font-sans);
-      color: var(--color-text);
-      margin: 0;
-      transition: color 0.2s ease;
-    }
+  .hero-title {
+    @apply text-2xl font-bold leading-tight md:text-3xl lg:text-4xl;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    margin: 0;
+    transition: color 0.2s ease;
+  }
 
-    .hero-card:hover .hero-title {
-      color: var(--color-accent);
-    }
+  .hero-card:hover .hero-title {
+    color: var(--color-accent);
+  }
 
-    .hero-description {
-      @apply line-clamp-3 text-base leading-relaxed md:text-lg;
-      color: var(--color-muted);
-      margin: 0;
-    }
+  .hero-description {
+    @apply line-clamp-3 text-base leading-relaxed md:text-lg;
+    color: var(--color-muted);
+    margin: 0;
+  }
 
-    .hero-footer {
-      @apply flex flex-wrap items-center justify-between gap-4 pt-2;
-    }
+  .hero-footer {
+    @apply flex flex-wrap items-center justify-between gap-4 pt-2;
+  }
 
-    .hero-author {
-      @apply flex items-center gap-3;
-    }
+  .hero-author {
+    @apply flex items-center gap-3;
+  }
 
-    .author-avatar {
-      @apply h-10 w-10 rounded-full object-cover md:h-12 md:w-12;
-      border: 2px solid var(--color-border);
-    }
+  .author-avatar {
+    @apply h-10 w-10 rounded-full object-cover md:h-12 md:w-12;
+    border: 2px solid var(--color-border);
+  }
 
-    .author-info {
-      @apply flex flex-col;
-    }
+  .author-info {
+    @apply flex flex-col;
+  }
 
-    .author-name {
-      @apply text-sm font-semibold;
-      color: var(--color-text);
-    }
+  .author-name {
+    @apply text-sm font-semibold;
+    color: var(--color-text);
+  }
 
-    .author-bio {
-      @apply hidden text-xs md:block;
-      color: var(--color-muted);
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+  .author-bio {
+    @apply hidden text-xs md:block;
+    color: var(--color-muted);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-    .read-more {
-      @apply flex items-center gap-2 text-sm font-medium;
-      color: var(--color-accent);
-      transition: gap 0.2s ease;
-    }
+  .read-more {
+    @apply flex items-center gap-2 text-sm font-medium;
+    color: var(--color-accent);
+    transition: gap 0.2s ease;
+  }
 
-    .hero-card:hover .read-more {
-      gap: 0.75rem;
-    }
+  .hero-card:hover .read-more {
+    gap: 0.75rem;
   }
 </style>

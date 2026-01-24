@@ -72,10 +72,9 @@ const iconSize = size === "sm" ? 14 : size === "lg" ? 20 : 16;
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    /* Base button styles */
-    .btn {
-      @apply inline-flex items-center justify-center
+  /* Base button styles */
+  .btn {
+    @apply inline-flex items-center justify-center
       font-medium
       rounded-lg
       border
@@ -84,66 +83,65 @@ const iconSize = size === "sm" ? 14 : size === "lg" ? 20 : 16;
       focus:ring-(--color-accent)
       no-underline
       cursor-pointer;
-    }
+  }
 
-    .btn-content {
-      @apply inline-flex items-center justify-center gap-2;
-    }
+  .btn-content {
+    @apply inline-flex items-center justify-center gap-2;
+  }
 
-    /* Variants */
-    .btn-primary {
-      @apply bg-(--color-accent)
+  /* Variants */
+  .btn-primary {
+    @apply bg-(--color-accent)
       border-transparent
       text-white
       hover:bg-(--color-accent-hover)
       active:scale-[0.98];
-    }
+  }
 
-    .btn-secondary {
-      @apply bg-(--color-surface)
+  .btn-secondary {
+    @apply bg-(--color-surface)
       border-(--color-border)
       text-(--color-text)
       hover:bg-(--color-border)
       active:scale-[0.98];
-    }
+  }
 
-    .btn-outline {
-      @apply bg-transparent
+  .btn-outline {
+    @apply bg-transparent
       border-(--color-border)
       text-(--color-text)
       hover:bg-(--color-surface)
       hover:border-(--color-muted)
       active:scale-[0.98];
-    }
+  }
 
-    .btn-ghost {
-      @apply bg-transparent
+  .btn-ghost {
+    @apply bg-transparent
       border-transparent
       text-(--color-text)
       hover:bg-gray-100 dark:hover:bg-white/10
       active:scale-[0.98];
-    }
+  }
 
-    /* Sizes */
-    .btn-sm {
-      @apply px-3 py-1.5 text-sm;
-    }
+  /* Sizes */
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
 
-    .btn-md {
-      @apply px-4 py-2 text-sm;
-    }
+  .btn-md {
+    @apply px-4 py-2 text-sm;
+  }
 
-    .btn-lg {
-      @apply px-6 py-3 text-base;
-    }
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
 
-    /* States */
-    .btn-disabled {
-      @apply opacity-50 cursor-not-allowed pointer-events-none;
-    }
+  /* States */
+  .btn-disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+  }
 
-    .btn-loading {
-      @apply cursor-wait;
-    }
+  .btn-loading {
+    @apply cursor-wait;
   }
 </style>

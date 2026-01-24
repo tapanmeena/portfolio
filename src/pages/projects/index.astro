@@ -1,0 +1,53 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import ProjectTimeline from "@components/projects/ProjectTimeline.astro";
+import TechStackFilter from "@components/projects/TechStackFilter.astro";
+import { getPublishedProjects, collectUniqueTechStack } from "@utils/projects";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const techStacks = collectUniqueTechStack(projects);
+
+// Get tech filter from URL if present
+const url = Astro.url;
+const activeTech = url.searchParams.get("tech") || undefined;
+---
+
+<BaseLayout pageTitle="Projects">
+  <div class="projects-page">
+    <header class="page-header">
+      <h1 class="page-title">Projects</h1>
+      <p class="page-description">A timeline of projects I've worked on. Filter by technology to explore specific areas.</p>
+    </header>
+
+    <TechStackFilter techStacks={techStacks} activeTech={activeTech} />
+
+    <ProjectTimeline projects={projects} />
+  </div>
+</BaseLayout>
+
+<style>
+  @reference "tailwindcss";
+
+  .projects-page {
+    @apply mx-auto max-w-6xl px-4 pb-12;
+    /* @apply mx-auto max-w-6xl px-4 pb-12; */
+  }
+
+  .page-header {
+    @apply mb-8 pt-8;
+  }
+
+  .page-title {
+    @apply text-4xl font-bold mb-3;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
+
+  .page-description {
+    @apply text-lg;
+    color: var(--color-muted);
+    margin: 0;
+  }
+</style>

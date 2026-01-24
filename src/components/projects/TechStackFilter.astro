@@ -1,0 +1,166 @@
+---
+import { normalizeTech } from "@utils/projects";
+
+interface Props {
+  techStacks: string[];
+  activeTech?: string;
+}
+
+const { techStacks, activeTech } = Astro.props;
+---
+
+<div class="tech-filter-wrapper">
+  <div class="tech-filter">
+    <button class={`filter-pill ${!activeTech ? "active" : ""}`} data-tech="all" type="button"> All </button>
+    {
+      techStacks.map((tech) => (
+        <button class={`filter-pill ${activeTech === normalizeTech(tech) ? "active" : ""}`} data-tech={normalizeTech(tech)} type="button">
+          {tech}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="filter-empty-state hidden">
+    <p>No projects found with this technology.</p>
+    <button class="clear-filter-btn" type="button">Clear filter</button>
+  </div>
+</div>
+
+<script>
+  function initTechFilter() {
+    const filterPills = document.querySelectorAll(".filter-pill");
+    const timelineItems = document.querySelectorAll(".timeline-item");
+    const emptyState = document.querySelector(".filter-empty-state");
+    const clearFilterBtn = document.querySelector(".clear-filter-btn");
+
+    function filterByTech(selectedTech: string) {
+      let visibleCount = 0;
+
+      timelineItems.forEach((item) => {
+        const techStack = item.getAttribute("data-tech-stack") || "";
+        const techs = techStack.split(",");
+
+        if (selectedTech === "all" || techs.includes(selectedTech)) {
+          item.classList.remove("hidden");
+          visibleCount++;
+        } else {
+          item.classList.add("hidden");
+        }
+      });
+
+      // Show/hide empty state
+      if (emptyState) {
+        emptyState.classList.toggle("hidden", visibleCount > 0);
+      }
+
+      // Update URL without page reload
+      const url = new URL(window.location.href);
+      if (selectedTech === "all") {
+        url.searchParams.delete("tech");
+      } else {
+        url.searchParams.set("tech", selectedTech);
+      }
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    function setActivePill(selectedTech: string) {
+      filterPills.forEach((pill) => {
+        const pillTech = pill.getAttribute("data-tech");
+        pill.classList.toggle("active", pillTech === selectedTech);
+      });
+    }
+
+    // Handle pill clicks
+    filterPills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const tech = pill.getAttribute("data-tech") || "all";
+        setActivePill(tech);
+        filterByTech(tech);
+      });
+    });
+
+    // Handle clear filter button
+    clearFilterBtn?.addEventListener("click", () => {
+      setActivePill("all");
+      filterByTech("all");
+    });
+
+    // Initialize from URL on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const techFromUrl = urlParams.get("tech");
+    if (techFromUrl) {
+      setActivePill(techFromUrl);
+      filterByTech(techFromUrl);
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener("astro:page-load", initTechFilter);
+  initTechFilter();
+</script>
+
+<style>
+  @reference "tailwindcss";
+
+  .tech-filter-wrapper {
+    @apply mb-8;
+  }
+
+  .tech-filter {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .filter-pill {
+    @apply inline-flex items-center rounded-full px-4 py-2 text-sm font-medium cursor-pointer;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .filter-pill:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-1px);
+  }
+
+  .filter-pill.active {
+    background-color: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
+  }
+
+  .filter-pill.active:hover {
+    background-color: var(--color-accent-hover);
+  }
+
+  .filter-empty-state {
+    @apply flex flex-col items-center justify-center gap-4 py-16 text-center;
+    color: var(--color-muted);
+  }
+
+  .filter-empty-state.hidden {
+    display: none;
+  }
+
+  .filter-empty-state p {
+    @apply text-lg;
+    margin: 0;
+  }
+
+  .clear-filter-btn {
+    @apply inline-flex items-center rounded-full px-4 py-2 text-sm font-medium cursor-pointer;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    transition: background-color 0.2s ease;
+  }
+
+  .clear-filter-btn:hover {
+    background-color: var(--color-accent-hover);
+  }
+</style>

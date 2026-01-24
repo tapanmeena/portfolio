@@ -1,0 +1,76 @@
+---
+import { getCollection } from "astro:content";
+import ProjectCard from "./ProjectCard.astro";
+import { getFeaturedProjects } from "@utils/projects";
+import { ArrowRight } from "@lucide/astro";
+
+interface Props {
+  maxProjects?: number;
+}
+
+const { maxProjects = 3 } = Astro.props;
+
+const allProjects = await getCollection("projects");
+const featuredProjects = getFeaturedProjects(allProjects).slice(0, maxProjects);
+---
+
+{
+  featuredProjects.length > 0 && (
+    <section class="featured-projects">
+      <div class="section-header">
+        <h2 class="section-title">Featured Projects</h2>
+        <a href="/projects" class="view-all-link">
+          View All Projects
+          <ArrowRight size={16} />
+        </a>
+      </div>
+
+      <div class="projects-grid">
+        {featuredProjects.map((project) => (
+          <ProjectCard project={project} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  @reference "tailwindcss";
+
+  .featured-projects {
+    @apply py-12;
+  }
+
+  .section-header {
+    @apply flex flex-wrap items-center justify-between gap-4 mb-8;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .view-all-link {
+    @apply inline-flex items-center gap-1.5 text-sm font-medium;
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: gap 0.2s ease;
+  }
+
+  .view-all-link:hover {
+    gap: 0.75rem;
+  }
+
+  .projects-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  @media (min-width: 1024px) {
+    .projects-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

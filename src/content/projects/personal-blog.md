@@ -1,6 +1,6 @@
 ---
 title: "Personal Blog & Portfolio"
-description: "A command-line tool for managing Azure Privileged Identity Management (PIM) roles. Streamline the process of activating, deactivating, and listing PIM role assignments."
+description: "A modern, performant blog and portfolio site built with Astro. Features dark mode, content collections, and a timeline-based projects showcase."
 techStack:
   - Astro
   - TypeScript
@@ -10,7 +10,7 @@ category: "Web Development"
 liveUrl: "https://tapanmeena.com"
 repoUrl: "https://github.com/tapanmeena/blog"
 blogUrl: "https://tapanmeena.com/blog/cli-tools/test"
-startDate: 2025-08-10
+startDate: 2025-08-01
 status: "in-progress"
 featured: true
 draft: false
@@ -18,20 +18,28 @@ draft: false
 
 ## Overview
 
-AZPM CLI is a command-line interface tool designed to simplify Azure Privileged Identity Management operations.
+This is my personal blog and portfolio website, built from scratch using Astro and modern web technologies. The site showcases my projects, technical blog posts, and professional journey.
 
 ## Features
 
-- **Quick Role Activation**: Activate eligible PIM roles with a single command
+- **Content Collections**: Type-safe blog posts and projects using Astro's content collections
+- **Dark Mode**: Seamless light/dark theme switching with system preference detection
+- **Timeline View**: Chronological project showcase with tech stack filtering
+- **Performance First**: Static site generation for optimal loading speeds
+- **SEO Optimized**: Proper meta tags, Open Graph, and structured data
 
-## Challenges
+## Technical Highlights
 
-Building this tool required deep understanding of Azure's PIM APIs and authentication flows. Key challenges included:
+- Astro 5 with TypeScript for type safety
+- Tailwind CSS v4 for styling
+- Content stored in Markdown with frontmatter validation
+- RSS feed generation
+- Responsive design for all screen sizes
 
-1. Handling token refresh for long-running operations
-2. Managing complex permission hierarchies
-3. Providing meaningful errr messages for common failure scenarios
+## Ongoing Work
 
-## Outcomes
+Currently working on:
 
-The CLI has significantly reduced the time needed to activate PIM roles from ~2 minutes (portal navigation) to ~5 seconds (single command).
+- Adding more interactive components
+- Improving accessibility
+- Adding search functionality

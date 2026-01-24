@@ -73,104 +73,102 @@ const categoriesWithCount = categories
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .blog-index {
-      @apply mx-auto max-w-6xl px-4 pb-12;
-    }
+  .blog-index {
+    @apply mx-auto max-w-6xl px-4 pb-12;
+  }
 
-    .blog-header {
-      @apply mb-6 text-center;
-    }
+  .blog-header {
+    @apply mb-6 text-center;
+  }
 
-    .blog-header h1 {
-      @apply mb-3 text-4xl font-bold md:text-5xl;
-      font-family: var(--font-sans);
-      color: var(--color-text);
-    }
+  .blog-header h1 {
+    @apply mb-3 text-4xl font-bold md:text-5xl;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
 
-    .blog-subtitle {
-      @apply text-lg md:text-xl;
-      color: var(--color-muted);
-    }
+  .blog-subtitle {
+    @apply text-lg md:text-xl;
+    color: var(--color-muted);
+  }
 
-    .view-controls {
-      @apply mb-6 flex items-center justify-end gap-2;
-    }
+  .view-controls {
+    @apply mb-6 flex items-center justify-end gap-2;
+  }
 
-    .view-label {
-      @apply mr-1 text-sm;
-      color: var(--color-muted);
-    }
+  .view-label {
+    @apply mr-1 text-sm;
+    color: var(--color-muted);
+  }
 
-    .view-toggle {
-      @apply flex cursor-pointer items-center justify-center rounded-lg border p-2;
-      background-color: var(--color-surface);
-      border-color: var(--color-border);
-      color: var(--color-muted);
-      transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease;
-    }
+  .view-toggle {
+    @apply flex cursor-pointer items-center justify-center rounded-lg border p-2;
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-muted);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
 
-    .view-toggle:hover {
-      border-color: var(--color-accent);
-      color: var(--color-accent);
-    }
+  .view-toggle:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
 
-    .view-toggle.active {
-      background-color: var(--color-accent);
-      border-color: var(--color-accent);
-      color: white;
-    }
+  .view-toggle.active {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+  }
 
-    .hero-wrapper {
-      @apply relative mb-10;
-      transition:
-        opacity 0.3s ease,
-        transform 0.3s ease;
-    }
+  .hero-wrapper {
+    @apply relative mb-10;
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
+  }
 
-    .featured-label {
-      @apply absolute -top-3 left-4 z-10 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider;
-      background-color: var(--color-accent);
-      color: white;
-    }
+  .featured-label {
+    @apply absolute -top-3 left-4 z-10 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider;
+    background-color: var(--color-accent);
+    color: white;
+  }
 
-    .posts-section {
-      @apply mt-8;
-    }
+  .posts-section {
+    @apply mt-8;
+  }
 
-    .posts-grid {
-      @apply grid gap-6;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    }
+  .posts-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
 
-    /* List View */
-    .posts-grid.list-view {
-      @apply flex flex-col gap-4;
-    }
+  /* List View */
+  .posts-grid.list-view {
+    @apply flex flex-col gap-4;
+  }
 
-    .posts-grid.list-view > :global(.blog-card) {
-      @apply flex-row;
-    }
+  .posts-grid.list-view > :global(.blog-card) {
+    @apply flex-row;
+  }
 
-    .posts-grid.list-view > :global(.blog-card .card-link) {
-      @apply grid grid-cols-[200px_1fr] gap-4 md:grid-cols-[280px_1fr];
-    }
+  .posts-grid.list-view > :global(.blog-card .card-link) {
+    @apply grid grid-cols-[200px_1fr] gap-4 md:grid-cols-[280px_1fr];
+  }
 
-    .posts-grid.list-view > :global(.blog-card .card-image) {
-      @apply aspect-4/3 h-full;
-    }
+  .posts-grid.list-view > :global(.blog-card .card-image) {
+    @apply aspect-4/3 h-full;
+  }
 
-    .posts-grid.list-view > :global(.blog-card .card-content) {
-      @apply justify-center py-4;
-    }
+  .posts-grid.list-view > :global(.blog-card .card-content) {
+    @apply justify-center py-4;
+  }
 
-    .empty-state {
-      @apply py-16 text-center;
-      color: var(--color-muted);
-    }
+  .empty-state {
+    @apply py-16 text-center;
+    color: var(--color-muted);
   }
 </style>
 

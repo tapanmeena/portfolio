@@ -67,62 +67,60 @@ const coverImage = post.data.coverImage as ImageMetadata | undefined;
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    /* 3-column grid layout */
+  /* 3-column grid layout */
+  .blog-layout {
+    @apply mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 1024px) {
     .blog-layout {
-      @apply mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
+      grid-template-columns: 220px 1fr 220px;
+      gap: 3rem;
+      align-items: start;
     }
+  }
 
-    @media (min-width: 1024px) {
-      .blog-layout {
-        grid-template-columns: 220px 1fr 220px;
-        gap: 3rem;
-        align-items: start;
-      }
-    }
+  /* TOC Sidebar */
+  .toc-sidebar {
+    @apply hidden lg:block;
+    position: sticky;
+    top: 6rem;
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+  }
 
-    /* TOC Sidebar */
-    .toc-sidebar {
-      @apply hidden lg:block;
-      position: sticky;
-      top: 6rem;
-      max-height: calc(100vh - 8rem);
-      overflow-y: auto;
-    }
+  /* Right spacer for symmetry */
+  .blog-spacer {
+    @apply hidden lg:block;
+  }
 
-    /* Right spacer for symmetry */
-    .blog-spacer {
-      @apply hidden lg:block;
-    }
+  /* Article container */
+  .article-container {
+    @apply w-full max-w-3xl mx-auto lg:mx-0;
+  }
 
-    /* Article container */
-    .article-container {
-      @apply w-full max-w-3xl mx-auto lg:mx-0;
-    }
+  /* Cover Image */
+  .cover-image {
+    @apply w-full rounded-xl mb-8;
+    max-height: 400px;
+    object-fit: cover;
+  }
 
-    /* Cover Image */
-    .cover-image {
-      @apply w-full rounded-xl mb-8;
-      max-height: 400px;
-      object-fit: cover;
-    }
+  .article-header {
+    @apply mb-8 border-b border-(--color-border) pb-8;
+  }
 
-    .article-header {
-      @apply mb-8 border-b border-(--color-border) pb-8;
-    }
+  .article-title {
+    @apply text-3xl font-bold tracking-tight sm:text-4xl;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
 
-    .article-title {
-      @apply text-3xl font-bold tracking-tight sm:text-4xl;
-      font-family: var(--font-sans);
-      color: var(--color-text);
-    }
-
-    .article-description {
-      @apply mt-4 text-lg;
-      color: var(--color-muted);
-    }
+  .article-description {
+    @apply mt-4 text-lg;
+    color: var(--color-muted);
   }
 </style>

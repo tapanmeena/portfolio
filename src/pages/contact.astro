@@ -1,8 +1,8 @@
 ---
-import Button from "@components/ui/Button.astro";
-import { authors } from "@data/authors";
 import BaseLayout from "@layouts/BaseLayout.astro";
-import { Github, Globe, Linkedin, Mail, MapIcon, MessageCircle, Phone, Twitter, X } from "@lucide/astro";
+import { authors } from "@data/authors";
+import Button from "@components/ui/Button.astro";
+import { Mail, Phone, MapPin, Github, Linkedin, Twitter, Globe, MessageCircle } from "@lucide/astro";
 
 const author = authors["tapan-meena"];
 ---
@@ -39,6 +39,7 @@ const author = authors["tapan-meena"];
             </a>
           )
         }
+
         {
           author.phone && (
             <a href={`tel:${author.phone}`} class="contact-card">
@@ -53,16 +54,17 @@ const author = authors["tapan-meena"];
             </a>
           )
         }
+
         {
           author.location && (
             <div class="contact-card contact-card-static">
               <div class="contact-card-icon">
-                <MapIcon size={28} />
+                <MapPin size={28} />
               </div>
               <div class="contact-card-content">
                 <h3 class="contact-card-title">Location</h3>
                 <p class="contact-card-value">{author.location}</p>
-                <span class="contact-card-action">Available for remote work</span>
+                <span class="contact-card-note">Available for remote work</span>
               </div>
             </div>
           )
@@ -89,6 +91,7 @@ const author = authors["tapan-meena"];
             </a>
           )
         }
+
         {
           author.social?.linkedin && (
             <a href={author.social.linkedin} class="social-card" target="_blank" rel="noopener noreferrer">
@@ -100,6 +103,7 @@ const author = authors["tapan-meena"];
             </a>
           )
         }
+
         {
           author.social?.twitter && (
             <a href={author.social.twitter} class="social-card" target="_blank" rel="noopener noreferrer">
@@ -111,6 +115,7 @@ const author = authors["tapan-meena"];
             </a>
           )
         }
+
         {
           author.social?.website && (
             <a href={author.social.website} class="social-card" target="_blank" rel="noopener noreferrer">
@@ -130,14 +135,14 @@ const author = authors["tapan-meena"];
       <div class="cta-content">
         <h2 class="cta-title">Let's Build Something Together</h2>
         <p class="cta-description">
-          Wheather you have a project in mind, need technical consultation, or want to explore collaboration opportunities, I'm here to help.
+          Whether you have a project in mind, need technical consultation, or want to explore collaboration opportunities, I'm here to help.
         </p>
         <div class="cta-buttons">
           <Button href={`mailto:${author.email}`} variant="primary" size="lg">
             <Mail slot="icon-left" size={18} />
             Send an Email
           </Button>
-          <Button href="/projects" variant="outline" size="lg"> View My Work</Button>
+          <Button href="/projects" variant="outline" size="lg"> View My Work </Button>
         </div>
       </div>
     </section>
@@ -147,159 +152,157 @@ const author = authors["tapan-meena"];
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .contact-page {
-      @apply mx-auto max-w-6xl px-4 pb-16;
-    }
+  .contact-page {
+    @apply mx-auto max-w-6xl px-4 pb-16;
+  }
 
-    /* Header */
-    .page-header {
-      @apply py-12 text-center border-b;
-      border-color: var(--color-border);
-    }
+  /* Header */
+  .page-header {
+    @apply py-12 text-center border-b;
+    border-color: var(--color-border);
+  }
 
-    .page-title {
-      @apply text-4xl font-bold mb-4;
-      font-family: var(--font-sans);
-      color: var(--color-text);
-    }
+  .page-title {
+    @apply text-4xl font-bold mb-4;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
 
-    .page-description {
-      @apply text-lg max-w-2xl mx-auto;
-      color: var(--color-muted);
-    }
+  .page-description {
+    @apply text-lg max-w-2xl mx-auto;
+    color: var(--color-muted);
+  }
 
-    /* Sections */
-    .contact-section {
-      @apply py-10 border-b;
-      border-color: var(--color-border);
-    }
+  /* Sections */
+  .contact-section {
+    @apply py-10 border-b;
+    border-color: var(--color-border);
+  }
 
-    .section-title {
-      @apply flex items-center gap-3 text-xl font-bold mb-4;
-      font-family: var(--font-sans);
-      color: var(--color-text);
-    }
+  .section-title {
+    @apply flex items-center gap-3 text-xl font-bold mb-4;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
 
-    .section-description {
-      @apply text-base mb-6;
-      color: var(--color-muted);
-    }
+  .section-description {
+    @apply text-base mb-6;
+    color: var(--color-muted);
+  }
 
-    /* Contact Cards */
-    .contact-cards {
-      @apply grid gap-4 md:grid-cols-3;
-    }
+  /* Contact Cards */
+  .contact-cards {
+    @apply grid gap-4 md:grid-cols-3;
+  }
 
-    .contact-card {
-      @apply flex items-start gap-4 p-5 rounded-xl no-underline transition-all duration-200;
-      background-color: var(--color-surface);
-      border: 1px solid var(--color-border);
-    }
+  .contact-card {
+    @apply flex items-start gap-4 p-5 rounded-xl no-underline transition-all duration-200;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
 
-    .contact-card:not(.contact-card-static):hover {
-      border-color: var(--color-accent);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.1);
-    }
+  .contact-card:not(.contact-card-static):hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.1);
+  }
 
-    :global(.dark) .contact-card:not(.contact-card-static):hover {
-      box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
-    }
+  :global(.dark) .contact-card:not(.contact-card-static):hover {
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
+  }
 
-    .contact-card-static {
-      @apply cursor-default;
-    }
+  .contact-card-static {
+    @apply cursor-default;
+  }
 
-    .contact-card-icon {
-      @apply shrink-0 p-3 rounded-lg;
-      background-color: var(--color-bg-accent);
-      color: var(--color-accent);
-    }
+  .contact-card-icon {
+    @apply shrink-0 p-3 rounded-lg;
+    background-color: var(--color-bg);
+    color: var(--color-accent);
+  }
 
-    .contact-card-content {
-      @apply flex flex-col gap-1;
-    }
+  .contact-card-content {
+    @apply flex flex-col gap-1;
+  }
 
-    .contact-card-title {
-      @apply text-sm font-semibold uppercase tracking-wider;
-      color: var(--color-muted);
-    }
+  .contact-card-title {
+    @apply text-sm font-semibold uppercase tracking-wider;
+    color: var(--color-muted);
+  }
 
-    .contact-card-value {
-      @apply text-base font-medium;
-      color: var(--color-text);
-    }
+  .contact-card-value {
+    @apply text-base font-medium;
+    color: var(--color-text);
+  }
 
-    .contact-card-action {
-      @apply text-sm mt-1;
-      color: var(--color-accent);
-    }
+  .contact-card-action {
+    @apply text-sm mt-1;
+    color: var(--color-accent);
+  }
 
-    .contact-card-note {
-      @apply text-xs mt-1 italic;
-      color: var(--color-muted);
-    }
+  .contact-card-note {
+    @apply text-xs mt-1 italic;
+    color: var(--color-muted);
+  }
 
-    /* Social Grid */
-    .social-grid {
-      @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-4;
-    }
+  /* Social Grid */
+  .social-grid {
+    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-4;
+  }
 
-    .social-card {
-      @apply flex items-center gap-4 p-5 rounded-xl no-underline transition-all duration-200;
-      background-color: var(--color-surface);
-      border: 1px solid var(--color-border);
-      color: var(--color-text);
-    }
+  .social-card {
+    @apply flex items-center gap-4 p-5 rounded-xl no-underline transition-all duration-200;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
 
-    .social-card:hover {
-      border-color: var(--color-accent);
-      color: var(--color-accent);
-      transform: translateY(-2px);
-    }
+  .social-card:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
 
-    .social-card-info {
-      @apply flex flex-col;
-    }
+  .social-card-info {
+    @apply flex flex-col;
+  }
 
-    .social-card-name {
-      @apply text-sm font-semibold;
-    }
+  .social-card-name {
+    @apply text-sm font-semibold;
+  }
 
-    .social-card-handle {
-      @apply text-xs;
-      color: var(--color-muted);
-    }
+  .social-card-handle {
+    @apply text-xs;
+    color: var(--color-muted);
+  }
 
-    .social-card:hover .social-card-handle {
-      color: var(--color-accent);
-    }
+  .social-card:hover .social-card-handle {
+    color: var(--color-accent);
+  }
 
-    /* CTA Section */
-    .cta-section {
-      @apply py-12;
-    }
+  /* CTA Section */
+  .cta-section {
+    @apply py-12;
+  }
 
-    .cta-content {
-      @apply text-center p-8 rounded-2xl;
-      background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg-accent) 100%);
-      border: 1px solid var(--color-border);
-    }
+  .cta-content {
+    @apply text-center p-8 rounded-2xl;
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg) 100%);
+    border: 1px solid var(--color-border);
+  }
 
-    .cta-title {
-      @apply text-2xl font-bold mb-3;
-      font-family: var(--font-sans);
-      color: var(--color-text);
-    }
+  .cta-title {
+    @apply text-2xl font-bold mb-3;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+  }
 
-    .cta-description {
-      @apply text-base max-w-xl mx-auto mb-6;
-      color: var(--color-muted);
-    }
+  .cta-description {
+    @apply text-base max-w-xl mx-auto mb-6;
+    color: var(--color-muted);
+  }
 
-    .cta-buttons {
-      @apply flex flex-wrap justify-center gap-4;
-    }
+  .cta-buttons {
+    @apply flex flex-wrap justify-center gap-4;
   }
 </style>

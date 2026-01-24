@@ -53,34 +53,32 @@ function getWeight(count: number): number {
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .tag-cloud {
-      @apply flex flex-wrap items-center justify-center gap-3;
-    }
+  .tag-cloud {
+    @apply flex flex-wrap items-center justify-center gap-3;
+  }
 
-    .tag-cloud-item {
-      @apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 no-underline;
-      background-color: var(--color-surface);
-      color: var(--color-text);
-      border: 1px solid var(--color-border);
-      transition:
-        transform 0.2s ease,
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease;
-    }
+  .tag-cloud-item {
+    @apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 no-underline;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
 
-    .tag-cloud-item:hover {
-      transform: scale(1.05);
-      border-color: var(--color-accent);
-      color: var(--color-accent);
-    }
+  .tag-cloud-item:hover {
+    transform: scale(1.05);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
 
-    .tag-count {
-      @apply ml-1 rounded-full px-1.5 py-0.5 text-xs;
-      background-color: var(--color-bg);
-      color: var(--color-muted);
-      font-weight: 500;
-    }
+  .tag-count {
+    @apply ml-1 rounded-full px-1.5 py-0.5 text-xs;
+    background-color: var(--color-bg);
+    color: var(--color-muted);
+    font-weight: 500;
   }
 </style>

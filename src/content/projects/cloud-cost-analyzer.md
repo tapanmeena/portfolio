@@ -1,11 +1,13 @@
 ---
 title: "Cloud Cost Analyzer"
-description: "A command-line tool for managing Azure Privileged Identity Management (PIM) roles. Streamline the process of activating, deactivating, and listing PIM role assignments."
+description: "An automated tool for analyzing and optimizing Azure cloud costs. Provides actionable recommendations for reducing cloud spending."
 techStack:
   - Python
   - Azure SDK
-  - Fast API
-category: "Cloud tools"
+  - Pandas
+  - FastAPI
+category: "Cloud Tools"
+repoUrl: "https://github.com/tapanmeena/cloud-cost-analyzer"
 startDate: 2024-06-10
 endDate: 2024-12-20
 status: "completed"
@@ -15,20 +17,25 @@ draft: false
 
 ## Overview
 
-AZPM CLI is a command-line interface tool designed to simplify Azure Privileged Identity Management operations.
+Cloud Cost Analyzer is a tool that helps organizations understand and optimize their Azure cloud spending. It automatically analyzes resource usage patterns and provides recommendations for cost savings.
 
 ## Features
 
-- **Quick Role Activation**: Activate eligible PIM roles with a single command
+- **Cost Breakdown**: Detailed breakdown of costs by service, resource group, and tags
+- **Anomaly Detection**: Identifies unusual spending patterns
+- **Right-sizing Recommendations**: Suggests optimal VM sizes based on usage
+- **Reserved Instance Analysis**: Calculates potential savings from reserved instances
+- **Scheduled Reports**: Automated weekly/monthly cost reports
 
-## Challenges
+## Architecture
 
-Building this tool required deep understanding of Azure's PIM APIs and authentication flows. Key challenges included:
+The tool consists of:
 
-1. Handling token refresh for long-running operations
-2. Managing complex permission hierarchies
-3. Providing meaningful errr messages for common failure scenarios
+1. Data collection agents that pull cost data from Azure Cost Management API
+2. Analysis engine built with Pandas for data processing
+3. FastAPI backend for serving recommendations
+4. Simple dashboard for visualization
 
-## Outcomes
+## Results
 
-The CLI has significantly reduced the time needed to activate PIM roles from ~2 minutes (portal navigation) to ~5 seconds (single command).
+Deployed for internal use, the tool identified potential savings of 30% on monthly cloud costs through right-sizing and reserved instance recommendations.

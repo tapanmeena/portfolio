@@ -139,94 +139,92 @@ const tocHeadings = headings.filter((h) => h.depth >= 1 && h.depth <= 3);
 <style>
   @reference "tailwindcss";
 
-  @layer components {
-    .toc-container {
-      @apply hidden lg:block;
-      padding-left: 1rem;
-      position: relative;
-    }
+  .toc-container {
+    @apply hidden lg:block;
+    padding-left: 1rem;
+    position: relative;
+  }
 
-    /* Progress track (background line) */
-    .toc-progress-track {
-      @apply absolute left-0 top-0 bottom-0 w-0.5;
-      background-color: var(--color-border);
-    }
+  /* Progress track (background line) */
+  .toc-progress-track {
+    @apply absolute left-0 top-0 bottom-0 w-0.5;
+    background-color: var(--color-border);
+  }
 
-    /* Progress bar (growing fill) */
-    .toc-progress-bar {
-      @apply absolute left-0 top-0 w-0.5;
-      background-color: var(--color-accent);
-      height: 0%;
-      transition: height 0.1s ease-out;
-    }
+  /* Progress bar (growing fill) */
+  .toc-progress-bar {
+    @apply absolute left-0 top-0 w-0.5;
+    background-color: var(--color-accent);
+    height: 0%;
+    transition: height 0.1s ease-out;
+  }
 
-    /* Header */
-    .toc-header {
-      @apply flex items-center gap-2 mb-4 pb-2;
-      border-bottom: 1px solid var(--color-border);
-    }
+  /* Header */
+  .toc-header {
+    @apply flex items-center gap-2 mb-4 pb-2;
+    border-bottom: 1px solid var(--color-border);
+  }
 
-    .toc-icon {
-      color: var(--color-accent);
-      flex-shrink: 0;
-    }
+  .toc-icon {
+    color: var(--color-accent);
+    flex-shrink: 0;
+  }
 
-    .toc-title {
-      @apply text-sm font-semibold;
-      color: var(--color-text);
-    }
+  .toc-title {
+    @apply text-sm font-semibold;
+    color: var(--color-text);
+  }
 
-    /* List */
-    .toc-list {
-      @apply space-y-1;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
+  /* List */
+  .toc-list {
+    @apply space-y-1;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
 
-    .toc-item {
-      @apply leading-snug;
-    }
+  .toc-item {
+    @apply leading-snug;
+  }
 
-    /* Indentation based on depth */
-    .toc-depth-1 {
-      @apply pl-0;
-    }
+  /* Indentation based on depth */
+  .toc-depth-1 {
+    @apply pl-0;
+  }
 
-    .toc-depth-1 .toc-link {
-      @apply font-medium;
-    }
+  .toc-depth-1 .toc-link {
+    @apply font-medium;
+  }
 
-    .toc-depth-2 {
-      @apply pl-3;
-    }
+  .toc-depth-2 {
+    @apply pl-3;
+  }
 
-    .toc-depth-3 {
-      @apply pl-6 text-xs;
-    }
+  .toc-depth-3 {
+    @apply pl-6 text-xs;
+  }
 
-    .toc-depth-3 .toc-link {
-      @apply py-1;
-    }
+  .toc-depth-3 .toc-link {
+    @apply py-1;
+  }
 
-    /* Links */
-    .toc-link {
-      @apply block py-1.5 text-sm no-underline rounded-sm;
-      color: var(--color-muted);
-      transition:
-        color 0.2s ease,
-        background-color 0.2s ease,
-        padding-left 0.2s ease;
-    }
+  /* Links */
+  .toc-link {
+    @apply block py-1.5 text-sm no-underline rounded-sm;
+    color: var(--color-muted);
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      padding-left 0.2s ease;
+  }
 
-    .toc-link:hover {
-      color: var(--color-text);
-    }
+  .toc-link:hover {
+    color: var(--color-text);
+  }
 
-    .toc-link.active {
-      color: var(--color-accent);
-      font-weight: 500;
-      padding-left: 0.5rem;
-    }
+  .toc-link.active {
+    color: var(--color-accent);
+    font-weight: 500;
+    padding-left: 0.5rem;
   }
 </style>
