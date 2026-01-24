@@ -30,6 +30,31 @@ export const collectUniqueTechStack = (projects: Project[]): string[] => {
 };
 
 /**
+ * Collect tech stack with counts, sorted by count descending
+ */
+export interface TechStackWithCount {
+  name: string;
+  count: number;
+}
+
+export const collectTechStackWithCounts = (
+  projects: Project[],
+): TechStackWithCount[] => {
+  const countMap = new Map<string, number>();
+
+  projects.forEach((project) => {
+    const techStack = project?.data?.techStack ?? [];
+    techStack.forEach((tech: string) => {
+      countMap.set(tech, (countMap.get(tech) || 0) + 1);
+    });
+  });
+
+  return Array.from(countMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+};
+
+/**
  * Filter projects by tech stack
  */
 export const filterProjectsByTech = (

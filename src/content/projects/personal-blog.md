@@ -8,9 +8,8 @@ techStack:
   - MDX
 category: "Web Development"
 liveUrl: "https://tapanmeena.com"
-repoUrl: "https://github.com/tapanmeena/blog"
-blogUrl: "https://tapanmeena.com/blog/cli-tools/test"
-startDate: 2025-08-01
+repoUrl: "https://github.com/tapanmeena/portfolio"
+startDate: 2026-01-16
 status: "in-progress"
 featured: true
 draft: false

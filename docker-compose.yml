@@ -1,7 +1,0 @@
-services:
-  blog:
-    container_name: blog-site
-    build: .
-    ports:
-      - "4322:4322"
-    restart: unless-stopped

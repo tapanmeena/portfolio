@@ -3,11 +3,11 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import ProjectTimeline from "@components/projects/ProjectTimeline.astro";
 import TechStackFilter from "@components/projects/TechStackFilter.astro";
-import { getPublishedProjects, collectUniqueTechStack } from "@utils/projects";
+import { getPublishedProjects, collectTechStackWithCounts } from "@utils/projects";
 
 const allProjects = await getCollection("projects");
 const projects = getPublishedProjects(allProjects);
-const techStacks = collectUniqueTechStack(projects);
+const techStacks = collectTechStackWithCounts(projects);
 
 // Get tech filter from URL if present
 const url = Astro.url;

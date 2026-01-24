@@ -29,7 +29,7 @@ export const projectsCollection = defineCollection({
       category: z.string().optional(),
       liveUrl: urlOptional,
       repoUrl: urlOptional,
-      blogUrl: urlOptional,
+      blogUrl: z.string().optional(),
       startDate: z.date(),
       endDate: z.date().optional(),
       status: z

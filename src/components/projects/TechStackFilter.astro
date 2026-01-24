@@ -1,23 +1,49 @@
 ---
-import { normalizeTech } from "@utils/projects";
+import { normalizeTech, type TechStackWithCount } from "@utils/projects";
 
 interface Props {
-  techStacks: string[];
+  techStacks: TechStackWithCount[];
   activeTech?: string;
+  initialVisibleCount?: number;
 }
 
-const { techStacks, activeTech } = Astro.props;
+const { techStacks, activeTech, initialVisibleCount = 10 } = Astro.props;
+
+const visibleTechs = techStacks.slice(0, initialVisibleCount);
+const hiddenTechs = techStacks.slice(initialVisibleCount);
+const hasMoreTechs = hiddenTechs.length > 0;
+const totalProjects = techStacks.reduce((sum, t) => sum + t.count, 0) / techStacks.length; // Approximate for "All"
 ---
 
 <div class="tech-filter-wrapper">
   <div class="tech-filter">
     <button class={`filter-pill ${!activeTech ? "active" : ""}`} data-tech="all" type="button"> All </button>
     {
-      techStacks.map((tech) => (
-        <button class={`filter-pill ${activeTech === normalizeTech(tech) ? "active" : ""}`} data-tech={normalizeTech(tech)} type="button">
-          {tech}
+      visibleTechs.map((tech) => (
+        <button class={`filter-pill ${activeTech === normalizeTech(tech.name) ? "active" : ""}`} data-tech={normalizeTech(tech.name)} type="button">
+          {tech.name}
+          <span class="pill-count">{tech.count}</span>
         </button>
       ))
+    }
+    {
+      hiddenTechs.map((tech) => (
+        <button
+          class={`filter-pill hidden-pill ${activeTech === normalizeTech(tech.name) ? "active" : ""}`}
+          data-tech={normalizeTech(tech.name)}
+          type="button"
+        >
+          {tech.name}
+          <span class="pill-count">{tech.count}</span>
+        </button>
+      ))
+    }
+    {
+      hasMoreTechs && (
+        <button class="filter-pill toggle-more-btn" type="button" data-expanded="false">
+          <span class="toggle-text">+{hiddenTechs.length} more</span>
+        </button>
+      )
     }
   </div>
 
@@ -29,10 +55,12 @@ const { techStacks, activeTech } = Astro.props;
 
 <script>
   function initTechFilter() {
-    const filterPills = document.querySelectorAll(".filter-pill");
+    const filterPills = document.querySelectorAll(".filter-pill:not(.toggle-more-btn)");
     const timelineItems = document.querySelectorAll(".timeline-item");
     const emptyState = document.querySelector(".filter-empty-state");
     const clearFilterBtn = document.querySelector(".clear-filter-btn");
+    const toggleMoreBtn = document.querySelector(".toggle-more-btn");
+    const hiddenPills = document.querySelectorAll(".hidden-pill");
 
     function filterByTech(selectedTech: string) {
       let visibleCount = 0;
@@ -80,6 +108,21 @@ const { techStacks, activeTech } = Astro.props;
       });
     });
 
+    // Handle toggle more button
+    toggleMoreBtn?.addEventListener("click", () => {
+      const isExpanded = toggleMoreBtn.getAttribute("data-expanded") === "true";
+      const toggleText = toggleMoreBtn.querySelector(".toggle-text");
+
+      hiddenPills.forEach((pill) => {
+        pill.classList.toggle("visible", !isExpanded);
+      });
+
+      toggleMoreBtn.setAttribute("data-expanded", String(!isExpanded));
+      if (toggleText) {
+        toggleText.textContent = isExpanded ? `+${hiddenPills.length} more` : "Show less";
+      }
+    });
+
     // Handle clear filter button
     clearFilterBtn?.addEventListener("click", () => {
       setActivePill("all");
@@ -92,6 +135,17 @@ const { techStacks, activeTech } = Astro.props;
     if (techFromUrl) {
       setActivePill(techFromUrl);
       filterByTech(techFromUrl);
+
+      // If the active tech is in the hidden pills, expand them
+      const activeHiddenPill = Array.from(hiddenPills).find((pill) => pill.getAttribute("data-tech") === techFromUrl);
+      if (activeHiddenPill && toggleMoreBtn) {
+        hiddenPills.forEach((pill) => pill.classList.add("visible"));
+        toggleMoreBtn.setAttribute("data-expanded", "true");
+        const toggleText = toggleMoreBtn.querySelector(".toggle-text");
+        if (toggleText) {
+          toggleText.textContent = "Show less";
+        }
+      }
     }
   }
 
@@ -112,7 +166,7 @@ const { techStacks, activeTech } = Astro.props;
   }
 
   .filter-pill {
-    @apply inline-flex items-center rounded-full px-4 py-2 text-sm font-medium cursor-pointer;
+    @apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium cursor-pointer;
     background-color: var(--color-surface);
     color: var(--color-text);
     border: 1px solid var(--color-border);
@@ -136,6 +190,41 @@ const { techStacks, activeTech } = Astro.props;
 
   .filter-pill.active:hover {
     background-color: var(--color-accent-hover);
+  }
+
+  .filter-pill.active .pill-count {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  .pill-count {
+    @apply inline-flex items-center justify-center rounded-full text-xs font-medium;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.375rem;
+    background-color: var(--color-border);
+    color: var(--color-muted);
+  }
+
+  /* Hidden pills (collapsed state) */
+  .hidden-pill {
+    display: none;
+  }
+
+  .hidden-pill.visible {
+    display: inline-flex;
+  }
+
+  /* Toggle more button */
+  .toggle-more-btn {
+    background-color: transparent;
+    border-style: dashed;
+    color: var(--color-muted);
+  }
+
+  .toggle-more-btn:hover {
+    background-color: var(--color-surface);
+    color: var(--color-text);
   }
 
   .filter-empty-state {
@@ -162,5 +251,31 @@ const { techStacks, activeTech } = Astro.props;
 
   .clear-filter-btn:hover {
     background-color: var(--color-accent-hover);
+  }
+
+  /* Mobile: horizontal scroll */
+  @media (max-width: 640px) {
+    .tech-filter {
+      @apply flex-nowrap overflow-x-auto pb-2;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .tech-filter::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-pill {
+      @apply shrink-0;
+    }
+
+    .hidden-pill {
+      display: inline-flex;
+      flex-shrink: 0;
+    }
+
+    .toggle-more-btn {
+      display: none;
+    }
   }
 </style>

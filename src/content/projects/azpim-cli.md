@@ -7,8 +7,9 @@ techStack:
   - Azure SDK
   - Commander.js
 category: "CLI Tools"
-repoUrl: "https://github.com/tapanmeena/azpim-cli"
-startDate: 2025-10-15
+repoUrl: "https://github.com/tapanmeena/azp-cli"
+blogUrl: "/blog/cli-tools/azpim-cli"
+startDate: 2026-01-10
 status: "in-progress"
 featured: true
 draft: false
