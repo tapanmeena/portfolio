@@ -2,8 +2,8 @@
 import type { CollectionEntry } from "astro:content";
 import type { ImageMetadata } from "astro";
 import { Image } from "astro:assets";
-import { Calendar, ExternalLink, Github, FileText } from "@lucide/astro";
-import { formatProjectDate, isOngoing, getProjectDateRange, normalizeTech } from "@utils/projects";
+import { ExternalLink, Github, FileText } from "@lucide/astro";
+import { formatProjectDate, isOngoing, normalizeTech } from "@utils/projects";
 
 interface Props {
   project: CollectionEntry<"projects">;
@@ -15,6 +15,7 @@ const { title, description, techStack, coverImage, liveUrl, repoUrl, blogUrl, st
 const imageSrc = coverImage as ImageMetadata | undefined;
 const ongoing = isOngoing(project);
 const dateDisplay = formatProjectDate(new Date(startDate));
+const monthName = new Date(startDate).toLocaleString("default", { month: "long" });
 
 const statusConfig = {
   "in-progress": {
@@ -31,7 +32,10 @@ const currentStatus = statusConfig[status];
 
 <article class="timeline-item" data-tech-stack={techStack.map(normalizeTech).join(",")}>
   <div class="timeline-node">
-    <span class={`node-dot ${ongoing ? "node-dot-ongoing" : ""}`}></span>
+    <div class="node-dot-wrapper">
+      <span class="node-month">{monthName}</span>
+      <span class={`node-dot ${ongoing ? "node-dot-ongoing" : ""}`}></span>
+    </div>
     <span class="node-line"></span>
   </div>
 
@@ -116,6 +120,7 @@ const currentStatus = statusConfig[status];
     @apply grid gap-4;
     grid-template-columns: 40px 1fr;
     min-height: 180px;
+    margin-left: 5rem;
   }
 
   @media (min-width: 768px) {
@@ -130,8 +135,19 @@ const currentStatus = statusConfig[status];
     @apply relative flex flex-col items-center;
   }
 
+  .node-dot-wrapper {
+    @apply relative flex items-center mt-4;
+  }
+
+  .node-month {
+    @apply absolute text-xs font-medium whitespace-nowrap;
+    right: 100%;
+    margin-right: 0.75rem;
+    color: var(--color-muted);
+  }
+
   .node-dot {
-    @apply relative z-10 mt-4 h-4 w-4 rounded-full;
+    @apply relative z-10 h-4 w-4 rounded-full;
     background-color: var(--color-accent);
     border: 3px solid var(--color-surface);
     box-shadow: 0 0 0 2px var(--color-border);
