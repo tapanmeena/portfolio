@@ -12,7 +12,6 @@ const { techStacks, activeTech, initialVisibleCount = 10 } = Astro.props;
 const visibleTechs = techStacks.slice(0, initialVisibleCount);
 const hiddenTechs = techStacks.slice(initialVisibleCount);
 const hasMoreTechs = hiddenTechs.length > 0;
-const totalProjects = techStacks.reduce((sum, t) => sum + t.count, 0) / techStacks.length; // Approximate for "All"
 ---
 
 <div class="tech-filter-wrapper">
@@ -257,12 +256,6 @@ const totalProjects = techStacks.reduce((sum, t) => sum + t.count, 0) / techStac
   @media (max-width: 640px) {
     .tech-filter {
       @apply flex-nowrap overflow-x-auto pb-2;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    .tech-filter::-webkit-scrollbar {
-      display: none;
     }
 
     .filter-pill {
