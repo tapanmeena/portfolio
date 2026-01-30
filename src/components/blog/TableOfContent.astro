@@ -10,7 +10,7 @@ interface Props {
 const { headings, title = "Table of Contents", Icon } = Astro.props;
 
 // Filter to show only h1, h2 and h3
-const tocHeadings = headings.filter((h) => h.depth >= 1 && h.depth <= 3);
+const tocHeadings = headings.filter((h) => h.depth >= 1 && h.depth <= 2);
 ---
 
 {
