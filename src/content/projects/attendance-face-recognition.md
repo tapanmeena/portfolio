@@ -4,9 +4,7 @@ description: "An automated attendance system using face recognition with support
 techStack:
   - Python
   - TensorFlow
-  - Keras
   - OpenCV
-  - MTCNN
 category: "ML/AI"
 repoUrl: "https://github.com/tapanmeena/Attendance-Manager-Using-Face-Recognisation"
 startDate: 2018-10-01

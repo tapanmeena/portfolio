@@ -1,0 +1,271 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    
+    <!-- Code editor gradient -->
+    <linearGradient id="editorGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    
+    <!-- Progress bar gradients -->
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="extraGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="completeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#f472b6"/>
+    </linearGradient>
+    
+    <!-- Glow effects -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Shadow for editor -->
+    <filter id="editorShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  
+  <!-- Subtle grid pattern -->
+  <g opacity="0.03">
+    <defs>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#fff" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="1200" height="630" fill="url(#grid)"/>
+  </g>
+  
+  <!-- Decorative blobs -->
+  <ellipse cx="100" cy="100" rx="200" ry="150" fill="#3b82f6" opacity="0.1" filter="url(#glow)"/>
+  <ellipse cx="1100" cy="530" rx="180" ry="140" fill="#8b5cf6" opacity="0.1" filter="url(#glow)"/>
+  
+  <!-- Code Editor Window -->
+  <g transform="translate(100, 60)" filter="url(#editorShadow)">
+    <!-- Editor frame -->
+    <rect width="700" height="420" rx="12" fill="url(#editorGradient)" stroke="#334155" stroke-width="1"/>
+    
+    <!-- Title bar -->
+    <rect width="700" height="40" rx="12" fill="#1e293b"/>
+    <rect y="28" width="700" height="12" fill="#1e293b"/>
+    
+    <!-- Window buttons -->
+    <circle cx="24" cy="20" r="6" fill="#ef4444"/>
+    <circle cx="48" cy="20" r="6" fill="#eab308"/>
+    <circle cx="72" cy="20" r="6" fill="#22c55e"/>
+    
+    <!-- File name -->
+    <text x="350" y="25" text-anchor="middle" font-family="SF Mono, Monaco, Consolas, monospace" font-size="13" fill="#94a3b8">howlongtobeat.ts</text>
+    
+    <!-- Line numbers -->
+    <g font-family="SF Mono, Monaco, Consolas, monospace" font-size="14" fill="#475569">
+      <text x="24" y="80">1</text>
+      <text x="24" y="104">2</text>
+      <text x="24" y="128">3</text>
+      <text x="24" y="152">4</text>
+      <text x="24" y="176">5</text>
+      <text x="24" y="200">6</text>
+      <text x="24" y="224">7</text>
+      <text x="24" y="248">8</text>
+      <text x="24" y="272">9</text>
+      <text x="18" y="296">10</text>
+      <text x="18" y="320">11</text>
+      <text x="18" y="344">12</text>
+      <text x="18" y="368">13</text>
+      <text x="18" y="392">14</text>
+    </g>
+    
+    <!-- Code content -->
+    <g font-family="SF Mono, Monaco, Consolas, monospace" font-size="14">
+      <!-- Line 1: import -->
+      <text x="50" y="80">
+        <tspan fill="#c586c0">import</tspan>
+        <tspan fill="#e2e8f0"> { </tspan>
+        <tspan fill="#4ec9b0">HowLongToBeat</tspan>
+        <tspan fill="#e2e8f0"> } </tspan>
+        <tspan fill="#c586c0">from</tspan>
+        <tspan fill="#ce9178"> "howlongtobeat-core"</tspan>
+        <tspan fill="#e2e8f0">;</tspan>
+      </text>
+      
+      <!-- Line 2: empty -->
+      
+      <!-- Line 3: const hltb -->
+      <text x="50" y="128">
+        <tspan fill="#569cd6">const</tspan>
+        <tspan fill="#9cdcfe"> hltb</tspan>
+        <tspan fill="#e2e8f0"> = </tspan>
+        <tspan fill="#c586c0">new</tspan>
+        <tspan fill="#4ec9b0"> HowLongToBeat</tspan>
+        <tspan fill="#e2e8f0">();</tspan>
+      </text>
+      
+      <!-- Line 4: empty -->
+      
+      <!-- Line 5: const results -->
+      <text x="50" y="176">
+        <tspan fill="#569cd6">const</tspan>
+        <tspan fill="#9cdcfe"> results</tspan>
+        <tspan fill="#e2e8f0"> = </tspan>
+        <tspan fill="#c586c0">await</tspan>
+        <tspan fill="#9cdcfe"> hltb</tspan>
+        <tspan fill="#e2e8f0">.</tspan>
+        <tspan fill="#dcdcaa">search</tspan>
+        <tspan fill="#e2e8f0">(</tspan>
+        <tspan fill="#ce9178">"Elden Ring"</tspan>
+        <tspan fill="#e2e8f0">);</tspan>
+      </text>
+      
+      <!-- Line 6: empty -->
+      
+      <!-- Line 7: comment -->
+      <text x="50" y="224" fill="#6a9955">// Output:</text>
+      
+      <!-- Line 8: console.log -->
+      <text x="50" y="248">
+        <tspan fill="#9cdcfe">console</tspan>
+        <tspan fill="#e2e8f0">.</tspan>
+        <tspan fill="#dcdcaa">log</tspan>
+        <tspan fill="#e2e8f0">(</tspan>
+        <tspan fill="#9cdcfe">results</tspan>
+        <tspan fill="#e2e8f0">[</tspan>
+        <tspan fill="#b5cea8">0</tspan>
+        <tspan fill="#e2e8f0">]);</tspan>
+      </text>
+      
+      <!-- Line 9: { -->
+      <text x="50" y="272" fill="#e2e8f0">{</text>
+      
+      <!-- Line 10: name -->
+      <text x="50" y="296">
+        <tspan fill="#e2e8f0">  </tspan>
+        <tspan fill="#9cdcfe">name</tspan>
+        <tspan fill="#e2e8f0">: </tspan>
+        <tspan fill="#ce9178">"Elden Ring"</tspan>
+        <tspan fill="#e2e8f0">,</tspan>
+      </text>
+      
+      <!-- Line 11: gameplayMain -->
+      <text x="50" y="320">
+        <tspan fill="#e2e8f0">  </tspan>
+        <tspan fill="#9cdcfe">gameplayMain</tspan>
+        <tspan fill="#e2e8f0">: </tspan>
+        <tspan fill="#b5cea8">58</tspan>
+        <tspan fill="#e2e8f0">,</tspan>
+      </text>
+      
+      <!-- Line 12: gameplayMainExtra -->
+      <text x="50" y="344">
+        <tspan fill="#e2e8f0">  </tspan>
+        <tspan fill="#9cdcfe">gameplayMainExtra</tspan>
+        <tspan fill="#e2e8f0">: </tspan>
+        <tspan fill="#b5cea8">98</tspan>
+        <tspan fill="#e2e8f0">,</tspan>
+      </text>
+      
+      <!-- Line 13: gameplayComplete -->
+      <text x="50" y="368">
+        <tspan fill="#e2e8f0">  </tspan>
+        <tspan fill="#9cdcfe">gameplayComplete</tspan>
+        <tspan fill="#e2e8f0">: </tspan>
+        <tspan fill="#b5cea8">132</tspan>
+      </text>
+      
+      <!-- Line 14: } -->
+      <text x="50" y="392" fill="#e2e8f0">}</text>
+    </g>
+  </g>
+  
+  <!-- Output Panel / Game Card -->
+  <g transform="translate(850, 100)">
+    <!-- Card background -->
+    <rect width="280" height="320" rx="16" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    
+    <!-- Game controller icon -->
+    <g transform="translate(140, 50)">
+      <rect x="-30" y="-12" width="60" height="24" rx="12" fill="rgba(99, 102, 241, 0.3)" stroke="#818cf8" stroke-width="1.5"/>
+      <circle cx="-15" cy="0" r="5" fill="#a5b4fc"/>
+      <circle cx="15" cy="0" r="5" fill="#a5b4fc"/>
+    </g>
+    
+    <!-- Game title -->
+    <text x="140" y="95" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="600" fill="#fff">Elden Ring</text>
+    
+    <!-- Time bars -->
+    <g transform="translate(24, 130)">
+      <!-- Main Story -->
+      <text x="0" y="0" font-family="system-ui, sans-serif" font-size="12" fill="rgba(255,255,255,0.6)">Main Story</text>
+      <text x="232" y="0" text-anchor="end" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#60a5fa">58h</text>
+      <rect x="0" y="8" width="232" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
+      <rect x="0" y="8" width="102" height="6" rx="3" fill="url(#mainGradient)"/>
+      
+      <!-- Main + Extra -->
+      <text x="0" y="50" font-family="system-ui, sans-serif" font-size="12" fill="rgba(255,255,255,0.6)">Main + Extra</text>
+      <text x="232" y="50" text-anchor="end" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#a78bfa">98h</text>
+      <rect x="0" y="58" width="232" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
+      <rect x="0" y="58" width="172" height="6" rx="3" fill="url(#extraGradient)"/>
+      
+      <!-- Completionist -->
+      <text x="0" y="100" font-family="system-ui, sans-serif" font-size="12" fill="rgba(255,255,255,0.6)">Completionist</text>
+      <text x="232" y="100" text-anchor="end" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#f472b6">132h</text>
+      <rect x="0" y="108" width="232" height="6" rx="3" fill="rgba(255,255,255,0.1)"/>
+      <rect x="0" y="108" width="232" height="6" rx="3" fill="url(#completeGradient)"/>
+    </g>
+    
+    <!-- Similarity score -->
+    <g transform="translate(140, 290)">
+      <text x="0" y="0" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="rgba(255,255,255,0.4)">Similarity: 100%</text>
+    </g>
+  </g>
+  
+  <!-- Title section -->
+  <g transform="translate(100, 530)">
+    <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="42" font-weight="700" fill="#fff" filter="url(#glow)">howlongtobeat-core</text>
+    <text x="0" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="rgba(255,255,255,0.6)">TypeScript API for Game Completion Times</text>
+  </g>
+  
+  <!-- Tech badges -->
+  <g transform="translate(850, 530)">
+    <!-- Deno badge -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="65" height="28" rx="14" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+      <text x="32" y="19" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#fff">Deno</text>
+    </g>
+    
+    <!-- TypeScript badge -->
+    <g transform="translate(75, 0)">
+      <rect x="0" y="0" width="90" height="28" rx="14" fill="rgba(49, 120, 198, 0.2)" stroke="#3178c6" stroke-width="1"/>
+      <text x="45" y="19" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#60a5fa">TypeScript</text>
+    </g>
+    
+    <!-- npm badge -->
+    <g transform="translate(175, 0)">
+      <rect x="0" y="0" width="55" height="28" rx="14" fill="rgba(203, 56, 55, 0.2)" stroke="#cb3837" stroke-width="1"/>
+      <text x="27" y="19" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#f87171">npm</text>
+    </g>
+    
+    <!-- JSR badge -->
+    <g transform="translate(240, 0)">
+      <rect x="0" y="0" width="50" height="28" rx="14" fill="rgba(251, 191, 36, 0.2)" stroke="#fbbf24" stroke-width="1"/>
+      <text x="25" y="19" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="500" fill="#fbbf24">JSR</text>
+    </g>
+  </g>
+</svg>

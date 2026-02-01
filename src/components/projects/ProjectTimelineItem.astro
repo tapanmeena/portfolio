@@ -10,12 +10,14 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, description, techStack, coverImage, liveUrl, repoUrl, blogUrl, startDate, status } = project.data;
+const { title, description, techStack, coverImage, liveUrl, repoUrl, blogUrl, startDate, status, category } = project.data;
 
 const imageSrc = coverImage as ImageMetadata | undefined;
 const ongoing = isOngoing(project);
 const dateDisplay = formatProjectDate(new Date(startDate));
-const monthName = new Date(startDate).toLocaleString("default", { month: "long" });
+const monthName = new Date(startDate).toLocaleString("default", {
+  month: "long",
+});
 
 const statusConfig = {
   "in-progress": {
@@ -63,8 +65,11 @@ const currentStatus = statusConfig[status];
         {description && <p class="card-description">{description}</p>}
 
         <div class="card-footer">
-          <div class="tech-stack">
-            {techStack.map((tech) => <span class="tech-badge">{tech}</span>)}
+          <div class="card-footer-left">
+            {category && <span class="category-badge">{category}</span>}
+            <div class="tech-stack">
+              {techStack.map((tech) => <span class="tech-badge">{tech}</span>)}
+            </div>
           </div>
 
           <div class="card-links">
@@ -269,6 +274,10 @@ const currentStatus = statusConfig[status];
     @apply flex flex-wrap items-center justify-between gap-3 pt-2;
   }
 
+  .card-footer-left {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
   .card-links {
     @apply flex items-center gap-2;
   }
@@ -305,5 +314,11 @@ const currentStatus = statusConfig[status];
 
   .status-archived {
     opacity: 0.6;
+  }
+
+  .category-badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+    background-color: var(--color-accent);
+    color: white;
   }
 </style>

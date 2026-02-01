@@ -5,7 +5,6 @@ techStack:
   - Astro
   - TypeScript
   - Tailwind CSS
-  - MDX
 category: "Web Development"
 liveUrl: "https://tapanmeena.com"
 repoUrl: "https://github.com/tapanmeena/portfolio"

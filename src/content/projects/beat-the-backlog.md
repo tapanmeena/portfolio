@@ -5,9 +5,7 @@ techStack:
   - TypeScript
   - React
   - Vite
-  - Express.js
   - PWA
-  - Workbox
 category: "Web Apps"
 repoUrl: "https://github.com/tapanmeena/BeatTheBacklog"
 startDate: 2025-12-31

@@ -3,7 +3,6 @@ title: "ScreenSage macOS"
 description: "A lightweight macOS overlay that reads on-screen text using OCR and surfaces AI-powered coding guidance for technical interviews."
 techStack:
   - Swift
-  - macOS
   - Apple Vision
   - Azure OpenAI
 category: "Desktop Apps"
