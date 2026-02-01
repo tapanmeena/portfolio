@@ -8,6 +8,7 @@ techStack:
 category: "ML/AI"
 repoUrl: "https://github.com/tapanmeena/Attendance-Manager-Using-Face-Recognisation"
 startDate: 2018-10-01
+endDate: 2019-12-01
 status: "completed"
 featured: false
 draft: false

@@ -9,7 +9,7 @@ techStack:
 category: "Web Apps"
 repoUrl: "https://github.com/tapanmeena/PricePulse"
 startDate: 2025-11-01
-status: "in-progress"
+status: "on-hold"
 featured: true
 draft: false
 ---

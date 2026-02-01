@@ -11,7 +11,8 @@ techStack:
 category: "IoT/Security"
 repoUrl: "https://github.com/tapanmeena/Sentinel"
 startDate: 2025-11-30
-status: "in-progress"
+endDate: 2025-12-05
+status: "completed"
 featured: false
 draft: false
 ---

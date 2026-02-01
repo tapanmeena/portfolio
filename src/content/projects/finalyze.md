@@ -10,7 +10,7 @@ techStack:
 category: "Mobile Apps"
 repoUrl: "https://github.com/tapanmeena/Finalyze"
 startDate: 2025-10-13
-status: "in-progress"
+status: "on-hold"
 featured: true
 draft: false
 ---

@@ -33,7 +33,7 @@ export const projectsCollection = defineCollection({
       startDate: z.date(),
       endDate: z.date().optional(),
       status: z
-        .enum(["in-progress", "completed", "archived"])
+        .enum(["in-progress", "completed", "archived", "on-hold"])
         .default("in-progress"),
       featured: z.boolean().default(false),
       draft: z.boolean().default(false),

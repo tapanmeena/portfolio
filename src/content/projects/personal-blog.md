@@ -9,7 +9,8 @@ category: "Web Development"
 liveUrl: "https://tapanmeena.com"
 repoUrl: "https://github.com/tapanmeena/portfolio"
 startDate: 2026-01-16
-status: "in-progress"
+endDate: 2026-01-20
+status: "completed"
 featured: true
 draft: false
 ---

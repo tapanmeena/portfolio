@@ -27,6 +27,7 @@ const statusConfig = {
   },
   completed: { label: "Completed", icon: "⚪", class: "status-completed" },
   archived: { label: "Archived", icon: "🔴", class: "status-archived" },
+  "on-hold": { label: "On Hold", icon: "🟠", class: "status-on-hold" },
 };
 
 const currentStatus = statusConfig[status];
@@ -314,6 +315,10 @@ const currentStatus = statusConfig[status];
 
   .status-archived {
     opacity: 0.6;
+  }
+
+  .status-on-hold {
+    color: var(--color-warning);
   }
 
   .category-badge {

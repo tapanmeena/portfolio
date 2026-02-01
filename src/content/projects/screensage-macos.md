@@ -9,7 +9,8 @@ category: "Desktop Apps"
 repoUrl: "https://github.com/tapanmeena/ScreenSage-macOS"
 demoUrl: "https://tapanmeena.com/screensage"
 startDate: 2025-08-09
-status: "in-progress"
+endDate: 2025-09-01
+status: "completed"
 featured: true
 draft: false
 ---
