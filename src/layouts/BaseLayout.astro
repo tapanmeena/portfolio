@@ -1,6 +1,7 @@
 ---
 import Footer from "@components/Footer.astro";
 import Header from "../components/Header.astro";
+import SearchModal from "@components/SearchModal.astro";
 const { pageTitle } = Astro.props;
 import "@styles/global.css";
 import SpeedInsights from "@vercel/speed-insights/astro";
@@ -35,6 +36,7 @@ import Analytics from "@vercel/analytics/astro";
 
   <body>
     <Header />
+    <SearchModal />
     <main class="pt-16 md:pt-20">
       <slot />
     </main>
