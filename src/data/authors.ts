@@ -7,6 +7,8 @@ export interface Experience {
 
 export interface SkillCategory {
   name: string;
+  description?: string;
+  icon?: string;
   skills: string[];
 }
 
@@ -46,31 +48,80 @@ export const authors: Record<string, Author> = {
     },
     skills: [
       {
-        name: "Languages",
+        name: "Programming Languages",
+        description: "Core programming languages I work with",
+        icon: "code",
         skills: [
           "C#",
-          "TypeScript",
           "JavaScript",
+          "TypeScript",
           "Python",
           "SQL",
           "PowerShell",
+          "Bash",
         ],
       },
       {
-        name: "Frontend",
-        skills: ["React", "HTML5", "CSS3", "Tailwind CSS", "Astro"],
+        name: "Frontend Development",
+        description: "Modern frontend technologies and frameworks",
+        icon: "globe",
+        skills: ["React", "HTML5", "CSS3", "Tailwind CSS", "SPA"],
       },
       {
-        name: "Backend",
-        skills: [".NET", "ASP.NET", "Node.js", "REST APIs"],
+        name: "Backend Development",
+        description: "Server-side technologies and architectures",
+        icon: "server",
+        skills: [".NET", "ASP.NET", "Node.js", "REST APIs", "Microservices"],
       },
       {
         name: "Cloud & DevOps",
-        skills: ["Azure", "Docker", "Azure DevOps"],
+        description: "Cloud platforms and deployment strategies",
+        icon: "cloud",
+        skills: ["Microsoft Azure", "Docker", "Azure DevOps", "Git"],
       },
       {
         name: "Databases",
-        skills: ["SQL Server", "PostgreSQL", "MongoDB"],
+        description: "Database technologies and data management",
+        icon: "database",
+        skills: [
+          "SQL Server",
+          "PostgreSQL",
+          "MongoDB",
+          "Redis",
+          "Azure SQL",
+          "Database Design",
+        ],
+      },
+      {
+        name: "Tools & Frameworks",
+        description: "Development tools and productivity frameworks",
+        icon: "settings",
+        skills: ["VS Code", "Git", "Postman", "Swagger"],
+      },
+      {
+        name: "Soft Skills",
+        description: "Leadership and collaboration abilities",
+        icon: "users",
+        skills: [
+          "Team Leadership",
+          "Mentoring",
+          "Agile/Scrum",
+          "Problem Solving",
+          "Communication",
+          "Project Management",
+        ],
+      },
+      {
+        name: "Other Technologies",
+        description: "Additional technologies and concepts",
+        icon: "layers",
+        skills: [
+          "Data Analysis",
+          "Power BI",
+          "Automation",
+          "Testing",
+          "Performance Optimization",
+        ],
       },
     ],
     experience: [

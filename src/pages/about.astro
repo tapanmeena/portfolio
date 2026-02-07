@@ -4,8 +4,19 @@ import { getCollection } from "astro:content";
 import { authors } from "@data/authors";
 import ProjectCard from "@components/projects/ProjectCard.astro";
 import Button from "@components/ui/Button.astro";
-import { Github, Linkedin, Twitter, Globe, MapPin, Briefcase } from "@lucide/astro";
+import { Github, Linkedin, Twitter, Globe, MapPin, Briefcase, Code, Server, Cloud, Database, Settings, Users, Layers } from "@lucide/astro";
 import { getPublishedProjects } from "@utils/projects";
+
+const skillIcons: Record<string, any> = {
+  code: Code,
+  globe: Globe,
+  server: Server,
+  cloud: Cloud,
+  database: Database,
+  settings: Settings,
+  users: Users,
+  layers: Layers,
+};
 
 const author = authors["tapan-meena"];
 
@@ -49,16 +60,27 @@ const featuredProjects = projects.slice(0, 3);
         <section class="about-section">
           <h2 class="section-title">Skills & Technologies</h2>
           <div class="skills-grid">
-            {author.skills.map((category) => (
-              <div class="skill-category">
-                <h3 class="skill-category-title">{category.name}</h3>
-                <div class="skill-tags">
-                  {category.skills.map((skill) => (
-                    <span class="skill-tag">{skill}</span>
-                  ))}
+            {author.skills.map((category) => {
+              const IconComponent = category.icon ? skillIcons[category.icon] : null;
+              return (
+                <div class="skill-card">
+                  <div class="skill-card-header">
+                    {IconComponent && (
+                      <div class="skill-icon">
+                        <IconComponent size={24} />
+                      </div>
+                    )}
+                    <h3 class="skill-card-title">{category.name}</h3>
+                  </div>
+                  {category.description && <p class="skill-card-description">{category.description}</p>}
+                  <div class="skill-tags">
+                    {category.skills.map((skill) => (
+                      <span class="skill-tag">{skill}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )
@@ -228,17 +250,38 @@ const featuredProjects = projects.slice(0, 3);
 
   /* Skills */
   .skills-grid {
-    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+    @apply grid gap-5 sm:grid-cols-2 lg:grid-cols-4;
   }
 
-  .skill-category {
-    @apply p-4 rounded-lg;
+  .skill-card {
+    @apply flex flex-col gap-4 rounded-xl p-5;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
+    transition: border-color 0.2s ease;
   }
 
-  .skill-category-title {
-    @apply text-sm font-semibold uppercase tracking-wider mb-3;
+  .skill-card:hover {
+    border-color: var(--color-accent);
+  }
+
+  .skill-card-header {
+    @apply flex items-center gap-3;
+  }
+
+  .skill-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .skill-card-title {
+    @apply text-lg font-bold;
+    color: var(--color-text);
+  }
+
+  .skill-card-description {
+    @apply text-sm leading-relaxed;
     color: var(--color-muted);
   }
 
