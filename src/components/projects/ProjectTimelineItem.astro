@@ -47,7 +47,7 @@ const currentStatus = statusConfig[status];
       {
         imageSrc && (
           <div class="card-image">
-            <Image src={imageSrc} alt={`Cover image for ${title}`} class="cover-img" width={400} height={225} />
+            <Image src={imageSrc} alt={`Cover image for ${title}`} class="cover-img" width={imageSrc.width} height={imageSrc.height} />
           </div>
         )
       }
@@ -208,13 +208,20 @@ const currentStatus = statusConfig[status];
   }
 
   .card-image {
-    @apply relative aspect-video w-full overflow-hidden;
+    @apply relative w-full overflow-hidden;
     background-color: var(--color-bg);
+    max-height: 140px;
+    transition: max-height 0.4s ease;
   }
 
   .cover-img {
-    @apply h-full w-full object-cover;
+    @apply w-full h-auto;
     transition: transform 0.4s ease;
+  }
+
+  .timeline-card:hover .card-image,
+  .timeline-card:focus-within .card-image {
+    max-height: 360px;
   }
 
   :global(.dark) .cover-img {

@@ -13,6 +13,7 @@ category: "CLI Tools"
 repoUrl: "https://github.com/tapanmeena/azpim"
 liveUrl: "https://www.npmjs.com/package/azpim"
 blogUrl: "/blog/cli-tools/azpim-cli"
+coverImage: "@assets/images/blog/azpim/cover.png"
 startDate: 2026-01-10
 endDate: 2026-01-28
 status: "completed"
