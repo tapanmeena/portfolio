@@ -1,0 +1,102 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import Button from "@components/ui/Button.astro";
+import { Home, BookOpen, Briefcase } from "@lucide/astro";
+---
+
+<BaseLayout pageTitle="404 — Page Not Found">
+  <div class="not-found-page">
+    <section class="not-found-hero">
+      <!-- 404 Heading -->
+      <h1 class="error-code">404</h1>
+      <h2 class="error-title">Page Not Found</h2>
+      <p class="error-description">
+        The page you're looking for doesn't exist or has been moved.<br />
+        Let's get you back on track.
+      </p>
+
+      <!-- Navigation Buttons -->
+      <div class="nav-buttons">
+        <Button href="/" variant="primary" size="lg">
+          <Home slot="icon-left" size={18} />
+          Go Home
+        </Button>
+        <Button href="/blog" variant="outline" size="lg">
+          <BookOpen slot="icon-left" size={18} />
+          Read Blog
+        </Button>
+        <Button href="/projects" variant="outline" size="lg">
+          <Briefcase slot="icon-left" size={18} />
+          View Projects
+        </Button>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  @reference "tailwindcss";
+
+  .not-found-page {
+    @apply mx-auto max-w-3xl px-4 pb-16;
+  }
+
+  .not-found-hero {
+    @apply flex flex-col items-center text-center py-16 md:py-24;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .error-code,
+    .error-title,
+    .error-description,
+    .nav-buttons {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
+  /* 404 heading */
+  .error-code {
+    @apply text-[8rem] md:text-[10rem] font-bold leading-none mb-2 select-none;
+    font-family: var(--font-sans);
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 50%, var(--color-muted) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out 0.1s forwards;
+  }
+
+  .error-title {
+    @apply text-2xl md:text-3xl font-bold mb-4;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out 0.2s forwards;
+  }
+
+  .error-description {
+    @apply text-base md:text-lg max-w-md mb-8 leading-relaxed;
+    color: var(--color-muted);
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out 0.3s forwards;
+  }
+
+  .nav-buttons {
+    @apply flex flex-wrap justify-center gap-4;
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out 0.4s forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
