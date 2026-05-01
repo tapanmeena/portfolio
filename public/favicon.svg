@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Tapan Meena monogram">
+  <!--
+    Workshop-log monogram — italic Merriweather "tm" inside a square border.
+    Background follows light/dark color-scheme, foreground inverts.
+  -->
+  <style>
+    .bg { fill: #fafafa; }
+    .fg { fill: #1a202c; stroke: #1a202c; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1a202c; }
+      .fg { fill: #e2e8f0; stroke: #e2e8f0; }
+    }
+  </style>
+  <rect class="bg" width="64" height="64" rx="0" />
+  <rect
+    x="6" y="6" width="52" height="52"
+    fill="none" class="fg"
+    stroke-width="2.5"
+  />
+  <text
+    x="50%" y="56%"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-family="Merriweather, Georgia, serif"
+    font-style="italic"
+    font-weight="900"
+    font-size="34"
+    class="fg"
+  >tm</text>
+</svg>
