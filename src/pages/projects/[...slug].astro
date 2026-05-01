@@ -98,17 +98,27 @@ const initials = title
   .filter(Boolean)
   .slice(0, 2)
   .join("");
+
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
 ---
 
 <BaseLayout pageTitle={`${title} — Tapan Meena`}>
   <article class="logbook-detail" style={`--accent:${accent};`}>
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;01</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;A&nbsp;//&nbsp;№{pad(entryNo)}&nbsp;of&nbsp;{pad(totalEntries)}</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+    </p>
+
     <!-- ── BREAD ── -->
     <nav class="bread" aria-label="Breadcrumb">
       <a href="/projects" class="bread-back">
         <ArrowLeft size={12} /> back to log
       </a>
-      <span class="bread-sep">·</span>
-      <span class="bread-pos">entry №{pad(entryNo)} of {pad(totalEntries)}</span>
     </nav>
 
     <!-- ── MASTHEAD ── -->
@@ -435,6 +445,28 @@ const initials = title
       height: 8px;
       background: var(--color-text);
       opacity: 0.85;
+    }
+
+    /* ─── Dateline strip ─── */
+    .dateline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 8px;
+      margin: 0 0 0.6rem;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.04em;
+    }
+    .dl-issue {
+      color: var(--color-text);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .dl-sep {
+      opacity: 0.5;
     }
 
     /* ─── Breadcrumb ─── */

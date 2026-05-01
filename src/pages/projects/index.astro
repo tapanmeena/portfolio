@@ -48,40 +48,62 @@ const numberOf = new Map(numbered.map((p, i) => [p.id, i + 1]));
 const pad = (n: number) => String(n).padStart(2, "0");
 
 const monthShort = (d: Date) => d.toLocaleString("default", { month: "short" }).toUpperCase();
+
+// Dateline
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
 ---
 
 <BaseLayout pageTitle="Projects — Tapan Meena">
   <div class="logbook">
-    <!-- ─────────── MASTHEAD ─────────── -->
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;01</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;A&nbsp;//&nbsp;the&nbsp;workshop&nbsp;log</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+      <span class="dl-spacer"></span>
+      <span class="dl-counts">{earliest}–{latest}</span>
+    </p>
+
     <header class="mast">
-      <div class="mast-rule" aria-hidden="true">
-        <span class="mast-rule-tick"></span>
-        <span class="mast-rule-line"></span>
-        <span class="mast-rule-tick"></span>
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
       </div>
-      <div class="mast-row">
-        <div class="mast-issue">
-          <span class="mast-issue-label">vol.&nbsp;01</span>
-          <span class="mast-issue-num">{earliest}–{latest}</span>
-        </div>
-        <h1 class="mast-title">
-          <span class="mast-title-pre">the</span>
-          <span class="mast-title-main">Workshop&nbsp;Log</span>
-        </h1>
-        <div class="mast-counts">
-          <span><b>{total}</b> entries</span>
-          <span><b>{completed}</b> shipped</span>
-          <span><b>{inProgress}</b> live</span>
-          <span><b>{onHold}</b> shelved</span>
-        </div>
-      </div>
-      <p class="mast-note">a chronological dump of things i've built, half-built, abandoned, or am still wrestling with — newest first.</p>
-      <div class="mast-rule" aria-hidden="true">
-        <span class="mast-rule-tick"></span>
-        <span class="mast-rule-line"></span>
-        <span class="mast-rule-tick"></span>
+      <h1 class="mast-title">
+        <span class="mast-pre">a chronological log of</span>
+        <span class="mast-main"><em>things&nbsp;built,</em><br />half-built&nbsp;&amp;&nbsp;abandoned</span>
+      </h1>
+      <p class="mast-by">
+        <span>{total}&nbsp;entries</span>
+        <span class="dl-sep">·</span>
+        <span>newest first</span>
+      </p>
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
       </div>
     </header>
+
+    <!-- ── STATS STRIP ── -->
+    <ul class="stats" aria-label="Workshop log stats">
+      <li class="stat">
+        <span class="stat-v">{pad(total)}</span>
+        <span class="stat-k">total entries</span>
+      </li>
+      <li class="stat">
+        <span class="stat-v">{pad(completed)}</span>
+        <span class="stat-k">shipped</span>
+      </li>
+      <li class="stat">
+        <span class="stat-v stat-live"><span class="blip blip-pulse" aria-hidden="true"></span>{pad(inProgress)}</span>
+        <span class="stat-k">live</span>
+      </li>
+      <li class="stat">
+        <span class="stat-v">{pad(onHold)}</span>
+        <span class="stat-k">shelved</span>
+      </li>
+    </ul>
 
     <!-- ─────────── INLINE CONTROLS (NOT STICKY) ─────────── -->
     <section class="controls" aria-label="Search and filter">
@@ -296,20 +318,6 @@ const monthShort = (d: Date) => d.toLocaleString("default", { month: "short" }).
       <p>—&nbsp;nothing matches&nbsp;—</p>
       <button id="empty-reset" type="button" class="reset">reset filters</button>
     </div>
-
-    <!-- ─────────── COLOPHON ─────────── -->
-    <footer class="colophon">
-      <div class="mast-rule" aria-hidden="true">
-        <span class="mast-rule-tick"></span>
-        <span class="mast-rule-line"></span>
-        <span class="mast-rule-tick"></span>
-      </div>
-      <p>
-        compiled by hand · set in inter & merriweather · timeline auto-generated from
-        <a href="https://github.com/tapanmeena" target="_blank" rel="noopener noreferrer">github</a>
-        and a folder of markdown
-      </p>
-    </footer>
   </div>
 
   <script is:inline>
@@ -420,106 +428,160 @@ const monthShort = (d: Date) => d.toLocaleString("default", { month: "short" }).
       color: var(--color-text);
     }
 
-    /* ─────────── MASTHEAD ─────────── */
-    .mast {
-      margin-bottom: 1.6rem;
-    }
-    .mast-rule {
+    /* ─── Shared atoms ─── */
+    .rule {
       display: flex;
       align-items: center;
-      gap: 0;
       margin: 0.4rem 0;
     }
-    .mast-rule-line {
+    .rule-line {
       flex: 1;
       height: 1px;
       background: var(--color-text);
       opacity: 0.85;
     }
-    .mast-rule-tick {
+    .rule-tick {
       width: 1px;
       height: 8px;
       background: var(--color-text);
       opacity: 0.85;
     }
-    .mast-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.4rem 1rem;
-      align-items: end;
-      padding: 0.6rem 0.1rem 0.4rem;
-    }
-    @media (min-width: 760px) {
-      .mast-row {
-        grid-template-columns: auto 1fr auto;
-      }
-    }
-    .mast-issue {
+
+    .dateline {
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 8px;
+      margin: 0 0 0.6rem;
       font-family: ui-monospace, "SF Mono", Menlo, monospace;
       font-size: 0.7rem;
       color: var(--color-muted);
+      letter-spacing: 0.04em;
+    }
+    .dl-issue {
+      color: var(--color-text);
+      font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      line-height: 1.4;
     }
-    .mast-issue-num {
+    .dl-sep {
+      opacity: 0.5;
+    }
+    .dl-spacer {
+      flex: 1;
+      min-width: 8px;
+    }
+    .dl-counts {
+      font-family: ui-monospace, monospace;
       color: var(--color-text);
       font-weight: 700;
     }
-    .mast-title {
-      font-family: "Merriweather", Georgia, serif;
-      font-weight: 700;
-      font-style: italic;
-      font-size: clamp(2rem, 6vw, 3.4rem);
-      letter-spacing: -0.015em;
-      line-height: 0.95;
-      margin: 0;
-      text-align: center;
+
+    /* ─── Masthead ─── */
+    .mast {
+      margin-bottom: 1.4rem;
     }
-    .mast-title-pre {
+    .mast-title {
+      text-align: center;
+      margin: 0.8rem 0;
+      line-height: 1;
+      font-family: "Merriweather", Georgia, serif;
+    }
+    .mast-pre {
       display: block;
+      font-family: ui-monospace, monospace;
       font-style: normal;
       font-weight: 400;
-      font-size: 0.6em;
+      font-size: 0.72rem;
       letter-spacing: 0.4em;
       text-transform: uppercase;
       color: var(--color-muted);
-      margin-bottom: 4px;
-      font-family: ui-monospace, monospace;
+      margin-bottom: 0.7rem;
     }
-    .mast-title-main {
+    .mast-main {
       display: inline-block;
+      font-weight: 700;
+      font-style: italic;
+      font-size: clamp(2rem, 5.6vw, 3.6rem);
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+      line-height: 1.05;
     }
-    .mast-counts {
+    .mast-main em {
+      font-style: italic;
+    }
+    .mast-by {
+      text-align: center;
+      margin: 0.4rem 0 0.5rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--color-muted);
       display: flex;
       flex-wrap: wrap;
-      gap: 4px 14px;
       justify-content: center;
-      font-family: ui-monospace, monospace;
-      font-size: 0.72rem;
-      color: var(--color-muted);
-      letter-spacing: 0.04em;
+      gap: 6px;
     }
-    @media (min-width: 760px) {
-      .mast-counts {
-        justify-content: flex-end;
+
+    /* ─── Stats strip ─── */
+    .stats {
+      list-style: none;
+      margin: 0 0 1.6rem;
+      padding: 0.9rem 0;
+      border-top: 1px dashed var(--color-border);
+      border-bottom: 1px dashed var(--color-border);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.7rem 1.2rem;
+      font-family: ui-monospace, monospace;
+    }
+    @media (min-width: 640px) {
+      .stats {
+        grid-template-columns: repeat(4, 1fr);
       }
     }
-    .mast-counts b {
-      color: var(--color-text);
-      font-weight: 700;
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
-    .mast-note {
-      max-width: 640px;
-      margin: 0.6rem auto 0.6rem;
-      text-align: center;
-      font-family: "Merriweather", Georgia, serif;
-      font-style: italic;
-      font-size: 0.95rem;
+    .stat-v {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-k {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
       color: var(--color-muted);
-      line-height: 1.55;
+    }
+    .blip {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #16a34a;
+      display: inline-block;
+    }
+    .blip-pulse {
+      animation: blip 1.8s infinite;
+    }
+    @keyframes blip {
+      0% {
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5);
+      }
+      70% {
+        box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+      }
+    }
+    .stat-live {
+      color: var(--color-text);
     }
 
     /* ─────────── CONTROLS (inline, NOT sticky) ─────────── */
@@ -1193,24 +1255,6 @@ const monthShort = (d: Date) => d.toLocaleString("default", { month: "short" }).
     .empty p {
       font-style: italic;
       margin: 0 0 8px;
-    }
-
-    /* ─────────── COLOPHON ─────────── */
-    .colophon {
-      margin-top: 3rem;
-      text-align: center;
-      font-family: ui-monospace, monospace;
-      font-size: 0.7rem;
-      color: var(--color-muted);
-      letter-spacing: 0.04em;
-    }
-    .colophon p {
-      margin: 0.6rem 0 0;
-    }
-    .colophon a {
-      color: var(--color-text);
-      text-decoration: underline;
-      text-underline-offset: 3px;
     }
 
     @media (prefers-reduced-motion: reduce) {
