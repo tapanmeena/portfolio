@@ -2,70 +2,144 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { authors } from "@data/authors";
-import ProjectCard from "@components/projects/ProjectCard.astro";
-import Button from "@components/ui/Button.astro";
-import { getFeaturedProjects } from "@utils/projects";
-import { Github, Linkedin, Twitter, ArrowRight, ArrowUpRight, Mail, MapPin, Skull, Terminal, Rss } from "@lucide/astro";
+import { Github, Linkedin, Twitter, Mail, Rss, ArrowUpRight } from "@lucide/astro";
+import { getPublishedProjects, normalizeTech, isOngoing } from "@utils/projects";
 
 const author = authors["tapan-meena"];
 
-// Latest blog posts (non-draft, newest first)
+// ── Posts ──────────────────────────────────────────────────────────────
 const allPosts = await getCollection("blog");
 const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
 
-const [featuredPost, ...restPosts] = posts;
-const sidePosts = restPosts.slice(0, 3);
-
-// Currently building: pick the most-recent in-progress project
+// ── Projects ───────────────────────────────────────────────────────────
 const allProjects = await getCollection("projects");
-const inProgress = allProjects
-  .filter((p) => !p.data.draft && p.data.status === "in-progress")
-  .sort((a, b) => b.data.startDate.getTime() - a.data.startDate.getTime());
+const projects = getPublishedProjects(allProjects);
+const numbered = [...projects].reverse();
+const numberOf = new Map(numbered.map((p, i) => [p.id, i + 1]));
+const pad = (n: number) => String(n).padStart(2, "0");
+
+const inProgress = projects.filter((p) => p.data.status === "in-progress");
 const nowBuilding = inProgress[0];
 
-const featuredProjects = getFeaturedProjects(allProjects).slice(0, 3);
+const recentProjects = projects.slice(0, 4);
+const recentPosts = posts.slice(0, 4);
 
-// Compact stack: a few hand-picked categories
-const stackGroups = (author.skills ?? [])
-  .filter((g) => ["Programming Languages", "Backend Development", "Cloud & DevOps", "Databases"].includes(g.name))
-  .map((g) => ({ name: g.name, skills: g.skills.slice(0, 5) }));
+// ── Category palette (matches /projects) ──────────────────────────────
+const catColor: Record<string, string> = {
+  Fintech: "#10b981",
+  "Web Apps": "#3b82f6",
+  "Web Development": "#3b82f6",
+  "Mobile Apps": "#8b5cf6",
+  "Desktop Apps": "#06b6d4",
+  "CLI Tools": "#f59e0b",
+  Libraries: "#ec4899",
+  Games: "#ef4444",
+  "ML/AI": "#a855f7",
+  "IoT/Security": "#14b8a6",
+};
+const colorOf = (c?: string) => (c && catColor[c]) || "#6366f1";
 
-function fmtMonth(d: Date) {
-  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-}
+const monthShort = (d: Date) => d.toLocaleString("default", { month: "short" }).toUpperCase();
+const fullDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+// ── Tiny stats for the masthead ───────────────────────────────────────
+const totalProjects = projects.length;
+const totalPosts = posts.length;
+const yearsActive = (() => {
+  const earliest = projects.reduce((acc, p) => Math.min(acc, new Date(p.data.startDate).getFullYear()), 9999);
+  return new Date().getFullYear() - earliest + 1;
+})();
+
+// ── Today's date for the dateline ─────────────────────────────────────
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
+
+// ── About blurbs ───────────────────────────────────────────────
+const experience = author.experience ?? [];
+const totalYearsPro = (() => {
+  const years = experience.map((e) => e.period.match(/(\d{4})/g)?.map((y) => parseInt(y, 10)) ?? []).flat();
+  if (!years.length) return null;
+  return new Date().getFullYear() - Math.min(...years);
+})();
+const pickedCats = ["Programming Languages", "Backend Development", "Cloud & DevOps", "Databases"];
+const inlineStack = (author.skills ?? []).filter((g) => pickedCats.includes(g.name)).flatMap((g) => g.skills.slice(0, 4));
+const facts: { dt: string; dd: string }[] = [
+  { dt: "based", dd: "hyderabad, india · ist" },
+  { dt: "role", dd: `${(author.title ?? "").toLowerCase()} · maq software` },
+  { dt: "focus", dd: "backends · dev tools · cloud" },
+  { dt: "off-screen", dd: "books · chai · long walks" },
+];
+
+// Precompute experience helpers (avoids regex literals inside JSX)
+const expEntries = experience.map((e) => {
+  const yearMatch = e.period.match(/(\d{4})/);
+  return {
+    title: e.title,
+    company: e.company,
+    period: e.period,
+    periodLower: e.period.toLowerCase(),
+    description: e.description ?? "",
+    startYear: yearMatch ? yearMatch[0] : "",
+    isCurrent: /present|current/i.test(e.period),
+  };
+});
 ---
 
-<BaseLayout pageTitle="Home">
-  <div class="home">
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero__intro">
-        <p class="prompt">
-          <Terminal size={14} />
-          <span>~/tapan</span><span class="caret">▍</span>
-        </p>
-        <h1 class="hero__name">
-          Hi, I'm <span class="hero__name-mark">Tapan</span>.
-        </h1>
-        <p class="hero__lede">
-          Senior software engineer in <strong>Hyderabad</strong>, building scalable backends, developer tools, and the occasional Raspberry-Pi trading
-          bot. I write about what I learn — including the parts that made me regret things.
-        </p>
+<BaseLayout pageTitle="Tapan Meena — Senior Software Engineer">
+  <div class="logbook-home">
+    <!-- ─────────── DATELINE ─────────── -->
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;01</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+      <span class="dl-sep">·</span>
+      <span>hyderabad &nbsp;ist</span>
+      <span class="dl-spacer"></span>
+      <span class="dl-counts">
+        <b>{totalProjects}</b>&nbsp;projects&nbsp; <b>{totalPosts}</b>&nbsp;writeups&nbsp; <b>{yearsActive}</b>&nbsp;years
+      </span>
+    </p>
 
-        <div class="hero__cta">
-          <Button href="/blog" variant="primary" size="lg">
-            Read the blog
-            <ArrowRight slot="icon-right" size={18} />
-          </Button>
-          <Button href="/projects" variant="outline" size="lg"> See projects </Button>
-        </div>
+    <!-- ─────────── MASTHEAD ─────────── -->
+    <header class="mast">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+      <h1 class="mast-title">
+        <span class="mast-pre">an honest log of</span>
+        <span class="mast-main">things I've built<br />&amp; learned the hard way</span>
+      </h1>
+      <p class="mast-by">
+        <span>by</span>
+        <span class="mast-by-name">Tapan Meena</span>
+        <span class="dl-sep">·</span>
+        <span>senior software engineer</span>
+      </p>
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+    </header>
 
-        <ul class="hero__socials" aria-label="Social links">
+    <!-- ─────────── INTRO + NOW ─────────── -->
+    <section class="intro">
+      <div class="intro-text">
+        <p class="lede">
+          I build scalable backends, developer tools, and the occasional Raspberry-Pi trading bot out of <strong>Hyderabad</strong>. This is where I
+          keep the receipts — every project, every writeup, every cursed lesson — in one running log.
+        </p>
+        <ul class="quick-nav">
+          <li><a href="/projects">→ the workshop log</a></li>
+          <li><a href="/blog">→ writing</a></li>
+          <li><a href="/cursed-knowledge">→ cursed knowledge</a></li>
+          <li><a href="/contact">→ get in touch</a></li>
+        </ul>
+        <ul class="socials" aria-label="Elsewhere">
           {
             author.social?.github && (
               <li>
-                <a href={author.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-                  <Github size={18} /> <span>GitHub</span>
+                <a href={author.social.github} target="_blank" rel="noopener noreferrer">
+                  <Github size={13} /> github
                 </a>
               </li>
             )
@@ -73,8 +147,8 @@ function fmtMonth(d: Date) {
           {
             author.social?.linkedin && (
               <li>
-                <a href={author.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                  <Linkedin size={18} /> <span>LinkedIn</span>
+                <a href={author.social.linkedin} target="_blank" rel="noopener noreferrer">
+                  <Linkedin size={13} /> linkedin
                 </a>
               </li>
             )
@@ -82,522 +156,1104 @@ function fmtMonth(d: Date) {
           {
             author.social?.twitter && (
               <li>
-                <a href={author.social.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                  <Twitter size={18} /> <span>Twitter</span>
+                <a href={author.social.twitter} target="_blank" rel="noopener noreferrer">
+                  <Twitter size={13} /> twitter
                 </a>
               </li>
             )
           }
-          <li>
-            <a href="/rss.xml" aria-label="RSS feed">
-              <Rss size={18} />
-              <span>RSS</span>
-            </a>
-          </li>
+          <li><a href="/rss.xml"><Rss size={13} /> rss</a></li>
+          {
+            author.email && (
+              <li>
+                <a href={`mailto:${author.email}`}>
+                  <Mail size={13} /> {author.email}
+                </a>
+              </li>
+            )
+          }
         </ul>
       </div>
 
-      <!-- NOW panel -->
-      <aside class="now" aria-label="Now">
-        <header class="now__header">
-          <span class="now__dot" aria-hidden="true"></span>
-          <h2 class="now__title">Now</h2>
-          <span class="now__meta">
-            <MapPin size={12} /> Hyderabad · IST
-          </span>
-        </header>
-
-        <dl class="now__list">
-          {
-            nowBuilding && (
-              <div class="now__row">
-                <dt>Building</dt>
-                <dd>
-                  <a href={`/projects/${nowBuilding.id}`}>
-                    {nowBuilding.data.title} <ArrowUpRight size={14} />
-                  </a>
-                  <p>{nowBuilding.data.description}</p>
-                </dd>
+      <!-- NOW BOX -->
+      <aside class="now">
+        <div class="now-head">
+          <span class="now-tag">currently</span>
+          <span class="now-blip" aria-hidden="true"></span>
+        </div>
+        {
+          nowBuilding ? (
+            <a href={`/projects/${nowBuilding.id}`} class="now-card" style={`--accent:${colorOf(nowBuilding.data.category)}`}>
+              <div class="now-meta">
+                <span class="now-num">№{pad(numberOf.get(nowBuilding.id)!)}</span>
+                {nowBuilding.data.category && <span class="now-cat">{nowBuilding.data.category.toLowerCase()}</span>}
               </div>
-            )
-          }
-
-          {
-            featuredPost && (
-              <div class="now__row">
-                <dt>Latest write-up</dt>
-                <dd>
-                  <a href={`/blog/${featuredPost.id}`}>
-                    {featuredPost.data.title} <ArrowUpRight size={14} />
-                  </a>
-                  <p>
-                    {fmtMonth(featuredPost.data.publishedAt)} ·{featuredPost.data.category}
-                  </p>
-                </dd>
-              </div>
-            )
-          }
-
-          <div class="now__row">
-            <dt>Cursed lesson</dt>
-            <dd>
-              <a href="/cursed-knowledge">
-                Things I wish I'd known earlier <ArrowUpRight size={14} />
-              </a>
-              <p>A growing index of self-inflicted developer pain.</p>
-            </dd>
-          </div>
-        </dl>
+              <h3 class="now-title">
+                {nowBuilding.data.title}
+                <ArrowUpRight size={14} class="now-arrow" />
+              </h3>
+              <p class="now-desc">{nowBuilding.data.description}</p>
+              <p class="now-stack">
+                {nowBuilding.data.techStack.slice(0, 4).join(" · ")}
+                {nowBuilding.data.techStack.length > 4 && ` · +${nowBuilding.data.techStack.length - 4}`}
+              </p>
+            </a>
+          ) : (
+            <p class="now-empty">— between projects —</p>
+          )
+        }
+        <p class="now-foot">
+          mentoring · scaling backends · <a href="/about">more →</a>
+        </p>
       </aside>
     </section>
 
-    <!-- LATEST WRITING -->
-    {
-      posts.length > 0 && (
-        <section class="block">
-          <header class="block__header">
-            <div>
-              <p class="kicker">§ Writing</p>
-              <h2 class="block__title">From the blog</h2>
-            </div>
-            <a href="/blog" class="block__more">
-              All posts <ArrowRight size={16} />
-            </a>
-          </header>
+    <!-- ─────────── ABOUT THE AUTHOR ─────────── -->
+    <section class="block about">
+      <header class="block-head">
+        <h2><span class="bh-mark">§</span> about the author</h2>
+        <a href="/about" class="block-more">full bio &amp; cv →</a>
+      </header>
 
-          <ol class="post-list">
-            {featuredPost && (
-              <li class="post post--lead">
-                <span class="post__num">01</span>
-                <a href={`/blog/${featuredPost.id}`} class="post__link">
-                  <p class="post__meta">
-                    <time datetime={featuredPost.data.publishedAt.toISOString()}>{fmtMonth(featuredPost.data.publishedAt)}</time>
-                    <span aria-hidden="true">·</span>
-                    <span>{featuredPost.data.category}</span>
-                  </p>
-                  <h3 class="post__title">{featuredPost.data.title}</h3>
-                  <p class="post__excerpt">{featuredPost.data.description}</p>
+      <div class="about-grid">
+        <div class="about-portrait">
+          {author.avatar && <img src={author.avatar} alt={author.name} class="portrait-img" loading="lazy" />}
+          <p class="portrait-cap">
+            <span class="portrait-fig">fig.&nbsp;0</span>
+            <span class="portrait-desc">portrait of the author</span>
+          </p>
+        </div>
+
+        <div class="about-prose">
+          <p class="about-p">
+            I'm a senior software engineer with <strong>{totalYearsPro ?? "5+"} years</strong> of shipping production code — currently leading cross-functional
+            teams at
+            <strong>MAQ Software</strong>, mostly in the <strong>.NET</strong> and
+            <strong>Azure</strong> world. I care about clean architecture, fast feedback loops, and dragging junior devs through the same mistakes I once
+            made (with fewer scars this time).
+          </p>
+          <p class="about-p about-p-italic">
+            Outside of work, I build small things that scratch a personal itch — a CLI to kill a daily portal click, a fintech bot living on a
+            Raspberry Pi, an OCR overlay for macOS — and write down what broke so I don't relearn it next year.
+          </p>
+
+          <dl class="facts">
+            {
+              facts.map((f) => (
+                <div class="fact">
+                  <dt>{f.dt}</dt>
+                  <dd>{f.dd}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
+      </div>
+
+      {
+        inlineStack.length > 0 && (
+          <p class="about-stack" aria-label="Tech I reach for">
+            <span class="as-label">reaches&nbsp;for&nbsp;//</span>
+            {inlineStack.map((s, i) => (
+              <>
+                {i > 0 && (
+                  <span class="as-sep" aria-hidden="true">
+                    {" "}
+                    ·{" "}
+                  </span>
+                )}
+                <span class="as-item">{s.toLowerCase()}</span>
+              </>
+            ))}
+          </p>
+        )
+      }
+
+      {
+        experience.length > 0 && (
+          <ul class="entries about-exp">
+            {expEntries.slice(0, 2).map((e, i) => (
+              <li class="entry exp-entry">
+                <div class="entry-link static-entry">
+                  <div class="e-gutter">
+                    <span class="e-num">{pad(expEntries.slice(0, 2).length - i)}</span>
+                    <span class="e-month">{e.startYear}</span>
+                  </div>
+                  <div class="e-body">
+                    <div class="e-line e-line-1">
+                      <h3 class="e-title">
+                        {e.title}
+                        <span class="exp-at">@&nbsp;{e.company}</span>
+                      </h3>
+                      <span class="e-status">
+                        {e.isCurrent && <span class="blip blip-pulse" />}
+                        {e.periodLower}
+                      </span>
+                    </div>
+                    {e.description && <p class="e-desc">{e.description}</p>}
+                  </div>
+                </div>
+              </li>
+            ))}
+            {expEntries.length > 2 && (
+              <li class="entry exp-entry exp-more">
+                <a class="entry-link" href="/about#experience">
+                  <div class="e-gutter">
+                    <span class="e-num">+{expEntries.length - 2}</span>
+                  </div>
+                  <div class="e-body">
+                    <div class="e-line e-line-1">
+                      <h3 class="e-title">
+                        earlier roles &amp; the full progression
+                        <span class="exp-at">@&nbsp;maq software</span>
+                      </h3>
+                      <span class="e-status">see full history &rarr;</span>
+                    </div>
+                  </div>
                 </a>
               </li>
             )}
+          </ul>
+        )
+      }
+    </section>
 
-            {sidePosts.map((post, i) => (
-              <li class="post">
-                <span class="post__num">{String(i + 2).padStart(2, "0")}</span>
-                <a href={`/blog/${post.id}`} class="post__link">
-                  <p class="post__meta">
-                    <time datetime={post.data.publishedAt.toISOString()}>{fmtMonth(post.data.publishedAt)}</time>
-                    <span aria-hidden="true">·</span>
-                    <span>{post.data.category}</span>
-                  </p>
-                  <h3 class="post__title">{post.data.title}</h3>
+    <!-- ─────────── FROM THE LOG ─────────── -->
+    <section class="block">
+      <header class="block-head">
+        <h2><span class="bh-mark">§</span> from the workshop log</h2>
+        <a href="/projects" class="block-more">browse all {totalProjects} →</a>
+      </header>
+      <ul class="entries">
+        {
+          recentProjects.map((p) => {
+            const num = numberOf.get(p.id)!;
+            const accent = colorOf(p.data.category);
+            const start = new Date(p.data.startDate);
+            const ongoing = isOngoing(p);
+            return (
+              <li class="entry" style={`--accent:${accent}`}>
+                <a class="entry-link" href={`/projects/${p.id}`}>
+                  <div class="e-gutter">
+                    <span class="e-num">№{pad(num)}</span>
+                    <span class="e-month">
+                      {monthShort(start)}&nbsp;{start.getFullYear()}
+                    </span>
+                  </div>
+                  <div class="e-body">
+                    <div class="e-line e-line-1">
+                      <h3 class="e-title">
+                        {p.data.title}
+                        {p.data.featured && (
+                          <span class="e-star" title="featured">
+                            ★
+                          </span>
+                        )}
+                      </h3>
+                      <span class="e-status">
+                        <span class={`blip ${ongoing ? "blip-pulse" : ""}`} />
+                        {p.data.status === "in-progress"
+                          ? "active"
+                          : p.data.status === "completed"
+                            ? "shipped"
+                            : p.data.status === "on-hold"
+                              ? "shelved"
+                              : p.data.status}
+                      </span>
+                    </div>
+                    <p class="e-desc">{p.data.description}</p>
+                    <p class="e-stack">
+                      {p.data.category && <span class="e-cat">{p.data.category.toLowerCase()}</span>}
+                      <span>
+                        {p.data.techStack.slice(0, 6).join(" · ")}
+                        {p.data.techStack.length > 6 && ` · +${p.data.techStack.length - 6}`}
+                      </span>
+                    </p>
+                  </div>
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </section>
+
+    <!-- ─────────── WRITING ─────────── -->
+    {
+      recentPosts.length > 0 && (
+        <section class="block">
+          <header class="block-head">
+            <h2>
+              <span class="bh-mark">§</span> recent writing
+            </h2>
+            <a href="/blog" class="block-more">
+              all {totalPosts} posts →
+            </a>
+          </header>
+          <ul class="entries">
+            {recentPosts.map((post, i) => (
+              <li class="entry">
+                <a class="entry-link" href={`/blog/${post.id}`}>
+                  <div class="e-gutter">
+                    <span class="e-num">№{pad(i + 1)}</span>
+                    <span class="e-month">
+                      {monthShort(post.data.publishedAt)}&nbsp;{post.data.publishedAt.getFullYear()}
+                    </span>
+                  </div>
+                  <div class="e-body">
+                    <div class="e-line e-line-1">
+                      <h3 class="e-title">{post.data.title}</h3>
+                      <span class="e-status e-cat-only">{post.data.category.toLowerCase()}</span>
+                    </div>
+                    <p class="e-desc">{post.data.description}</p>
+                    {post.data.tags && post.data.tags.length > 0 && (
+                      <p class="e-stack">
+                        <span>
+                          {post.data.tags
+                            .slice(0, 5)
+                            .map((t) => `#${t.toLowerCase().replace(/\s+/g, "-")}`)
+                            .join(" ")}
+                        </span>
+                      </p>
+                    )}
+                  </div>
                 </a>
               </li>
             ))}
-          </ol>
+          </ul>
         </section>
       )
     }
 
-    <!-- BUILDING -->
-    {
-      featuredProjects.length > 0 && (
-        <section class="block">
-          <header class="block__header">
-            <div>
-              <p class="kicker">§ Building</p>
-              <h2 class="block__title">Selected projects</h2>
-            </div>
-            <a href="/projects" class="block__more">
-              All projects <ArrowRight size={16} />
-            </a>
-          </header>
-
-          <div class="projects-grid">
-            {featuredProjects.map((project) => (
-              <ProjectCard project={project} />
-            ))}
-          </div>
-        </section>
-      )
-    }
-
-    <!-- CURSED KNOWLEDGE TEASER -->
-    <section class="cursed">
-      <a href="/cursed-knowledge" class="cursed__link">
-        <div class="cursed__head">
-          <Skull size={20} />
-          <p class="kicker kicker--invert">§ Cursed Knowledge</p>
+    <!-- ─────────── CURSED TEASER ─────────── -->
+    <section class="block">
+      <a href="/cursed-knowledge" class="cursed">
+        <div class="cursed-bg" aria-hidden="true"></div>
+        <div class="cursed-meta">
+          <span class="cursed-tag">// pinned</span>
+          <span class="cursed-blip" aria-hidden="true"></span>
         </div>
-        <h2 class="cursed__title">A growing index of things I learned the hard way.</h2>
-        <p class="cursed__sub">
-          Auth gone wrong, SQLite at 1× speed, OCR backed by zero reasoning — tagged by project and severity, sortable by regret.
+        <h2 class="cursed-title">
+          things i wish i'd known
+          <em>before</em>
+          shipping them
+        </h2>
+        <p class="cursed-desc">
+          47 cursed entries from 2018 to 2026 — auth gone wrong, SQLite at 1× speed, OCR backed by zero reasoning. Tagged by project, sortable by
+          regret.
         </p>
-        <span class="cursed__cta">
-          Open the grimoire <ArrowRight size={16} />
-        </span>
+        <span class="cursed-cta">open the grimoire →</span>
       </a>
     </section>
 
-    <!-- STACK -->
-    {
-      stackGroups.length > 0 && (
-        <section class="block">
-          <header class="block__header">
-            <div>
-              <p class="kicker">§ Stack</p>
-              <h2 class="block__title">What I reach for</h2>
-            </div>
-            <a href="/about" class="block__more">
-              More about me <ArrowRight size={16} />
-            </a>
-          </header>
-
-          <div class="stack">
-            {stackGroups.map((g) => (
-              <div class="stack__col">
-                <h3 class="stack__name">{g.name}</h3>
-                <ul class="stack__items">
-                  {g.skills.map((s) => (
-                    <li>{s}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
-      )
-    }
-
-    <!-- CONTACT -->
-    <section class="contact">
-      <div class="contact__inner">
-        <p class="kicker">§ Contact</p>
-        <h2 class="contact__title">Have a problem worth solving?</h2>
-        <p class="contact__sub">
-          Consulting, collaboration, or just a good conversation —
-          {" "}<a href={`mailto:${author.email}`}>{author.email}</a>{" "}
-          is the fastest way in.
-        </p>
-        <Button href="/contact" variant="primary" size="lg">
-          <Mail slot="icon-left" size={18} />
-          Get in touch
-        </Button>
+    <!-- ─────────── COLOPHON ─────────── -->
+    <footer class="colophon">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
       </div>
-    </section>
+      <p>
+        compiled by hand · set in inter &amp; merriweather · static-rendered with astro ·
+        <a href="https://github.com/tapanmeena/portfolio" target="_blank" rel="noopener noreferrer">view source →</a>
+      </p>
+    </footer>
   </div>
 </BaseLayout>
 
 <style>
   @reference "tailwindcss";
 
-  .home {
-    @apply mx-auto max-w-6xl px-4 pb-20;
+  .logbook-home {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 5rem;
+    color: var(--color-text);
   }
 
-  /* ── HERO ─────────────────────────────────────────── */
-  .hero {
-    @apply grid gap-10 py-12 md:py-16 md:grid-cols-[1.4fr_1fr] md:gap-14;
+  /* ─── Hairline rule ─── */
+  .rule {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 0.4rem 0;
+  }
+  .rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+  .rule-tick {
+    width: 1px;
+    height: 8px;
+    background: var(--color-text);
+    opacity: 0.85;
   }
 
-  .prompt {
-    @apply inline-flex items-center gap-2 text-xs mb-6;
+  /* ─── Dateline (top strip) ─── */
+  .dateline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0 0 0.6rem;
+    padding: 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
     color: var(--color-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-  .prompt .caret {
-    color: var(--color-accent);
-    animation: blink 1.05s steps(1) infinite;
+  .dl-issue {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
-  @keyframes blink {
-    50% {
-      opacity: 0;
+  .dl-sep {
+    opacity: 0.5;
+  }
+  .dl-spacer {
+    flex: 1;
+    min-width: 8px;
+  }
+  .dl-counts b {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  /* ─── Masthead ─── */
+  .mast {
+    margin-bottom: 1.6rem;
+  }
+  .mast-title {
+    text-align: center;
+    margin: 0.8rem 0;
+    line-height: 1;
+    font-family: "Merriweather", Georgia, serif;
+  }
+  .mast-pre {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 0.72rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.7rem;
+  }
+  .mast-main {
+    display: inline-block;
+    font-weight: 700;
+    font-style: italic;
+    font-size: clamp(2rem, 5.6vw, 3.6rem);
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    line-height: 1.05;
+  }
+  .mast-by {
+    text-align: center;
+    margin: 0.4rem 0 0.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    display: inline-flex;
+    width: 100%;
+    justify-content: center;
+    gap: 6px;
+    letter-spacing: 0.04em;
+  }
+  .mast-by-name {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── Intro / Now grid ─── */
+  .intro {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem 2.5rem;
+    padding: 1.5rem 0 2rem;
+  }
+  @media (min-width: 820px) {
+    .intro {
+      grid-template-columns: 1.4fr 1fr;
     }
   }
 
-  .hero__name {
-    @apply text-4xl md:text-6xl font-bold leading-tight tracking-tight;
+  .lede {
+    font-family: "Merriweather", Georgia, serif;
+    font-size: 1.1rem;
+    line-height: 1.65;
     color: var(--color-text);
-    font-family: var(--font-sans);
+    margin: 0 0 1.2rem;
+    max-width: 600px;
   }
-  .hero__name-mark {
-    background: linear-gradient(120deg, var(--color-accent), var(--color-accent-hover));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .lede strong {
+    color: var(--color-text);
+    font-weight: 700;
   }
 
-  .hero__lede {
-    @apply mt-5 text-base md:text-lg leading-relaxed max-w-xl;
-    color: var(--color-muted);
+  .quick-nav {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.92rem;
   }
-  .hero__lede strong {
+  .quick-nav a {
     color: var(--color-text);
+    text-decoration: none;
+    padding: 2px 0;
+    transition:
+      color 0.15s ease,
+      padding-left 0.15s ease;
+    display: inline-block;
+  }
+  .quick-nav a:hover {
+    color: var(--color-accent);
+    padding-left: 4px;
+  }
+
+  .socials {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0.8rem 0 0;
+    border-top: 1px dashed var(--color-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+  }
+  .socials a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .socials a:hover {
+    color: var(--color-text);
+  }
+
+  /* ─── NOW box ─── */
+  .now {
+    padding: 0;
+    border-top: 1px dashed var(--color-border);
+    border-bottom: 1px dashed var(--color-border);
+    padding: 0.8rem 0 0.8rem;
+  }
+  @media (min-width: 820px) {
+    .now {
+      border: 0;
+      padding: 0;
+    }
+  }
+  .now-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.7rem;
+  }
+  .now-tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-muted);
     font-weight: 600;
   }
-
-  .hero__cta {
-    @apply mt-7 flex flex-wrap gap-3;
+  .now-tag::after {
+    content: " //";
+    opacity: 0.4;
+    margin-left: 2px;
   }
-
-  .hero__socials {
-    @apply mt-8 flex flex-wrap gap-x-5 gap-y-2 list-none p-0 m-0;
-  }
-  .hero__socials a {
-    @apply inline-flex items-center gap-1.5 text-sm font-medium;
-    color: var(--color-muted);
-    text-decoration: none;
-  }
-  .hero__socials a:hover {
-    color: var(--color-accent);
-  }
-
-  /* NOW panel */
-  .now {
-    @apply rounded-xl p-5 md:p-6 self-start;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
-  }
-  .now__header {
-    @apply flex items-center gap-2 mb-5 pb-4;
-    border-bottom: 1px dashed var(--color-border);
-  }
-  .now__title {
-    @apply text-base font-semibold m-0;
-    color: var(--color-text);
-  }
-  .now__dot {
-    @apply inline-block w-2 h-2 rounded-full;
+  .now-blip {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
     background: #16a34a;
-    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
-    animation: pulse 2.4s ease-in-out infinite;
+    display: inline-block;
+    animation: blip 1.8s infinite;
   }
-  @keyframes pulse {
-    0%,
+  @keyframes blip {
+    0% {
+      box-shadow: 0 0 0 0 #16a34a;
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+    }
     100% {
-      box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
-    }
-    50% {
-      box-shadow: 0 0 0 7px rgba(22, 163, 74, 0.05);
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
     }
   }
-  .now__meta {
-    @apply ml-auto inline-flex items-center gap-1 text-xs;
-    color: var(--color-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
 
-  .now__list {
-    @apply space-y-4 m-0 p-0;
-  }
-  .now__row {
-    @apply m-0;
-  }
-  .now__row dt {
-    @apply text-[11px] uppercase font-semibold mb-1;
-    color: var(--color-muted);
-    letter-spacing: 0.08em;
-  }
-  .now__row dd {
-    @apply m-0;
-  }
-  .now__row dd a {
-    @apply inline-flex items-center gap-1 text-sm font-semibold;
-    color: var(--color-text);
-    text-decoration: none;
-  }
-  .now__row dd a:hover {
-    color: var(--color-accent);
-  }
-  .now__row dd p {
-    @apply text-sm mt-1 leading-snug;
-    color: var(--color-muted);
-  }
-
-  /* ── BLOCK (generic section) ──────────────────────── */
-  .block {
-    @apply py-12 border-t;
-    border-color: var(--color-border);
-  }
-  .block__header {
-    @apply flex flex-wrap items-end justify-between gap-4 mb-8;
-  }
-  .kicker {
-    @apply text-xs uppercase mb-1 m-0;
-    color: var(--color-accent);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    letter-spacing: 0.1em;
-  }
-  .block__title {
-    @apply text-2xl md:text-3xl font-bold m-0;
-    color: var(--color-text);
-    font-family: var(--font-sans);
-    letter-spacing: -0.02em;
-  }
-  .block__more {
-    @apply inline-flex items-center gap-1.5 text-sm font-medium;
-    color: var(--color-accent);
-    text-decoration: none;
-    transition: gap 0.2s ease;
-  }
-  .block__more:hover {
-    gap: 0.625rem;
-  }
-
-  /* ── POST LIST ────────────────────────────────────── */
-  .post-list {
-    @apply list-none p-0 m-0;
-  }
-
-  .post {
-    @apply grid gap-4 py-5;
-    grid-template-columns: 2.5rem 1fr;
-    border-top: 1px solid var(--color-border);
-  }
-  .post:first-child {
-    border-top: none;
-  }
-
-  .post__num {
-    @apply text-sm pt-1;
-    color: var(--color-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .post__link {
-    @apply block;
+  .now-card {
+    display: block;
     text-decoration: none;
     color: inherit;
+    padding: 0.9rem 0 0.6rem;
+    border-top: 1px solid var(--color-border);
+    position: relative;
+    transition: padding-left 0.18s ease;
   }
-  .post__meta {
-    @apply text-xs uppercase m-0 mb-2 inline-flex items-center gap-2;
+  .now-card::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .now-card:hover {
+    padding-left: 6px;
+  }
+  .now-card:hover::before {
+    opacity: 1;
+  }
+  .now-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
     color: var(--color-muted);
-    letter-spacing: 0.08em;
+    margin-bottom: 4px;
   }
-  .post__title {
-    @apply text-xl md:text-2xl font-semibold m-0 leading-snug;
+  .now-num {
     color: var(--color-text);
-    transition: color 0.2s ease;
+    font-weight: 700;
   }
-  .post__link:hover .post__title {
+  .now-cat {
+    color: var(--accent);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.62rem;
+  }
+  .now-title {
+    font-family: "Merriweather", Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 0.4rem;
+    color: var(--color-text);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .now-card:hover .now-title {
+    color: var(--accent);
+  }
+  .now-arrow {
+    transition: transform 0.18s ease;
+    color: var(--color-muted);
+  }
+  .now-card:hover .now-arrow {
+    color: var(--accent);
+    transform: translate(2px, -2px);
+  }
+  .now-desc {
+    margin: 0 0 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--color-muted);
+  }
+  .now-stack {
+    margin: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    color: var(--color-muted);
+    letter-spacing: 0.02em;
+  }
+  .now-empty {
+    font-family: ui-monospace, monospace;
+    font-style: italic;
+    color: var(--color-muted);
+    margin: 0.5rem 0;
+  }
+  .now-foot {
+    margin: 0.7rem 0 0;
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--color-border);
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    color: var(--color-muted);
+  }
+  .now-foot a {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .now-foot a:hover {
     color: var(--color-accent);
   }
 
-  .post__excerpt {
-    @apply text-base mt-3 leading-relaxed max-w-2xl;
+  /* ─── Block sections (entries reused from /projects) ─── */
+  .block {
+    margin: 2.5rem 0 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .block-head h2 {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--color-text);
+  }
+  .bh-mark {
+    color: var(--color-accent);
+    font-style: normal;
+    font-weight: 400;
+    opacity: 0.85;
+    margin-right: 0.2em;
+  }
+  .block-more {
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .block-more:hover {
+    color: var(--color-text);
+  }
+
+  .entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .entry {
+    border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  }
+  .entry:first-child {
+    border-top: 0;
+  }
+  .entry-link {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 14px;
+    padding: 0.85rem 0.4rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.18s ease;
+    position: relative;
+  }
+  @media (min-width: 600px) {
+    .entry-link {
+      grid-template-columns: 90px 1fr;
+      gap: 22px;
+    }
+  }
+  .entry-link::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--accent, var(--color-accent));
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .entry-link:hover {
+    background: var(--color-surface);
+  }
+  .entry-link:hover::before {
+    opacity: 1;
+  }
+
+  .e-gutter {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-family: ui-monospace, monospace;
+    padding-top: 2px;
+  }
+  .e-num {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .e-month {
+    font-size: 0.66rem;
+    color: var(--color-muted);
+    letter-spacing: 0.16em;
+  }
+
+  .e-body {
+    min-width: 0;
+  }
+  .e-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .e-line-1 {
+    margin-bottom: 4px;
+  }
+  .e-title {
+    font-family: "Merriweather", Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0;
+    color: var(--color-text);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .entry-link:hover .e-title {
+    color: var(--accent, var(--color-accent));
+  }
+  .e-star {
+    color: #f59e0b;
+    font-size: 0.85em;
+  }
+  .e-status {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+  .e-cat-only {
+    color: var(--color-muted);
+    letter-spacing: 0.1em;
+  }
+  .blip {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent, var(--color-accent));
+    display: inline-block;
+  }
+  .blip-pulse {
+    animation: blip 1.8s infinite;
+  }
+  .e-desc {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+    line-height: 1.55;
     color: var(--color-muted);
   }
-  .post--lead .post__title {
-    @apply text-2xl md:text-3xl;
-    letter-spacing: -0.015em;
+  .e-stack {
+    margin: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    letter-spacing: 0.02em;
+    word-break: break-word;
   }
-  /* ── PROJECTS GRID ─────────────────────────────── */
-  .projects-grid {
-    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+  .e-cat {
+    color: var(--accent, var(--color-accent));
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.62rem;
+    margin-right: 6px;
   }
-  /* ── CURSED TEASER ────────────────────────────────── */
+  .e-cat::after {
+    content: " //";
+    opacity: 0.4;
+    margin-left: 2px;
+  }
+
+  /* ─── About the author ─── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem 2rem;
+    align-items: start;
+  }
+  @media (min-width: 720px) {
+    .about-grid {
+      grid-template-columns: 160px minmax(0, 1fr);
+    }
+  }
+  .about-portrait {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .portrait-img {
+    width: 100%;
+    max-width: 160px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+    border: 1px solid var(--color-border);
+    filter: grayscale(0.5) contrast(1.05);
+    transition: filter 0.3s ease;
+  }
+  .about-portrait:hover .portrait-img {
+    filter: grayscale(0) contrast(1);
+  }
+  .portrait-cap {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    color: var(--color-muted);
+  }
+  .portrait-fig {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+  .portrait-desc {
+    font-style: italic;
+  }
+
+  .about-prose {
+    min-width: 0;
+  }
+  .about-p {
+    font-family: "Merriweather", Georgia, serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-text);
+    margin: 0 0 0.9rem;
+    max-width: 640px;
+  }
+  .about-p strong {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .about-p-italic {
+    font-style: italic;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.7rem 1.2rem;
+    margin: 1rem 0 0;
+    padding: 0.8rem 0 0;
+    border-top: 1px dashed var(--color-border);
+    font-family: ui-monospace, monospace;
+  }
+  @media (min-width: 720px) {
+    .facts {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .facts .fact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .facts dt {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0;
+  }
+  .facts dd {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--color-text);
+    line-height: 1.4;
+  }
+
+  .about-stack {
+    margin: 1.4rem 0 1.4rem;
+    padding: 0.9rem 0;
+    border-top: 1px dashed var(--color-border);
+    border-bottom: 1px dashed var(--color-border);
+    font-family: ui-monospace, monospace;
+    line-height: 1.9;
+    overflow-wrap: break-word;
+  }
+  .as-label {
+    display: inline;
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+  .as-sep {
+    display: inline;
+    color: var(--color-border);
+    user-select: none;
+  }
+  .as-item {
+    display: inline;
+    font-size: 0.82rem;
+    color: var(--color-text);
+  }
+
+  .about-exp {
+    margin-top: 0.4rem;
+  }
+  .exp-entry .static-entry {
+    padding: 0.85rem 0.4rem;
+    cursor: default;
+  }
+  .exp-entry .static-entry:hover {
+    background: transparent;
+  }
+  .exp-entry .static-entry::before {
+    display: none;
+  }
+  .exp-at {
+    font-family: ui-monospace, monospace;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    margin-left: 4px;
+  }
+
+  /* ─── Cursed teaser ─── */
   .cursed {
-    @apply py-12;
-  }
-  .cursed__link {
-    @apply block rounded-2xl p-8 md:p-12 relative overflow-hidden;
-    background: radial-gradient(1200px 400px at 0% 0%, rgba(99, 179, 237, 0.18), transparent 60%), linear-gradient(180deg, #0b1220 0%, #0a0f1a 100%);
-    color: #e2e8f0;
+    display: block;
+    position: relative;
+    padding: 1.6rem 1.4rem;
     text-decoration: none;
-    border: 1px solid rgba(99, 179, 237, 0.25);
+    color: inherit;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    overflow: hidden;
+    isolation: isolate;
     transition:
       transform 0.25s ease,
       border-color 0.25s ease;
   }
-  .cursed__link:hover {
+  .cursed:hover {
     transform: translateY(-2px);
-    border-color: rgba(99, 179, 237, 0.55);
+    border-color: #a855f7;
   }
-  .cursed__head {
-    @apply flex items-center gap-2 mb-4;
-    color: #fda4af;
+  .cursed-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(ellipse at 0% 0%, color-mix(in srgb, #ef4444 12%, transparent), transparent 55%),
+      radial-gradient(ellipse at 100% 100%, color-mix(in srgb, #a855f7 14%, transparent), transparent 55%),
+      linear-gradient(transparent 95%, color-mix(in srgb, #a855f7 18%, transparent) 95%) 0 0 / 100% 28px,
+      linear-gradient(90deg, transparent 95%, color-mix(in srgb, #ef4444 12%, transparent) 95%) 0 0 / 28px 100%;
+    mask-image: radial-gradient(ellipse at center, black 60%, transparent 100%);
   }
-  .kicker--invert {
-    color: #fda4af;
-    margin: 0;
+  .cursed-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.6rem;
   }
-  .cursed__title {
-    @apply text-2xl md:text-3xl font-bold m-0 max-w-3xl;
-    letter-spacing: -0.02em;
-    font-family: var(--font-sans);
-    color: #f8fafc;
+  .cursed-tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #ef4444;
+    font-weight: 700;
   }
-  .cursed__sub {
-    @apply mt-3 text-base md:text-lg max-w-2xl;
-    color: #cbd5e1;
+  .cursed-blip {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #a855f7;
+    display: inline-block;
+    animation: blip 1.8s infinite;
+    box-shadow: 0 0 0 0 #a855f7;
   }
-  .cursed__cta {
-    @apply mt-6 inline-flex items-center gap-2 text-sm font-semibold;
-    color: #93c5fd;
-    transition: gap 0.2s ease;
+  .cursed-title {
+    font-family: "Merriweather", Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(1.4rem, 3.5vw, 2rem);
+    line-height: 1.2;
+    margin: 0 0 0.6rem;
+    color: var(--color-text);
+    max-width: 720px;
   }
-  .cursed__link:hover .cursed__cta {
-    gap: 0.625rem;
+  .cursed-title em {
+    font-style: italic;
+    color: #ef4444;
+  }
+  .cursed-desc {
+    margin: 0 0 0.8rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+    max-width: 620px;
+  }
+  .cursed-cta {
+    display: inline-block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.82rem;
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1px;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease,
+      padding-left 0.15s ease;
+  }
+  .cursed:hover .cursed-cta {
+    color: #a855f7;
+    border-bottom-color: #a855f7;
+    padding-left: 4px;
   }
 
-  /* ── STACK ───────────────────────────────────────── */
-  .stack {
-    @apply grid gap-6 sm:grid-cols-2 lg:grid-cols-4;
-  }
-  .stack__col {
-    @apply rounded-lg p-5;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
-  .stack__name {
-    @apply text-sm font-semibold m-0 mb-3 pb-3;
-    color: var(--color-text);
-    border-bottom: 1px dashed var(--color-border);
-  }
-  .stack__items {
-    @apply list-none p-0 m-0 text-sm;
+  /* ─── Colophon ─── */
+  .colophon {
+    margin-top: 3rem;
+    text-align: center;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
     color: var(--color-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.04em;
   }
-  .stack__items li {
-    @apply py-1;
+  .colophon p {
+    margin: 0.6rem 0 0;
   }
-  .stack__items li::before {
-    content: "› ";
-    color: var(--color-accent);
-  }
-
-  /* ── CONTACT ─────────────────────────────────────── */
-  .contact {
-    @apply py-16 mt-8;
-    border-top: 1px solid var(--color-border);
-  }
-  .contact__inner {
-    @apply max-w-2xl;
-  }
-  .contact__title {
-    @apply text-3xl md:text-4xl font-bold mt-2 mb-4;
+  .colophon a {
     color: var(--color-text);
-    font-family: var(--font-sans);
-    letter-spacing: -0.02em;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
-  .contact__sub {
-    @apply text-base md:text-lg mb-6 leading-relaxed;
-    color: var(--color-muted);
-  }
-  .contact__sub a {
+  .colophon a:hover {
     color: var(--color-accent);
-    text-decoration: none;
-    border-bottom: 1px dashed currentColor;
-  }
-  .contact__sub a:hover {
-    color: var(--color-accent-hover);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .prompt .caret,
-    .now__dot {
-      animation: none;
+    .blip-pulse,
+    .now-blip,
+    .cursed-blip {
+      animation: none !important;
     }
   }
 </style>

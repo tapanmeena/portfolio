@@ -1,27 +1,22 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { authors } from "@data/authors";
-import {
-  Mail,
-  Github,
-  Linkedin,
-  Twitter,
-  Globe,
-  MapPin,
-  Clock,
-  Copy,
-  CheckCircle2,
-  Send,
-  Briefcase,
-  Code2,
-  MessagesSquare,
-  Coffee,
-} from "@lucide/astro";
+import { Mail, Github, Linkedin, Twitter, Globe, Rss, Copy, CheckCircle2, Send } from "@lucide/astro";
 
 const author = authors["tapan-meena"];
 
-// Channels — ordered by how I prefer to be reached.
-const channels = [
+// ── Channels ─────────────────────────────────────────────────────────
+type Channel = {
+  key: string;
+  label: string;
+  handle: string;
+  href: string;
+  icon: any;
+  bestFor: string;
+  primary?: boolean;
+  external?: boolean;
+};
+const channels: Channel[] = [
   {
     key: "email",
     label: "email",
@@ -29,18 +24,16 @@ const channels = [
     href: author.email ? `mailto:${author.email}` : "#",
     icon: Mail,
     bestFor: "consulting · long-form questions · anything serious",
-    copyable: true,
     primary: true,
   },
   {
     key: "github",
     label: "github",
-    handle: "@tapanmeena",
+    handle: "tapanmeena",
     href: author.social?.github ?? "#",
     icon: Github,
     bestFor: "code · bug reports · pull requests",
-    copyable: false,
-    primary: false,
+    external: true,
   },
   {
     key: "linkedin",
@@ -49,32 +42,30 @@ const channels = [
     href: author.social?.linkedin ?? "#",
     icon: Linkedin,
     bestFor: "introductions · roles · professional context",
-    copyable: false,
-    primary: false,
+    external: true,
   },
   {
     key: "twitter",
     label: "twitter",
-    handle: "@tapanmeena3",
+    handle: "tapanmeena3",
     href: author.social?.twitter ?? "#",
     icon: Twitter,
     bestFor: "fast hellos · public conversation",
-    copyable: false,
-    primary: false,
+    external: true,
   },
   {
-    key: "website",
-    label: "website",
-    handle: "tapanmeena.com",
-    href: author.social?.website ?? "/",
-    icon: Globe,
-    bestFor: "you're already here.",
-    copyable: false,
-    primary: false,
+    key: "rss",
+    label: "rss",
+    handle: "/rss.xml",
+    href: "/rss.xml",
+    icon: Rss,
+    bestFor: "follow new writeups in your feed reader",
   },
-].filter((c) => c.handle);
+];
 
-// Default email payload used by the "compose" helper.
+const pad = (n: number | string) => String(n).padStart(2, "0");
+
+// ── Compose template ─────────────────────────────────────────────────
 const defaultSubject = "Hi Tapan — let's talk";
 const defaultBody = `Hi Tapan,
 
@@ -85,586 +76,733 @@ What I'm hoping to discuss:
 When works for you in the next two weeks?
 
 — `;
-
 const mailto = author.email ? `mailto:${author.email}?subject=${encodeURIComponent(defaultSubject)}&body=${encodeURIComponent(defaultBody)}` : "#";
+const copyTemplate = `To: ${author.email}\nSubject: ${defaultSubject}\n\n${defaultBody}`;
 
-// "Best to write me about" rows.
-const writeAbout = [
-  { icon: Briefcase, kind: "Consulting", text: "Backend architecture, broker / API integrations, developer tooling." },
-  { icon: Code2, kind: "Code", text: "Open source collaboration on any project you see in /projects." },
-  { icon: MessagesSquare, kind: "Mentoring", text: "Career advice for early-career engineers — happy to chat." },
-  { icon: Coffee, kind: "Just hello", text: "If something I wrote helped you, I'd genuinely love to hear about it." },
+// ── Topics ───────────────────────────────────────────────────────────
+const topics = [
+  { kind: "consulting", text: "backend architecture, broker / api integrations, developer tooling." },
+  { kind: "open source", text: "any project you see in /projects — issues and pull requests welcome." },
+  { kind: "mentoring", text: "career advice for early-career engineers — happy to chat." },
+  { kind: "just hello", text: "if something I wrote helped you, I'd genuinely love to hear about it." },
 ];
+
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
 ---
 
-<BaseLayout pageTitle="Contact">
-  <div class="contact">
-    <!-- HERO -->
-    <section class="hero">
-      <p class="prompt">
-        <span class="prompt__user">tm@blog</span><span class="prompt__sep">:</span><span class="prompt__path">~/contact</span><span
-          class="prompt__dollar">$</span
-        >
-        <span class="prompt__cmd">cat contact.md</span>
-      </p>
-      <h1 class="hero__title">
-        Say <span class="hero__mark">hi</span>.
+<BaseLayout pageTitle="Contact — Tapan Meena">
+  <div class="page">
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;01</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;D&nbsp;//&nbsp;correspondence</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+    </p>
+
+    <header class="mast">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+      <h1 class="mast-title">
+        <span class="mast-pre">to the editor</span>
+        <span class="mast-main"><em>say&nbsp;hi.</em></span>
       </h1>
-      <p class="hero__lede">
-        I read everything that lands in my inbox. I reply to most of it. The fastest way in is
-        {" "}<a href={`mailto:${author.email}`} class="hero__email">{author.email}</a>; the slowest is <span class="hero__strike"
-          >a calendar invite without context</span
-        >.
+      <p class="mast-by">
+        <span>I read everything that lands in my inbox.</span>
+        <span class="dl-sep">·</span>
+        <span>I reply to most of it.</span>
       </p>
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+    </header>
 
-      <!-- Status row -->
-      <ul class="status" aria-label="Availability">
-        <li class="status__item">
-          <span class="status__dot status__dot--green"></span>
-          <span class="status__k">status</span>
-          <span class="status__v">open to interesting work</span>
-        </li>
-        <li class="status__item">
-          <Clock size={12} />
-          <span class="status__k">replies</span>
-          <span class="status__v">~24h on weekdays</span>
-        </li>
-        <li class="status__item">
-          <MapPin size={12} />
-          <span class="status__k">timezone</span>
-          <span class="status__v">{author.location} · IST (UTC+5:30)</span>
-        </li>
-      </ul>
-    </section>
+    <!-- ── AVAILABILITY STRIP ── -->
+    <ul class="avail" aria-label="Availability">
+      <li class="av">
+        <span class="av-blip" aria-hidden="true"></span>
+        <span class="av-k">status</span>
+        <span class="av-v">open to interesting work</span>
+      </li>
+      <li class="av">
+        <span class="av-k">replies</span>
+        <span class="av-v">~24h on weekdays</span>
+      </li>
+      <li class="av">
+        <span class="av-k">timezone</span>
+        <span class="av-v">{author.location?.toLowerCase()} · ist (utc+5:30)</span>
+      </li>
+    </ul>
 
-    <!-- CHANNELS -->
+    <!-- ── CHANNELS ── -->
     <section class="block">
-      <header class="block__header">
-        <div>
-          <p class="kicker">§ Channels</p>
-          <h2 class="block__title">Pick the one that fits</h2>
-        </div>
+      <header class="block-head">
+        <h2><span class="bh-mark">§</span> pick a channel</h2>
+        <span class="block-meta">— ordered by how I prefer to be reached</span>
       </header>
 
-      <ul class="channels">
+      <ul class="entries channels">
         {
-          channels.map((c) => (
-            <li class:list={["channel", { "channel--primary": c.primary }]}>
-              <a
-                href={c.href}
-                class="channel__main"
-                target={c.href.startsWith("http") ? "_blank" : undefined}
-                rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                aria-label={`Contact via ${c.label}`}
-              >
-                <span class="channel__icon">
-                  <c.icon size={16} />
-                </span>
-                <span class="channel__label">{c.label}</span>
-                <span class="channel__handle">{c.handle}</span>
-                <span class="channel__best">{c.bestFor}</span>
-                <span class="channel__arrow" aria-hidden="true">
-                  →
-                </span>
-              </a>
-              {c.copyable && c.handle && (
-                <button type="button" class="channel__copy" data-copy={c.handle} aria-label={`Copy ${c.label}`} title="Copy">
-                  <Copy size={14} class="channel__copy-icon" />
-                  <CheckCircle2 size={14} class="channel__copy-check" />
-                </button>
-              )}
-            </li>
-          ))
+          channels
+            .filter((c) => c.handle)
+            .map((c, i) => (
+              <li class={`entry ch ${c.primary ? "ch-primary" : ""}`}>
+                <a class="entry-link" href={c.href} target={c.external ? "_blank" : undefined} rel={c.external ? "noopener noreferrer" : undefined}>
+                  <div class="e-gutter">
+                    <span class="e-num">{pad(i + 1)}</span>
+                    <span class="e-month">
+                      <c.icon size={11} />
+                    </span>
+                  </div>
+                  <div class="e-body">
+                    <div class="e-line">
+                      <h3 class="e-title">
+                        {c.label}
+                        <span class="ch-handle">{c.handle}</span>
+                        {c.primary && <span class="ch-pin">// preferred</span>}
+                      </h3>
+                      <span class="ch-arrow" aria-hidden="true">
+                        →
+                      </span>
+                    </div>
+                    <p class="e-desc">{c.bestFor}</p>
+                  </div>
+                </a>
+                {c.primary && c.handle && (
+                  <button type="button" class="copy-btn" data-copy={c.handle} aria-label={`Copy ${c.label}`} title="Copy email">
+                    <Copy size={11} class="copy-icon" />
+                    <CheckCircle2 size={11} class="copy-check" />
+                    <span class="copy-text">copy</span>
+                  </button>
+                )}
+              </li>
+            ))
         }
       </ul>
     </section>
 
-    <!-- WHAT TO WRITE ABOUT -->
+    <!-- ── WHAT TO WRITE ABOUT ── -->
     <section class="block">
-      <header class="block__header">
-        <div>
-          <p class="kicker">§ Write to me about</p>
-          <h2 class="block__title">What I'm interested in</h2>
-        </div>
+      <header class="block-head">
+        <h2><span class="bh-mark">§</span> what I'm interested in</h2>
+        <span class="block-meta">— write to me about</span>
       </header>
-
-      <ul class="topics">
+      <dl class="kv">
         {
-          writeAbout.map((t) => (
-            <li class="topic">
-              <span class="topic__icon">
-                <t.icon size={16} />
-              </span>
-              <div>
-                <p class="topic__kind">{t.kind}</p>
-                <p class="topic__text">{t.text}</p>
-              </div>
-            </li>
+          topics.map((t) => (
+            <div class="kv-row">
+              <dt>{t.kind}</dt>
+              <dd>{t.text}</dd>
+            </div>
           ))
         }
-      </ul>
+      </dl>
     </section>
 
-    <!-- COMPOSE -->
-    <section class="block compose-block">
-      <header class="block__header">
-        <div>
-          <p class="kicker">§ Compose</p>
-          <h2 class="block__title">A starting point</h2>
-        </div>
+    <!-- ── COMPOSE TEMPLATE ── -->
+    <section class="block">
+      <header class="block-head">
+        <h2><span class="bh-mark">§</span> a starting point</h2>
+        <span class="block-meta">— optional template</span>
       </header>
 
-      <div class="compose">
-        <div class="compose__chrome" aria-hidden="true">
-          <span class="compose__dot"></span>
-          <span class="compose__dot"></span>
-          <span class="compose__dot"></span>
-          <span class="compose__file">draft.eml</span>
-        </div>
+      <article class="letter">
+        <header class="letter-head">
+          <p><span class="lh-k">From:</span> <span class="lh-v">you@somewhere.com</span></p>
+          <p><span class="lh-k">To:</span> <span class="lh-v">{author.email}</span></p>
+          <p><span class="lh-k">Subject:</span> <span class="lh-v">{defaultSubject}</span></p>
+        </header>
+        <pre class="letter-body">{defaultBody}<span class="letter-sig">{author.name?.split(" ")[0] ?? "you"}</span></pre>
 
-        <div class="compose__head">
-          <p><span class="compose__k">From:</span> <span class="compose__v">you@somewhere.com</span></p>
-          <p><span class="compose__k">To:</span> <span class="compose__v">{author.email}</span></p>
-          <p><span class="compose__k">Subject:</span> <span class="compose__v">{defaultSubject}</span></p>
-        </div>
-
-        <pre class="compose__body">{defaultBody}{author.name?.split(" ")[0] ?? "you"}</pre>
-
-        <div class="compose__actions">
-          <a href={mailto} class="btn btn--primary">
-            <Send size={14} />
-            Open in mail client
+        <div class="letter-actions">
+          <a href={mailto} class="act act-primary">
+            <Send size={13} />
+            <span>open in mail client</span>
           </a>
-          <button
-            type="button"
-            class="btn btn--ghost"
-            data-copy={`To: ${author.email}\nSubject: ${defaultSubject}\n\n${defaultBody}`}
-            id="copy-template"
-          >
-            <Copy size={14} class="btn__copy-icon" />
-            <CheckCircle2 size={14} class="btn__copy-check" />
-            <span class="btn__copy-text">Copy template</span>
+          <button type="button" class="act copy-btn" data-copy={copyTemplate} id="copy-template">
+            <Copy size={11} class="copy-icon" />
+            <CheckCircle2 size={11} class="copy-check" />
+            <span class="copy-text">copy template</span>
           </button>
         </div>
 
-        <p class="compose__hint">Tip: include a sentence about what you're working on. It almost always gets a faster reply.</p>
-      </div>
+        <p class="letter-hint">
+          <span class="hint-mark">tip&nbsp;//</span>
+          include one sentence about what you're working on. it almost always gets a faster reply.
+        </p>
+      </article>
     </section>
 
-    <!-- SIGN-OFF -->
+    <!-- ── SIGN-OFF ── -->
     <section class="signoff">
-      <p class="signoff__line">
-        <span class="prompt__dollar">$</span>
-        <span>echo "talk soon" &gt;&gt; inbox</span>
-      </p>
-      <p class="signoff__sub">— {author.name}</p>
+      <p class="so-line"><em>— talk soon,</em></p>
+      <p class="so-name">{author.name}</p>
     </section>
   </div>
-</BaseLayout>
 
-<script is:inline>
-  const COPY_RESET_MS = 1600;
-
-  document.querySelectorAll("[data-copy]").forEach((btn) => {
-    btn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      const text = btn.getAttribute("data-copy");
-      if (!text) return;
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch {
-        // Fallback: select-and-copy via temp textarea
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-      }
-      btn.classList.add("is-copied");
-      setTimeout(() => btn.classList.remove("is-copied"), COPY_RESET_MS);
+  <script is:inline>
+    const COPY_RESET_MS = 1600;
+    document.querySelectorAll("[data-copy]").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const text = btn.getAttribute("data-copy");
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
+        btn.classList.add("is-copied");
+        setTimeout(() => btn.classList.remove("is-copied"), COPY_RESET_MS);
+      });
     });
-  });
-</script>
+  </script>
 
-<style>
-  @reference "tailwindcss";
+  <style>
+    @reference "tailwindcss";
 
-  .contact {
-    @apply mx-auto max-w-6xl px-4 pb-20;
-  }
-
-  /* ── HERO ────────────────────────────────────────── */
-  .hero {
-    @apply pt-12 pb-10 md:pt-16 md:pb-12;
-  }
-  .prompt {
-    @apply inline-flex flex-wrap items-center gap-1.5 text-xs mb-6 m-0;
-    color: var(--color-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .prompt__user {
-    color: var(--color-text);
-    font-weight: 600;
-  }
-  .prompt__path {
-    color: var(--color-accent);
-  }
-  .prompt__sep,
-  .prompt__dollar {
-    color: var(--color-muted);
-  }
-  .prompt__cmd {
-    color: var(--color-text);
-  }
-
-  .hero__title {
-    @apply text-4xl md:text-6xl font-bold leading-tight tracking-tight m-0;
-    color: var(--color-text);
-    font-family: var(--font-sans);
-  }
-  .hero__mark {
-    background: linear-gradient(120deg, var(--color-accent), var(--color-accent-hover));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .hero__lede {
-    @apply mt-5 text-base md:text-lg leading-relaxed max-w-2xl;
-    color: var(--color-muted);
-  }
-  .hero__email {
-    color: var(--color-accent);
-    text-decoration: none;
-    border-bottom: 1px dashed currentColor;
-  }
-  .hero__email:hover {
-    color: var(--color-accent-hover);
-  }
-  .hero__strike {
-    text-decoration: line-through;
-    opacity: 0.7;
-  }
-
-  /* Status row */
-  .status {
-    @apply mt-7 flex flex-wrap gap-x-6 gap-y-2 list-none p-0 m-0 text-xs;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .status__item {
-    @apply inline-flex items-center gap-1.5;
-    color: var(--color-muted);
-  }
-  .status__k {
-    color: var(--color-muted);
-    opacity: 0.75;
-  }
-  .status__k::after {
-    content: ":";
-  }
-  .status__v {
-    color: var(--color-text);
-  }
-  .status__dot {
-    @apply inline-block w-1.5 h-1.5 rounded-full;
-  }
-  .status__dot--green {
-    background: #16a34a;
-    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
-    animation: pulse-dot 2.4s ease-in-out infinite;
-  }
-  @keyframes pulse-dot {
-    0%,
-    100% {
-      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1.25rem 1.25rem 5rem;
+      color: var(--color-text);
     }
-    50% {
-      box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.05);
+
+    .rule {
+      display: flex;
+      align-items: center;
+      margin: 0.4rem 0;
     }
-  }
-
-  /* ── BLOCK ───────────────────────────────────────── */
-  .block {
-    @apply py-10 border-t;
-    border-color: var(--color-border);
-  }
-  .block__header {
-    @apply mb-6;
-  }
-  .kicker {
-    @apply text-xs uppercase mb-1 m-0;
-    color: var(--color-accent);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    letter-spacing: 0.1em;
-  }
-  .block__title {
-    @apply text-2xl md:text-3xl font-bold m-0;
-    color: var(--color-text);
-    font-family: var(--font-sans);
-    letter-spacing: -0.02em;
-  }
-
-  /* ── CHANNELS ────────────────────────────────────── */
-  .channels {
-    @apply list-none p-0 m-0;
-    border-top: 1px solid var(--color-border);
-  }
-  .channel {
-    @apply relative flex items-stretch;
-    border-bottom: 1px solid var(--color-border);
-    transition: background-color 0.18s ease;
-  }
-  .channel:hover {
-    background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
-  }
-  .channel--primary .channel__label {
-    color: var(--color-accent);
-  }
-
-  .channel__main {
-    @apply flex flex-1 items-center gap-3 md:gap-5 py-4 px-2 md:px-3 no-underline;
-    color: inherit;
-    display: grid;
-    grid-template-columns: auto auto 1fr auto auto;
-    align-items: center;
-    column-gap: 0.875rem;
-  }
-  .channel__icon {
-    color: var(--color-accent);
-    display: inline-flex;
-    width: 1.5rem;
-    justify-content: center;
-  }
-  .channel__label {
-    @apply text-sm font-semibold;
-    color: var(--color-text);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    min-width: 4.5rem;
-  }
-  .channel__handle {
-    @apply text-sm;
-    color: var(--color-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    word-break: break-all;
-  }
-  .channel__best {
-    @apply hidden md:block text-xs text-right ml-auto;
-    color: var(--color-muted);
-    opacity: 0.85;
-    max-width: 22rem;
-  }
-  .channel__arrow {
-    @apply text-base;
-    color: var(--color-muted);
-    transition:
-      transform 0.18s ease,
-      color 0.18s ease;
-  }
-  .channel__main:hover .channel__arrow {
-    color: var(--color-accent);
-    transform: translateX(4px);
-  }
-
-  /* Copy button */
-  .channel__copy {
-    @apply relative inline-flex items-center justify-center w-9 mr-1;
-    border: none;
-    background: transparent;
-    color: var(--color-muted);
-    cursor: pointer;
-    transition: color 0.18s ease;
-  }
-  .channel__copy:hover {
-    color: var(--color-accent);
-  }
-  .channel__copy-check {
-    position: absolute;
-    opacity: 0;
-    transform: scale(0.6);
-    color: #16a34a;
-    transition:
-      opacity 0.2s ease,
-      transform 0.2s ease;
-  }
-  .channel__copy.is-copied .channel__copy-icon {
-    opacity: 0;
-  }
-  .channel__copy.is-copied .channel__copy-check {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  /* ── TOPICS ──────────────────────────────────────── */
-  .topics {
-    @apply list-none p-0 m-0 grid gap-4 sm:grid-cols-2;
-  }
-  .topic {
-    @apply flex items-start gap-3 p-4 rounded-lg;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
-  .topic__icon {
-    @apply inline-flex items-center justify-center w-8 h-8 rounded-md shrink-0;
-    background-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
-    color: var(--color-accent);
-  }
-  .topic__kind {
-    @apply text-sm font-semibold m-0 mb-0.5;
-    color: var(--color-text);
-  }
-  .topic__text {
-    @apply text-sm m-0 leading-relaxed;
-    color: var(--color-muted);
-  }
-
-  /* ── COMPOSE ─────────────────────────────────────── */
-  .compose {
-    @apply rounded-xl overflow-hidden;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
-  .compose__chrome {
-    @apply flex items-center gap-2 px-4 py-2.5;
-    background-color: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
-  }
-  .compose__dot {
-    @apply inline-block w-2.5 h-2.5 rounded-full;
-    background-color: var(--color-border);
-  }
-  .compose__file {
-    @apply ml-2 text-xs;
-    color: var(--color-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-
-  .compose__head {
-    @apply px-5 pt-4 pb-3;
-    border-bottom: 1px dashed var(--color-border);
-  }
-  .compose__head p {
-    @apply m-0 py-0.5 text-sm;
-    color: var(--color-text);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .compose__k {
-    color: var(--color-muted);
-    display: inline-block;
-    min-width: 5rem;
-  }
-  .compose__v {
-    color: var(--color-text);
-  }
-
-  .compose__body {
-    @apply px-5 py-4 m-0 text-sm leading-relaxed whitespace-pre-wrap;
-    color: var(--color-text);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    background-color: transparent;
-  }
-
-  .compose__actions {
-    @apply flex flex-wrap gap-3 px-5 py-4;
-    border-top: 1px solid var(--color-border);
-    background-color: var(--color-bg);
-  }
-  .compose__hint {
-    @apply px-5 py-3 text-xs m-0;
-    color: var(--color-muted);
-    border-top: 1px dashed var(--color-border);
-    background-color: var(--color-bg);
-  }
-
-  /* Buttons (local, monospace flavor to match the panel) */
-  .btn {
-    @apply inline-flex items-center gap-2 px-3.5 py-2 rounded-md text-sm font-semibold;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    border: 1px solid transparent;
-    cursor: pointer;
-    text-decoration: none;
-    transition:
-      background-color 0.18s ease,
-      border-color 0.18s ease,
-      color 0.18s ease;
-  }
-  .btn--primary {
-    background: var(--color-accent);
-    color: white;
-  }
-  .btn--primary:hover {
-    background: var(--color-accent-hover);
-  }
-  .btn--ghost {
-    background: transparent;
-    color: var(--color-text);
-    border-color: var(--color-border);
-    position: relative;
-  }
-  .btn--ghost:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-  }
-  .btn__copy-check {
-    position: absolute;
-    left: 0.875rem;
-    opacity: 0;
-    color: #16a34a;
-    transition: opacity 0.2s ease;
-  }
-  .btn--ghost.is-copied .btn__copy-icon {
-    opacity: 0;
-  }
-  .btn--ghost.is-copied .btn__copy-check {
-    opacity: 1;
-  }
-  .btn--ghost.is-copied .btn__copy-text::after {
-    content: "  ✓ copied";
-    color: #16a34a;
-  }
-  .btn--ghost.is-copied .btn__copy-text {
-    /* swap original text via mask */
-    font-size: 0;
-  }
-  .btn--ghost.is-copied .btn__copy-text::after {
-    font-size: 0.875rem;
-  }
-
-  /* ── SIGN-OFF ────────────────────────────────────── */
-  .signoff {
-    @apply mt-12 pt-6;
-    border-top: 1px dashed var(--color-border);
-  }
-  .signoff__line {
-    @apply text-sm m-0 inline-flex items-center gap-1.5;
-    color: var(--color-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .signoff__sub {
-    @apply text-sm mt-2 m-0;
-    color: var(--color-text);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-
-  /* ── RESPONSIVE TIGHTEN ──────────────────────────── */
-  @media (max-width: 720px) {
-    .channel__main {
-      grid-template-columns: auto auto 1fr auto;
-      column-gap: 0.625rem;
-      padding-left: 0.5rem;
+    .rule-line {
+      flex: 1;
+      height: 1px;
+      background: var(--color-text);
+      opacity: 0.85;
     }
-    .channel__handle {
-      font-size: 0.8125rem;
+    .rule-tick {
+      width: 1px;
+      height: 8px;
+      background: var(--color-text);
+      opacity: 0.85;
     }
-  }
 
-  @media (prefers-reduced-motion: reduce) {
-    .status__dot--green {
-      animation: none;
+    .dateline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 8px;
+      margin: 0 0 0.6rem;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.04em;
     }
-    .channel__main:hover .channel__arrow {
+    .dl-issue {
+      color: var(--color-text);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .dl-sep {
+      opacity: 0.5;
+    }
+
+    .mast {
+      margin-bottom: 1.6rem;
+    }
+    .mast-title {
+      text-align: center;
+      margin: 0.8rem 0;
+      line-height: 1;
+      font-family: "Merriweather", Georgia, serif;
+    }
+    .mast-pre {
+      display: block;
+      font-family: ui-monospace, monospace;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 0.72rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.7rem;
+    }
+    .mast-main {
+      display: inline-block;
+      font-weight: 700;
+      font-style: italic;
+      font-size: clamp(2.4rem, 6.4vw, 4rem);
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+      line-height: 1.05;
+    }
+    .mast-by {
+      text-align: center;
+      margin: 0.4rem 0 0.5rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--color-muted);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* ─── Availability strip ─── */
+    .avail {
+      list-style: none;
+      margin: 0 0 0.6rem;
+      padding: 0.8rem 0;
+      border-top: 1px dashed var(--color-border);
+      border-bottom: 1px dashed var(--color-border);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px 16px;
+      font-family: ui-monospace, monospace;
+    }
+    @media (min-width: 720px) {
+      .avail {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .av {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .av-blip {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #16a34a;
+      display: inline-block;
+      animation: blip 1.8s infinite;
+      align-self: center;
+    }
+    @keyframes blip {
+      0% {
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5);
+      }
+      70% {
+        box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+      }
+    }
+    .av-k {
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      font-weight: 600;
+    }
+    .av-k::after {
+      content: ":";
+      opacity: 0.5;
+      margin-left: 1px;
+    }
+    .av-v {
+      font-size: 0.82rem;
+      color: var(--color-text);
+    }
+
+    /* ─── Block ─── */
+    .block {
+      margin: 2.5rem 0 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--color-border);
+    }
+    .block-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+    .block-head h2 {
+      font-family: "Merriweather", Georgia, serif;
+      font-style: italic;
+      font-weight: 700;
+      font-size: 1.5rem;
+      margin: 0;
+      color: var(--color-text);
+    }
+    .bh-mark {
+      color: var(--color-accent);
+      font-style: normal;
+      font-weight: 400;
+      opacity: 0.85;
+      margin-right: 0.2em;
+    }
+    .block-meta {
+      font-family: ui-monospace, monospace;
+      font-size: 0.74rem;
+      color: var(--color-muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ─── Entries (shared with index/projects) ─── */
+    .entries {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .entry {
+      border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+      position: relative;
+    }
+    .entry:first-child {
+      border-top: 0;
+    }
+    .entry-link {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 14px;
+      padding: 0.95rem 0.4rem;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.18s ease;
+      position: relative;
+    }
+    @media (min-width: 600px) {
+      .entry-link {
+        grid-template-columns: 90px 1fr;
+        gap: 22px;
+      }
+    }
+    .entry-link::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--color-accent);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+    .entry-link:hover {
+      background: var(--color-surface);
+    }
+    .entry-link:hover::before {
+      opacity: 1;
+    }
+
+    .e-gutter {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-family: ui-monospace, monospace;
+      padding-top: 4px;
+      align-items: flex-start;
+    }
+    .e-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+    .e-month {
+      font-size: 0.66rem;
+      color: var(--color-muted);
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .e-body {
+      min-width: 0;
+    }
+    .e-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .e-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0;
+      color: var(--color-text);
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .entry-link:hover .e-title {
+      color: var(--color-accent);
+    }
+    .ch-handle {
+      font-family: ui-monospace, monospace;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 0.82rem;
+      color: var(--color-muted);
+    }
+    .entry-link:hover .ch-handle {
+      color: var(--color-text);
+    }
+    .ch-pin {
+      font-family: ui-monospace, monospace;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+    }
+    .ch-arrow {
+      font-family: ui-monospace, monospace;
+      color: var(--color-muted);
+      flex-shrink: 0;
+      transition:
+        transform 0.18s ease,
+        color 0.18s ease;
+    }
+    .entry-link:hover .ch-arrow {
+      color: var(--color-accent);
+      transform: translateX(3px);
+    }
+    .e-desc {
+      margin: 0;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: var(--color-muted);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg);
+      color: var(--color-muted);
+      font-family: ui-monospace, monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border-radius: 3px;
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+    }
+    .copy-btn:hover {
+      color: var(--color-text);
+      border-color: var(--color-text);
+    }
+    .copy-btn .copy-check {
+      display: none;
+      color: #10b981;
+    }
+    .copy-btn.is-copied .copy-icon {
+      display: none;
+    }
+    .copy-btn.is-copied .copy-check {
+      display: inline-flex;
+    }
+    .copy-btn.is-copied .copy-text::before {
+      content: "copied";
+    }
+    .copy-btn.is-copied .copy-text {
+      color: #10b981;
+    }
+    .copy-btn.is-copied .copy-text :global(*) {
+      display: none;
+    }
+    /* Override 'copy' label when copied */
+    .copy-btn.is-copied {
+      color: #10b981;
+      border-color: #10b981;
+    }
+    .copy-btn.is-copied .copy-text {
+      display: inline-flex;
+    }
+    .copy-text {
+      display: inline-flex;
+    }
+
+    /* ─── KV (topics list) ─── */
+    .kv {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      font-family: ui-monospace, monospace;
+    }
+    .kv-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 16px;
+      padding: 0.7rem 0.2rem;
+      border-bottom: 1px dashed var(--color-border);
+      align-items: baseline;
+    }
+    .kv-row:last-child {
+      border-bottom: 0;
+    }
+    .kv dt {
+      margin: 0;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      font-weight: 600;
+    }
+    .kv dd {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--color-text);
+      line-height: 1.55;
+    }
+
+    /* ─── Letter (compose) ─── */
+    .letter {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      padding: 1.25rem 1.4rem;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    .letter-head {
+      padding-bottom: 0.7rem;
+      margin-bottom: 0.9rem;
+      border-bottom: 1px dashed var(--color-border);
+    }
+    .letter-head p {
+      margin: 0;
+      padding: 2px 0;
+      font-size: 0.82rem;
+      color: var(--color-text);
+    }
+    .lh-k {
+      color: var(--color-muted);
+      margin-right: 6px;
+    }
+    .lh-v {
+      color: var(--color-text);
+    }
+    .letter-body {
+      margin: 0 0 1rem;
+      padding: 0;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: var(--color-text);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background: transparent;
+      border: 0;
+    }
+    .letter-sig {
+      display: inline;
+      font-family: "Merriweather", Georgia, serif;
+      font-style: italic;
+      color: var(--color-text);
+    }
+    .letter-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding-top: 0.6rem;
+      border-top: 1px dashed var(--color-border);
+    }
+    .act {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--color-text);
+      text-decoration: none;
+      border: 1px solid var(--color-border);
+      background: transparent;
+      cursor: pointer;
+      border-radius: 3px;
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background 0.15s ease;
+    }
+    .act:hover {
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+    .act-primary {
+      color: var(--color-bg);
+      background: var(--color-text);
+      border-color: var(--color-text);
+    }
+    .act-primary:hover {
+      background: var(--color-accent);
+      color: var(--color-bg);
+      border-color: var(--color-accent);
+    }
+    .letter-actions .copy-btn {
+      position: static;
       transform: none;
     }
-  }
-</style>
+    .letter-hint {
+      margin: 0.9rem 0 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.74rem;
+      color: var(--color-muted);
+      line-height: 1.6;
+    }
+    .hint-mark {
+      color: var(--color-accent);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.62rem;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    /* ─── Sign-off ─── */
+    .signoff {
+      margin-top: 3rem;
+      text-align: center;
+      padding: 2rem 0 0;
+      border-top: 1px solid var(--color-border);
+    }
+    .so-line {
+      margin: 0 0 0.4rem;
+      font-family: "Merriweather", Georgia, serif;
+      font-size: 1.4rem;
+      font-style: italic;
+      color: var(--color-text);
+    }
+    .so-name {
+      margin: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--color-muted);
+      letter-spacing: 0.06em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .av-blip {
+        animation: none !important;
+      }
+    }
+  </style>
+</BaseLayout>
