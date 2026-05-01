@@ -1,33 +1,54 @@
 ---
-import { Moon, Sun, Search, Menu, X } from "@lucide/astro";
+import { Moon, Sun, Search, Menu, X, Terminal } from "@lucide/astro";
 import "@styles/global.css";
 
 const pathname = Astro.url.pathname;
 const navLinks = [
-  { href: "/blog", label: "Blog" },
-  { href: "/projects", label: "Projects" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/blog", label: "blog" },
+  { href: "/projects", label: "projects" },
+  { href: "/cursed-knowledge", label: "cursed" },
+  { href: "/about", label: "about" },
+  { href: "/contact", label: "contact" },
 ];
+
+// Build the breadcrumb path segments shown in the logo prompt.
+// "/" → ["~"]; "/blog" → ["~", "blog"]; "/blog/foo/bar" → ["~", "blog", "foo", "bar"]
+const segments = pathname
+  .replace(/\/+$/, "")
+  .split("/")
+  .filter(Boolean);
+const pathParts = segments.length === 0 ? ["~"] : ["~", ...segments];
 ---
 
-<header id="site-header" class="site-header fixed z-50 transition-all duration-500">
+<header id="site-header" class="site-header fixed z-50 transition-all duration-300">
   <!-- Scroll Progress bar -->
   <div class="scroll-progress" id="scroll-progress"></div>
 
-  <div class="header-content mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-    <!-- Logo -->
-    <a href="/" class="logo group flex items-center gap-2 no-underline">
-      <span class="logo-monogram">TM</span>
-      <span class="logo-text">Tapan Meena</span>
+  <div class="header-content mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5">
+    <!-- Logo: terminal-style prompt with current path -->
+    <a href="/" class="logo group" aria-label="Home">
+      <Terminal size={14} class="logo-icon" />
+      <span class="logo-host">tm</span>
+      <span class="logo-sep">@</span>
+      <span class="logo-domain">tapanmeena.com</span>
+      {
+        pathParts.map((part, i) => (
+          <>
+            <span class="logo-slash">/</span>
+            <span class:list={["logo-seg", { "logo-seg--last": i === pathParts.length - 1 }]}>{part}</span>
+          </>
+        ))
+      }
+      <span class="logo-caret">▍</span>
     </a>
 
     <!-- Desktop nav -->
-    <nav class="nav-desktop hidden md:flex gap-1">
+    <nav class="nav-desktop hidden md:flex items-center gap-1" aria-label="Primary">
       {
         navLinks.map((link) => (
           <a href={link.href} class:list={["nav-link", { active: pathname.startsWith(link.href) }]}>
-            {link.label}
+            <span class="nav-link__slash">/</span>
+            <span class="nav-link__label">{link.label}</span>
           </a>
         ))
       }
@@ -37,11 +58,10 @@ const navLinks = [
     <div class="flex items-center gap-2">
       <!-- Search button -->
       <button id="search-btn" aria-label="Search" class="search-btn">
-        <Search size={16} />
-        <span class="search-btn-text">Search</span>
+        <Search size={14} />
+        <span class="search-btn-text">search</span>
         <kbd class="search-btn-kbd">
-          <span class="search-kbd-modifier"></span>
-          K
+          <span class="search-kbd-modifier"></span>K
         </kbd>
       </button>
 
@@ -49,27 +69,28 @@ const navLinks = [
       <button id="theme-toggle" aria-label="Toggle theme" class="icon-btn theme-toggle">
         <Sun
           class="absolute transition-all duration-300 text-amber-500 opacity-100 rotate-0 scale-100 dark:opacity-0 dark:rotate-90 dark:scale-75"
-          size={18}
+          size={16}
         />
         <Moon
           class="absolute transition-all duration-300 text-indigo-300 opacity-0 -rotate-90 scale-75 dark:opacity-100 dark:rotate-0 dark:scale-100"
-          size={18}
+          size={16}
         />
       </button>
 
       <!-- Mobile Menu Toggle -->
       <button id="menu-toggle" aria-label="Toggle menu" aria-expanded="false" class="icon-btn md:hidden!">
-        <Menu size={20} class="menu-open-icon" />
-        <X size={20} class="menu-close-icon" />
+        <Menu size={18} class="menu-open-icon" />
+        <X size={18} class="menu-close-icon" />
       </button>
     </div>
   </div>
 
   <!-- Mobile nav -->
-  <nav id="mobile-nav" class="mobile-nav md:hidden!">
+  <nav id="mobile-nav" class="mobile-nav md:hidden!" aria-label="Mobile">
     {
       navLinks.map((link) => (
         <a href={link.href} class:list={["mobile-nav-link", { active: pathname.startsWith(link.href) }]}>
+          <span class="mobile-nav-link__slash">/</span>
           {link.label}
         </a>
       ))
@@ -89,12 +110,8 @@ const navLinks = [
 
   const getScrollThreshold = () => (window.innerWidth < 600 ? 32 : 64);
 
-  // Update scroll progress and header state
   const onScroll = () => {
-    // Header glass effect
     header.classList.toggle("is-scrolled", window.scrollY > getScrollThreshold());
-
-    // Scroll progress bar
     const scrollTop = window.scrollY;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
@@ -104,13 +121,11 @@ const navLinks = [
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll, { passive: true });
 
-  // Theme toggle
   document.getElementById("theme-toggle").addEventListener("click", () => {
     const isDark = document.documentElement.classList.toggle("dark");
     localStorage.setItem("theme", isDark ? "dark" : "light");
   });
 
-  // Mobile menu helper function
   const openMobileMenu = () => {
     header.classList.add("menu-open");
     mobileNav.classList.add("menu-open");
@@ -127,20 +142,14 @@ const navLinks = [
     menuToggle.setAttribute("aria-expanded", "false");
   };
 
-  // Mobile menu toggle
   menuToggle.addEventListener("click", () => {
     const isOpen = mobileNav.classList.contains("menu-open");
-    if (isOpen) {
-      closeMobileMenu();
-    } else {
-      openMobileMenu();
-    }
+    if (isOpen) closeMobileMenu();
+    else openMobileMenu();
   });
 
-  // Close mobile menu on backdrop click
   menuBackdrop.addEventListener("click", closeMobileMenu);
 
-  // Close mobile menu on link click
   mobileNav.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", closeMobileMenu);
   });
@@ -149,38 +158,34 @@ const navLinks = [
 <style>
   @reference "tailwindcss";
 
-  /* Reduced motion preference */
   @media (prefers-reduced-motion: reduce) {
     .site-header,
     .scroll-progress,
     .icon-btn,
-    .logo-monogram,
+    .logo-caret,
     .menu-open-icon,
     .menu-close-icon {
       transition: none !important;
+      animation: none !important;
     }
   }
 
-  /* Header base */
+  /* ── HEADER BASE ─────────────────────────────────── */
   .site-header {
-    @apply top-0 left-1/2 -translate-x-1/2 w-full bg-transparent overflow-hidden;
+    @apply top-0 left-1/2 -translate-x-1/2 w-full overflow-hidden;
+    background-color: transparent;
   }
 
-  /* Header background when mobile menu is open */
   .site-header.menu-open {
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-  }
-
-  :global(.dark) .site-header.menu-open {
-    background-color: rgba(30, 30, 30, 0.95);
+    background-color: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
   }
 
   /* Scroll progress bar */
   .scroll-progress {
-    @apply absolute bottom-0 left-0 h-0.5;
+    @apply absolute bottom-0 left-0 h-px;
     width: 0%;
-    background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+    background: var(--color-accent);
     transition: width 0.1s linear;
     z-index: 10;
   }
@@ -188,7 +193,6 @@ const navLinks = [
   .site-header:not(.is-scrolled) .scroll-progress {
     @apply opacity-0;
   }
-
   .site-header.is-scrolled .scroll-progress {
     @apply opacity-100;
     transition:
@@ -196,269 +200,267 @@ const navLinks = [
       opacity 0.3s ease;
   }
 
-  /* Glass header on scroll */
+  /* On scroll: stay edge-to-edge but adopt a subtle bg + bottom border */
   .site-header.is-scrolled {
-    @apply top-4
-        w-[calc(100%-32px)]
-        md:max-w-6xl
-        rounded-[18px]
-        shadow-sm
-        backdrop-blur
-        backdrop-saturate-150
-        transition-all;
-
-    background-color: var(--color-surface);
-    @apply bg-black/25 dark:bg-(--color-surface)/20;
+    background-color: color-mix(in srgb, var(--color-bg) 85%, transparent);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border-bottom: 1px solid var(--color-border);
   }
 
-  /* LOGO */
+  /* ── LOGO (terminal prompt) ──────────────────────── */
   .logo {
-    color: var(--color-text);
-  }
-
-  .logo-monogram {
-    @apply flex h-8 w-8 items-center justify-center
-      rounded-lg
-      bg-linear-to-br from-blue-500 to-sky-700
-      text-xs font-bold text-white;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
-  }
-
-  .logo:hover .logo-monogram {
-    transform: scale(1.08);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-  }
-
-  .logo-text {
-    @apply text-lg font-bold hidden sm:inline;
-    color: var(--color-text);
+    @apply inline-flex items-center gap-1.5 text-sm no-underline;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     transition: color 0.2s ease;
   }
-
-  .logo:hover .logo-text {
+  .logo-icon {
     color: var(--color-accent);
+    flex-shrink: 0;
   }
-
-  /* Desktop nav */
-  .nav-link {
-    @apply relative px-3 py-2 text-sm font-medium
-      rounded-lg;
+  .logo-host {
     color: var(--color-text);
-    transition:
-      color 0.2s ease,
-      background-color 0.2s ease;
-  }
-
-  .nav-link:hover {
-    color: var(--color-accent);
-    background-color: var(--color-surface);
-  }
-
-  .nav-link.active {
-    color: var(--color-accent);
     font-weight: 600;
   }
-
-  .nav-link::after {
-    content: "";
-    @apply absolute bottom-0 left-1/2
-      h-0.5 w-0 rounded-full
-      bg-blue-500 dark:bg-blue-400;
-    transform: translateX(-50%);
-    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .nav-link.active::after {
-    @apply w-4;
-  }
-
-  .nav-link:hover::after {
-    @apply w-3;
-  }
-
-  /* Icon buttons with enhanced interactions */
-  .icon-btn {
-    @apply relative flex h-9 w-9 items-center justify-center
-        rounded-full
-        border border-gray-300 dark:border-gray-600
-        text-gray-600 dark:text-gray-300
-        backdrop-blur-sm
-        overflow-hidden;
-    transition:
-      transform 0.2s ease,
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
-  }
-
-  .icon-btn:hover {
-    transform: scale(1.08);
-    border-color: var(--color-accent);
-    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
-  }
-
-  .icon-btn:active {
-    transform: scale(0.95);
-  }
-
-  /* Search button - enhanced style */
-  .search-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    height: 2.25rem;
-    padding: 0 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
+  .logo-sep,
+  .logo-domain,
+  .logo-slash {
     color: var(--color-muted);
-    backdrop-filter: blue(8px);
-    cursor: pointer;
-    transition: all 0.2s ease;
   }
-
-  .search-btn:hover {
-    border-color: var(--color-accent);
-    background: var(--color-bg);
+  .logo-domain {
+    @apply hidden sm:inline;
+  }
+  .logo-slash {
+    @apply hidden sm:inline;
+    opacity: 0.55;
+  }
+  .logo-seg {
+    color: var(--color-muted);
+    @apply hidden sm:inline;
+  }
+  /* Always show the deepest segment, even on mobile, so users see "where they are" */
+  .logo-seg--last {
+    @apply inline;
     color: var(--color-text);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    font-weight: 600;
+    max-width: 14ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .logo-caret {
+    color: var(--color-accent);
+    animation: blink 1.05s steps(1) infinite;
+    margin-left: -2px;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .logo:hover .logo-host {
+    color: var(--color-accent);
+  }
+  .logo:hover .logo-slash {
+    color: var(--color-accent);
+    opacity: 1;
   }
 
-  .search-btn:active {
-    transform: scale(0.98);
+  /* ── DESKTOP NAV ─────────────────────────────────── */
+  .nav-link {
+    @apply relative inline-flex items-center px-2.5 py-1.5 text-sm no-underline rounded-md;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    transition:
+      color 0.18s ease,
+      background-color 0.18s ease;
   }
-
-  .search-btn-text {
-    font-size: 0.875rem;
+  .nav-link__slash {
+    color: var(--color-muted);
+    opacity: 0.55;
+    margin-right: 1px;
+  }
+  .nav-link__label {
     font-weight: 500;
   }
+  .nav-link:hover {
+    color: var(--color-text);
+    background-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+  .nav-link:hover .nav-link__slash {
+    color: var(--color-accent);
+    opacity: 1;
+  }
+  .nav-link.active {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .nav-link.active .nav-link__slash {
+    color: var(--color-accent);
+    opacity: 1;
+  }
+  .nav-link.active::after {
+    content: "";
+    @apply absolute left-2.5 right-2.5 -bottom-0.5 h-px;
+    background: var(--color-accent);
+  }
 
+  /* ── ICON BUTTONS ────────────────────────────────── */
+  .icon-btn {
+    @apply relative flex h-8 w-8 items-center justify-center rounded-md overflow-hidden;
+    border: 1px solid var(--color-border);
+    color: var(--color-muted);
+    background-color: transparent;
+    transition:
+      border-color 0.18s ease,
+      color 0.18s ease,
+      background-color 0.18s ease;
+  }
+  .icon-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  }
+
+  /* ── SEARCH BUTTON ───────────────────────────────── */
+  .search-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2rem;
+    padding: 0 0.625rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    cursor: pointer;
+    transition:
+      border-color 0.18s ease,
+      color 0.18s ease,
+      background-color 0.18s ease;
+  }
+  .search-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+  .search-btn-text {
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
   @media (max-width: 640px) {
     .search-btn-text {
       display: none;
     }
   }
-
   .search-btn-kbd {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.125rem;
-    padding: 0.125rem 0.375rem;
+    padding: 0.0625rem 0.3125rem;
     border-radius: 0.25rem;
-    background: var(--color-bg);
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     font-size: 10px;
     font-weight: 600;
     color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-
   @media (max-width: 640px) {
     .search-btn-kbd {
       display: none;
     }
   }
-
   .search-kbd-modifier::after {
     content: "Ctrl ";
   }
-
   @supports (-webkit-touch-callout: none) {
     .search-kbd-modifier::after {
       content: "⌘";
     }
   }
-
   @media (pointer: coarse) {
     .search-btn-kbd {
       display: none;
     }
   }
 
-  /* Mobile menu button icons with rotation animation */
+  /* ── MOBILE MENU ICON ────────────────────────────── */
   .menu-open-icon,
   .menu-close-icon {
     transition:
       transform 0.3s ease,
       opacity 0.3s ease;
   }
-
   .menu-open-icon {
     opacity: 1;
     transform: rotate(0deg);
   }
-
   .menu-close-icon {
     position: absolute;
     opacity: 0;
     transform: rotate(-90deg);
   }
-
   .menu-open .menu-open-icon {
     opacity: 0;
     transform: rotate(90deg);
   }
-
   .menu-open .menu-close-icon {
     opacity: 1;
     transform: rotate(0deg);
   }
 
-  /* Mobile nav */
+  /* ── MOBILE NAV ──────────────────────────────────── */
   .mobile-nav {
-    @apply max-h-0 overflow-hidden
-      px-4;
-    background-color: rgba(255, 255, 255, 0.95);
+    @apply max-h-0 overflow-hidden px-4;
+    background-color: var(--color-bg);
     transition:
       max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
       padding 0.3s ease;
   }
-
-  :global(.dark) .mobile-nav {
-    background-color: rgba(30, 30, 30, 0.95);
-  }
-
   .mobile-nav.menu-open {
-    @apply max-h-80 pb-4;
+    @apply max-h-80 pb-4 pt-2;
   }
-
   .mobile-nav-link {
-    @apply block py-3 px-4
-      text-base font-medium
-      text-gray-800 dark:text-gray-200
-      border-b border-gray-200 dark:border-white/10
-      rounded-lg;
+    @apply flex items-center gap-2 py-3 px-3 text-sm rounded-md no-underline;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    border-bottom: 1px dashed var(--color-border);
     transition:
-      color 0.2s ease,
-      background-color 0.2s ease,
-      transform 0.2s ease;
+      color 0.18s ease,
+      background-color 0.18s ease;
   }
-
+  .mobile-nav-link__slash {
+    color: var(--color-accent);
+    opacity: 0.6;
+  }
   .mobile-nav-link:hover {
-    @apply text-gray-900 dark:text-white
-      bg-gray-100 dark:bg-white/10;
-    transform: translateX(4px);
+    color: var(--color-text);
+    background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
   }
-
+  .mobile-nav-link:hover .mobile-nav-link__slash {
+    opacity: 1;
+  }
   .mobile-nav-link:last-child {
-    @apply border-b-0;
+    border-bottom: none;
   }
-
   .mobile-nav-link.active {
-    @apply text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10;
+    color: var(--color-text);
+    font-weight: 600;
+    background-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+  .mobile-nav-link.active .mobile-nav-link__slash {
+    opacity: 1;
   }
 
-  /* Mobile menu backdrop */
+  /* Mobile backdrop */
   .menu-backdrop {
-    @apply fixed inset-0 z-40
-      bg-black/0
-      pointer-events-none
-      md:hidden;
+    @apply fixed inset-0 z-40 bg-black/0 pointer-events-none md:hidden;
     transition: background-color 0.3s ease;
   }
-
   .menu-backdrop.visible {
-    @apply bg-black/30
-      pointer-events-auto;
+    @apply bg-black/30 pointer-events-auto;
   }
 </style>

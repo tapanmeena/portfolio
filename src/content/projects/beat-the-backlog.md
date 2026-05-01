@@ -9,7 +9,7 @@ techStack:
 category: "Web Apps"
 repoUrl: "https://github.com/tapanmeena/BeatTheBacklog"
 startDate: 2025-12-31
-status: "in-progress"
+status: "on-hold"
 featured: true
 draft: false
 ---

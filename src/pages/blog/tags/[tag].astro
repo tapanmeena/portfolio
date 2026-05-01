@@ -25,7 +25,7 @@ const { tag } = Astro.params;
 const { posts } = Astro.props;
 
 // Get the original tag label from the first post
-const tagLabel = posts?.[0]?.data?.tags?.find((t) => normalizeTag(t) === tag) ?? tag;
+const tagLabel = posts?.[0]?.data?.tags?.find((t: string) => normalizeTag(t) === tag) ?? tag;
 ---
 
 <BaseLayout pageTitle={`${tagLabel} - Tag`}>

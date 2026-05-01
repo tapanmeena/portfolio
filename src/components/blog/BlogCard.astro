@@ -15,7 +15,7 @@ interface Props {
 const { post } = Astro.props;
 const { title, description, publishedAt, updatedAt, category, tags, coverImage, author } = post.data;
 
-const readTime = calculateReadTime(post.body);
+const readTime = calculateReadTime(post.body ?? "");
 const imageSrc = coverImage as ImageMetadata | undefined;
 const authorData = getAuthorByName(author);
 const wasUpdated = updatedAt && updatedAt > publishedAt;
@@ -28,7 +28,7 @@ const formattedDate = publishedAt.toLocaleDateString("en-US", {
 ---
 
 <article class="blog-card" data-post-category={normalizeCategory(category)}>
-  <a href={`/blog/${post.slug}`} class="card-link">
+  <a href={`/blog/${post.id}`} class="card-link">
     <div class="card-image">
       {
         imageSrc ? (

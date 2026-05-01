@@ -17,10 +17,10 @@ export interface SearchItem {
 export function blogToSearchItem(post: CollectionEntry<"blog">): SearchItem {
   return {
     type: "blog",
-    slug: post.slug,
+    slug: post.id,
     title: post.data.title,
     description: post.data.description,
-    url: `/blog/${post.slug}`,
+    url: `/blog/${post.id}`,
     tags: post.data.tags,
     category: post.data.category,
   };
@@ -34,10 +34,10 @@ export function projectToSearchItem(
 ): SearchItem {
   return {
     type: "project",
-    slug: project.slug,
+    slug: project.id,
     title: project.data.title,
     description: project.data.description,
-    url: `/projects/${project.slug}`,
+    url: `/projects/${project.id}`,
     techStack: project.data.techStack,
     category: project.data.category,
   };

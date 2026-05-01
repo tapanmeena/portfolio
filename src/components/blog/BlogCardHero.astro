@@ -14,7 +14,7 @@ interface Props {
 const { post } = Astro.props;
 const { title, description, publishedAt, category, author, coverImage } = post.data;
 
-const readTime = calculateReadTime(post.body);
+const readTime = calculateReadTime(post.body ?? "");
 const authorData = getAuthorByName(author);
 const imageSrc = coverImage as ImageMetadata | undefined;
 
@@ -26,7 +26,7 @@ const formattedDate = publishedAt.toLocaleDateString("en-US", {
 ---
 
 <article class="hero-card">
-  <a href={`/blog/${post.slug}`} class="hero-link">
+  <a href={`/blog/${post.id}`} class="hero-link">
     <div class="hero-image-wrapper">
       {
         imageSrc ? (

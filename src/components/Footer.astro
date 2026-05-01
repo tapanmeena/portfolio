@@ -1,103 +1,129 @@
 ---
-import { Github, Twitter, Linkedin, Rss, ArrowUp, Mail } from "@lucide/astro";
+import { Github, Twitter, Linkedin, Rss, ArrowUp, Mail, MapPin } from "@lucide/astro";
 import { authors } from "@data/authors";
 
 const currentYear = new Date().getFullYear();
 const author = authors["tapan-meena"];
+const buildDate = new Date().toISOString().slice(0, 10);
 
-const quickLinks = [
-  { href: "/blog", label: "Blog" },
-  { href: "/projects", label: "Projects" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+const sections = [
+  {
+    label: "browse",
+    links: [
+      { href: "/blog", label: "Blog" },
+      { href: "/projects", label: "Projects" },
+      { href: "/cursed-knowledge", label: "Cursed Knowledge" },
+    ],
+  },
+  {
+    label: "more",
+    links: [
+      { href: "/about", label: "About" },
+      { href: "/contact", label: "Contact" },
+      { href: "/rss.xml", label: "RSS feed" },
+    ],
+  },
 ];
 
 const socialLinks = [
-  { href: author.social?.github, label: "GitHub", icon: Github },
-  { href: author.social?.twitter, label: "Twitter", icon: Twitter },
-  { href: author.social?.linkedin, label: "LinkedIn", icon: Linkedin },
-  {
-    href: author.email ? `mailto:${author.email}` : undefined,
-    label: "Email",
-    icon: Mail,
-  },
-  { href: "/rss.xml", label: "RSS Feed", icon: Rss },
-].filter((link) => link.href);
+  { href: author.social?.github, label: "GitHub", icon: Github, handle: "@tapanmeena" },
+  { href: author.social?.linkedin, label: "LinkedIn", icon: Linkedin, handle: "in/tapanmeena" },
+  { href: author.social?.twitter, label: "Twitter", icon: Twitter, handle: "@tapanmeena3" },
+  { href: author.email ? `mailto:${author.email}` : undefined, label: "Email", icon: Mail, handle: author.email },
+  { href: "/rss.xml", label: "RSS", icon: Rss, handle: "/rss.xml" },
+].filter((l) => l.href);
 ---
 
 <footer class="footer">
-  <div class="footer-container">
-    <!-- Main Footer Content -->
-    <div class="footer-grid">
-      <!-- Brand Column -->
-      <div class="footer-brand">
-        <a href="/" class="footer-logo">
-          <span class="footer-monogram">TM</span>
-          <span class="footer-name">{author.name}</span>
+  <div class="footer__inner">
+    <!-- Top: brand + sitemap + connect -->
+    <div class="footer__grid">
+      <!-- Brand -->
+      <section class="footer__brand">
+        <a href="/" class="brand__logo" aria-label="Home">
+          <span class="brand__prompt">tm@blog</span>
+          <span class="brand__sep">:</span>
+          <span class="brand__path">~</span>
+          <span class="brand__dollar">$</span>
+          <span class="brand__cmd">whoami</span>
         </a>
-        <p class="footer-tagline">Software engineer sharing thoughts on web development, cloud, and developer tools.</p>
-      </div>
+        <p class="brand__bio">
+          {author.name} — {author.title}. Building scalable backends and developer tools, writing about the parts that didn't go to plan.
+        </p>
+        <p class="brand__meta">
+          <MapPin size={12} />
+          <span>{author.location}</span>
+        </p>
+      </section>
 
-      <!-- Quick Links Column -->
-      <div class="footer-section">
-        <h3 class="footer-heading">Quick Links</h3>
-        <nav class="footer-links">
+      <!-- Sitemap columns -->
+      {
+        sections.map((section) => (
+          <section class="footer__section">
+            <h3 class="footer__heading">
+              <span class="footer__heading-mark">§</span> {section.label}
+            </h3>
+            <ul class="footer__list">
+              {section.links.map((link) => (
+                <li>
+                  <a href={link.href} class="footer__link">
+                    <span class="footer__link-slash">/</span>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+
+      <!-- Connect -->
+      <section class="footer__section">
+        <h3 class="footer__heading">
+          <span class="footer__heading-mark">§</span> connect
+        </h3>
+        <ul class="footer__contacts">
           {
-            quickLinks.map((link) => (
-              <a href={link.href} class="footer-link">
-                {link.label}
-              </a>
+            socialLinks.map((s) => (
+              <li>
+                <a
+                  href={s.href}
+                  class="footer__contact"
+                  aria-label={s.label}
+                  target={s.href?.startsWith("http") ? "_blank" : undefined}
+                  rel={s.href?.startsWith("http") ? "noopener noreferrer" : undefined}
+                >
+                  <s.icon size={14} class="footer__contact-icon" />
+                  <span class="footer__contact-handle">{s.handle}</span>
+                </a>
+              </li>
             ))
           }
-        </nav>
-      </div>
-
-      <!-- Connect Column -->
-      <div class="footer-section">
-        <h3 class="footer-heading">Get in Touch</h3>
-        <p class="footer-connect-text">Feel free to reach out for collaborations or just a friendly chat.</p>
-        <a href="/contact" class="footer-contact-btn">
-          <Mail size={16} />
-          Contact Me
-        </a>
-      </div>
-
-      <!-- Social Column -->
-      <div class="footer-section">
-        <h3 class="footer-heading">Follow</h3>
-        <div class="footer-social">
-          {
-            socialLinks.map((link) => (
-              <a
-                href={link.href}
-                class="social-link"
-                aria-label={link.label}
-                target={link.href?.startsWith("http") ? "_blank" : undefined}
-                rel={link.href?.startsWith("http") ? "noopener noreferrer" : undefined}
-              >
-                <link.icon size={20} />
-              </a>
-            ))
-          }
-        </div>
-      </div>
+        </ul>
+      </section>
     </div>
 
-    <!-- Bottom Bar -->
-    <div class="footer-bottom">
-      <p class="footer-copyright">
-        © {currentYear}
-        {author.name}. All rights reserved.
-      </p>
-      <button id="back-to-top" class="back-to-top" aria-label="Back to top">
-        <ArrowUp size={18} />
+    <!-- Status line -->
+    <div class="footer__status" aria-hidden="true">
+      <span class="status__cell">
+        <span class="status__dot"></span>
+        live
+      </span>
+      <span class="status__cell">build:{buildDate}</span>
+      <span class="status__cell">node:20</span>
+      <span class="status__cell status__cell--grow">
+        crafted in vim, deployed on a friday — © {currentYear}
+        {author.name}
+      </span>
+      <button id="back-to-top" class="status__top" aria-label="Back to top">
+        <ArrowUp size={12} /> top
       </button>
     </div>
   </div>
 </footer>
 
 <script is:inline>
-  document.getElementById("back-to-top").addEventListener("click", () => {
+  document.getElementById("back-to-top")?.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 </script>
@@ -106,124 +132,175 @@ const socialLinks = [
   @reference "tailwindcss";
 
   .footer {
-    @apply mt-auto
-        border-t border-(--color-border)
-        bg-(--color-surface);
+    @apply mt-auto;
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-bg);
   }
 
-  .footer-container {
-    @apply mx-auto max-w-6xl px-6 py-12;
+  .footer__inner {
+    @apply mx-auto max-w-6xl px-4 pt-12 pb-3;
   }
 
-  .footer-grid {
-    @apply grid gap-8
-        grid-cols-1
-        sm:grid-cols-2
-        lg:grid-cols-4;
+  /* ── GRID ────────────────────────────────────────── */
+  .footer__grid {
+    @apply grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1.4fr];
   }
 
-  /* Brand */
-  .footer-brand {
-    @apply sm:col-span-2 lg:col-span-1;
+  /* ── BRAND ───────────────────────────────────────── */
+  .footer__brand {
+    @apply flex flex-col gap-3;
+  }
+  .brand__logo {
+    @apply inline-flex flex-wrap items-center gap-1.5 text-sm no-underline;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--color-muted);
+  }
+  .brand__prompt {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+  .brand__sep,
+  .brand__dollar {
+    color: var(--color-muted);
+  }
+  .brand__path {
+    color: var(--color-accent);
+  }
+  .brand__cmd {
+    color: var(--color-text);
+  }
+  .brand__logo:hover .brand__cmd {
+    color: var(--color-accent);
+  }
+  .brand__bio {
+    @apply text-sm leading-relaxed max-w-md m-0;
+    color: var(--color-muted);
+  }
+  .brand__meta {
+    @apply inline-flex items-center gap-1.5 text-xs m-0 mt-1;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
-  .footer-logo {
-    @apply flex items-center gap-2 no-underline mb-3;
-  }
-
-  .footer-monogram {
-    @apply flex h-8 w-8 items-center justify-center
-        rounded-lg
-        bg-linear-to-br from-blue-500 to-sky-700
-        text-xs font-bold text-white;
-  }
-
-  .footer-name {
-    @apply text-lg font-bold text-(--color-text);
-  }
-
-  .footer-tagline {
-    @apply text-sm text-(--color-muted) leading-relaxed;
-  }
-
-  /* Sections */
-  .footer-section {
+  /* ── SECTIONS ────────────────────────────────────── */
+  .footer__section {
     @apply flex flex-col;
   }
-
-  .footer-heading {
-    @apply text-sm font-semibold uppercase tracking-wider
-        text-(--color-text)
-        mb-4;
+  .footer__heading {
+    @apply text-xs uppercase m-0 mb-4 pb-3;
+    color: var(--color-text);
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    border-bottom: 1px dashed var(--color-border);
+  }
+  .footer__heading-mark {
+    color: var(--color-accent);
+    margin-right: 4px;
   }
 
-  .footer-links {
-    @apply flex flex-col gap-2;
+  .footer__list {
+    @apply list-none p-0 m-0 flex flex-col gap-2;
+  }
+  .footer__link {
+    @apply inline-flex items-center gap-1 text-sm no-underline;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    transition: color 0.18s ease;
+  }
+  .footer__link-slash {
+    color: var(--color-accent);
+    opacity: 0.55;
+    transition: opacity 0.18s ease;
+  }
+  .footer__link:hover {
+    color: var(--color-accent);
+  }
+  .footer__link:hover .footer__link-slash {
+    opacity: 1;
   }
 
-  .footer-link {
-    @apply text-sm text-(--color-muted)
-        no-underline
-        transition-colors
-        hover:text-(--color-text);
+  /* ── CONTACTS ────────────────────────────────────── */
+  .footer__contacts {
+    @apply list-none p-0 m-0 flex flex-col gap-2;
+  }
+  .footer__contact {
+    @apply inline-flex items-center gap-2 text-sm no-underline;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    transition: color 0.18s ease;
+  }
+  .footer__contact-icon {
+    color: var(--color-accent);
+    opacity: 0.7;
+    transition: opacity 0.18s ease;
+  }
+  .footer__contact:hover {
+    color: var(--color-accent);
+  }
+  .footer__contact:hover .footer__contact-icon {
+    opacity: 1;
+  }
+  .footer__contact-handle {
+    word-break: break-all;
   }
 
-  /* Connect Section */
-  .footer-connect-text {
-    @apply text-sm text-(--color-muted) mb-3 leading-relaxed;
+  /* ── STATUS LINE ────────────────────────────────── */
+  .footer__status {
+    @apply mt-12 pt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px];
+    border-top: 1px solid var(--color-border);
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .status__cell {
+    @apply inline-flex items-center gap-1.5;
+  }
+  .status__cell--grow {
+    @apply ml-auto;
+    color: var(--color-muted);
+    opacity: 0.85;
+  }
+  .status__dot {
+    @apply inline-block h-1.5 w-1.5 rounded-full;
+    background: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+    animation: pulse-status 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse-status {
+    0%,
+    100% {
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+    }
+    50% {
+      box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.05);
+    }
+  }
+  .status__top {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded;
+    border: 1px solid var(--color-border);
+    color: var(--color-muted);
+    background: transparent;
+    cursor: pointer;
+    transition:
+      border-color 0.18s ease,
+      color 0.18s ease;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+  }
+  .status__top:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
   }
 
-  .footer-contact-btn {
-    @apply inline-flex items-center gap-2
-        px-4 py-2
-        text-sm font-medium
-        text-(--color-text)
-        bg-(--color-bg)
-        border border-(--color-border)
-        rounded-lg
-        no-underline
-        transition
-        hover:border-(--color-accent)
-        hover:text-(--color-accent);
+  @media (max-width: 640px) {
+    .status__cell--grow {
+      @apply ml-0 w-full order-last;
+    }
   }
 
-  /* Social */
-  .footer-social {
-    @apply flex gap-3;
-  }
-
-  .social-link {
-    @apply flex h-10 w-10 items-center justify-center
-        rounded-full
-        border border-(--color-border)
-        text-(--color-muted)
-        transition
-        hover:text-(--color-text)
-        hover:border-(--color-muted)
-        hover:scale-105;
-  }
-
-  /* Bottom */
-  .footer-bottom {
-    @apply flex flex-col sm:flex-row items-center justify-between
-        gap-4
-        mt-10 pt-6
-        border-t border-(--color-border);
-  }
-
-  .footer-copyright {
-    @apply text-sm text-(--color-muted);
-  }
-
-  .back-to-top {
-    @apply flex items-center gap-2
-        px-4 py-2
-        text-sm font-medium
-        text-(--color-muted)
-        border border-(--color-border)
-        rounded-full
-        transition
-        hover:text-(--color-text)
-        hover:border-(--color-muted);
+  @media (prefers-reduced-motion: reduce) {
+    .status__dot {
+      animation: none;
+    }
   }
 </style>

@@ -1,0 +1,1402 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { Skull, Filter, Shuffle, Flame, AlertTriangle, Ghost, Terminal, Link as LinkIcon } from "@lucide/astro";
+
+type Severity = 1 | 2 | 3;
+
+interface Curse {
+  date: string; // YYYY-MM
+  project: string;
+  projectSlug?: string;
+  tags: string[];
+  severity: Severity;
+  title: string;
+  body: string;
+}
+
+// Newest → oldest. Severity: 1 = mildly cursed, 2 = deeply cursed, 3 = eldritch.
+const curses: Curse[] = [
+  // ── 2026-04 — StalkMarket ──
+  {
+    date: "2026-04",
+    project: "StalkMarket",
+    projectSlug: "stalkmarket",
+    tags: ["Auth", "Brokers"],
+    severity: 3,
+    title: "Indian broker auth is four different religions in a trenchcoat",
+    body: "Angel One = TOTP. Upstox + Zerodha = OAuth. Groww = API keys. There is no unified standard, and there will not be one. Hide the chaos behind a provider interface and refresh tokens proactively — never wait for the 401.",
+  },
+
+  // ── 2025-10 — Finalyze ──
+  {
+    date: "2025-10",
+    project: "Finalyze",
+    projectSlug: "finalyze",
+    tags: ["SQLite", "Performance"],
+    severity: 3,
+    title: "Batch inserts without a transaction = one fsync per row",
+    body: "A 200-row import takes 8 seconds. Wrap it in `BEGIN`/`COMMIT` and the same import takes 40ms. The cost of forgetting is 200×.",
+  },
+
+  // ── 2025-08 — ScreenSage ──
+  {
+    date: "2025-08",
+    project: "ScreenSage",
+    projectSlug: "screensage-macos",
+    tags: ["macOS", "OCR"],
+    severity: 1,
+    title: "Apple Vision OCR has zero reason to lose to Tesseract on macOS",
+    body: "Free, local, fast, shockingly accurate, no model download. There is no scenario in 2025 where shipping Tesseract on macOS is the right call.",
+  },
+];
+
+const projectList = Array.from(new Set(curses.map((c) => c.project))).sort();
+const totalCurses = curses.length;
+const eldritchCount = curses.filter((c) => c.severity === 3).length;
+const projectCount = projectList.length;
+const earliest = curses[curses.length - 1].date.slice(0, 4);
+const latest = curses[0].date.slice(0, 4);
+
+const severityLabel: Record<Severity, string> = {
+  1: "mildly cursed",
+  2: "deeply cursed",
+  3: "eldritch",
+};
+
+const severityIcons: Record<Severity, any> = {
+  1: AlertTriangle,
+  2: Flame,
+  3: Skull,
+};
+
+function formatDate(date: string) {
+  const [y, m] = date.split("-");
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[parseInt(m, 10) - 1]} ${y}`;
+}
+---
+
+<BaseLayout pageTitle="Cursed Knowledge — Tapan Meena">
+  <div class="cursed-page">
+    <!-- ── HERO / TERMINAL BANNER ── -->
+    <section class="cursed-hero">
+      <div class="hero-grid"></div>
+      <div class="hero-inner">
+        <div class="terminal-card" role="img" aria-label="Terminal banner">
+          <div class="terminal-bar">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+            <span class="terminal-title"><Terminal size={12} /> ~/scars/grimoire.log</span>
+          </div>
+          <div class="terminal-body">
+            <p><span class="prompt">$</span> cat grimoire.log <span class="cursor">▍</span></p>
+            <p class="dim">// loading {totalCurses} entries from {projectCount} projects ({earliest}–{latest})…</p>
+            <p>
+              <span class="warn">[WARN]</span> the following knowledge was acquired through
+              <span class="glitch" data-text="suffering">suffering</span>.
+            </p>
+            <p class="dim">// reading is free. unlearning is not.</p>
+          </div>
+        </div>
+
+        <h1 class="cursed-title">
+          <span class="title-glitch" data-text="Cursed Knowledge">Cursed Knowledge</span>
+        </h1>
+        <p class="cursed-subtitle">
+          A timeline of every load-bearing fact I learned at <span class="mono">02:47</span> while something was on fire. One scar per entry, newest first.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-num">{totalCurses}</span>
+            <span class="stat-label">total curses</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num"><Skull size={20} /> {eldritchCount}</span>
+            <span class="stat-label">eldritch tier</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">{projectCount}</span>
+            <span class="stat-label">haunted projects</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">{earliest}–{latest}</span>
+            <span class="stat-label">years of regret</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CONTROLS ── -->
+    <section class="cursed-controls" aria-label="Filter curses">
+      <div class="controls-row">
+        <div class="control-group" role="group" aria-label="Filter by severity">
+          <span class="control-label"><Filter size={14} /> Severity</span>
+          <button class="chip chip-sev active" data-sev="all">All</button>
+          <button class="chip chip-sev" data-sev="3"><Skull size={12} /> Eldritch</button>
+          <button class="chip chip-sev" data-sev="2"><Flame size={12} /> Deeply</button>
+          <button class="chip chip-sev" data-sev="1"><AlertTriangle size={12} /> Mildly</button>
+        </div>
+        <button id="random-curse" class="random-btn" type="button" aria-label="Jump to random curse">
+          <Shuffle size={14} /> Summon a random curse
+        </button>
+      </div>
+      <div class="control-group control-projects" role="group" aria-label="Filter by project">
+        <span class="control-label"><Ghost size={14} /> Project</span>
+        <button class="chip chip-proj active" data-proj="all">All</button>
+        {
+          projectList.map((p) => (
+            <button class="chip chip-proj" data-proj={p}>
+              {p}
+            </button>
+          ))
+        }
+      </div>
+      <p class="exorcism-hint">
+        <span class="dim">psst —</span> type <kbd>e</kbd><kbd>x</kbd><kbd>o</kbd><kbd>r</kbd><kbd>c</kbd><kbd>i</kbd><kbd>s</kbd><kbd>e</kbd> to attempt
+        a banishment.
+      </p>
+    </section>
+
+    <!-- ── TIMELINE ── -->
+    <section class="timeline-wrap">
+      <div class="timeline" id="timeline">
+        {
+          curses.map((c, i) => {
+            const SevIcon = severityIcons[c.severity];
+            const side = i % 2 === 0 ? "left" : "right";
+            return (
+              <article class:list={["curse", `side-${side}`, `sev-${c.severity}`]} data-sev={c.severity} data-proj={c.project}>
+                <div class="curse-marker" aria-hidden="true">
+                  <SevIcon size={16} />
+                </div>
+                <div class="curse-card">
+                  <header class="curse-head">
+                    <time class="curse-date">{formatDate(c.date)}</time>
+                    <span class:list={["sev-badge", `sev-badge-${c.severity}`]} title={severityLabel[c.severity]}>
+                      {Array.from({ length: c.severity }).map(() => (
+                        <SevIcon size={12} />
+                      ))}
+                    </span>
+                  </header>
+                  <h3 class="curse-title">{c.title}</h3>
+                  <p class="curse-body">{c.body}</p>
+                  <footer class="curse-foot">
+                    <div class="curse-tags">
+                      {c.tags.map((t) => (
+                        <span class="curse-tag">{t}</span>
+                      ))}
+                    </div>
+                    {c.projectSlug && (
+                      <a class="curse-proj" href={`/projects/${c.projectSlug}`}>
+                        <LinkIcon size={11} />
+                        {c.project}
+                      </a>
+                    )}
+                  </footer>
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+      <div class="timeline-end">
+        <Skull size={18} />
+        <span>end of grimoire — for now</span>
+        <Skull size={18} />
+      </div>
+    </section>
+
+    <section class="meta-lesson">
+      <h2>The meta-lesson</h2>
+      <p>
+        Every entry above is something I <em>knew was important</em> in retrospect but didn't think to write down at the time. The cure isn't a better memory
+        — it's the habit of treating <q>huh, that was annoying</q> as a signal to open a notes file before fixing the next bug.
+      </p>
+      <p>
+        If you've shipped enough side projects to have your own list, write it down. Future you is the primary audience, and they will be deeply
+        grateful.
+      </p>
+    </section>
+  </div>
+
+  <!-- ── BANISHMENT RITUAL MODAL ── -->
+  <div id="ritual-modal" class="ritual-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ritual-title">
+    <div class="ritual-backdrop"></div>
+    <div class="ritual-stage">
+      <!-- Floating runes -->
+      <span class="rune rune-1">☠</span>
+      <span class="rune rune-2">✦</span>
+      <span class="rune rune-3">⚝</span>
+      <span class="rune rune-4">☾</span>
+      <span class="rune rune-5">⛧</span>
+      <span class="rune rune-6">✷</span>
+
+      <!-- Pentagram circle -->
+      <svg class="ritual-circle" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <radialGradient id="ritualGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#a855f7" stop-opacity="0.6"></stop>
+            <stop offset="60%" stop-color="#ef4444" stop-opacity="0.25"></stop>
+            <stop offset="100%" stop-color="transparent"></stop>
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="100" r="92" fill="url(#ritualGlow)"></circle>
+        <circle class="ring ring-outer" cx="100" cy="100" r="90"></circle>
+        <circle class="ring ring-inner" cx="100" cy="100" r="62"></circle>
+        <polygon class="pentagram" points="100,18 122,82 188,82 134,122 156,186 100,146 44,186 66,122 12,82 78,82"></polygon>
+        <!-- Tick marks around outer ring -->
+        <g class="ticks">
+          {
+            Array.from({ length: 24 }).map((_, i) => {
+              const a = (i * 360) / 24;
+              return <line x1="100" y1="6" x2="100" y2="14" transform={`rotate(${a} 100 100)`} />;
+            })
+          }
+        </g>
+      </svg>
+
+      <div class="ritual-card">
+        <div class="ritual-skull">
+          <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true">
+            <g fill="currentColor">
+              <path
+                d="M32 4C18.7 4 8 14.7 8 28c0 8 4 15 10 19v6a4 4 0 0 0 4 4h4v-6h2v6h8v-6h2v6h4a4 4 0 0 0 4-4v-6c6-4 10-11 10-19C56 14.7 45.3 4 32 4Zm-9 22a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm18 0a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm-9 14 4 8h-8l4-8Z"
+              ></path>
+            </g>
+          </svg>
+        </div>
+
+        <p class="ritual-eyebrow">— ritual failed —</p>
+        <h2 id="ritual-title" class="ritual-title">
+          <span class="title-glitch" data-text="Nice try.">Nice try.</span>
+        </h2>
+        <p class="ritual-line">The curses always come back.</p>
+        <p class="ritual-sub">
+          <span class="dim">// you cannot</span>
+          <span class="strike">unlearn</span>
+          <span class="dim">what you have lived through.</span>
+        </p>
+
+        <div class="ritual-meter">
+          <div class="meter-label">
+            <span>Banishment progress</span>
+            <span class="meter-value">0<span class="dim">%</span></span>
+          </div>
+          <div class="meter-track">
+            <div class="meter-fill"></div>
+          </div>
+        </div>
+
+        <button id="ritual-close" class="ritual-btn" type="button">
+          <span>Accept the curse</span>
+          <span class="btn-glow"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    // ── Filtering ────────────────────────────────────────────────────────
+    const curses = Array.from(document.querySelectorAll(".curse"));
+    let activeSev = "all";
+    let activeProj = "all";
+
+    function applyFilters() {
+      curses.forEach((el) => {
+        const sevOk = activeSev === "all" || el.dataset.sev === activeSev;
+        const projOk = activeProj === "all" || el.dataset.proj === activeProj;
+        el.classList.toggle("hidden", !(sevOk && projOk));
+      });
+    }
+
+    document.querySelectorAll(".chip-sev").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".chip-sev").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeSev = btn.dataset.sev;
+        applyFilters();
+      });
+    });
+
+    document.querySelectorAll(".chip-proj").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".chip-proj").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeProj = btn.dataset.proj;
+        applyFilters();
+      });
+    });
+
+    // ── Random curse ─────────────────────────────────────────────────────
+    document.getElementById("random-curse")?.addEventListener("click", () => {
+      const visible = curses.filter((c) => !c.classList.contains("hidden"));
+      if (!visible.length) return;
+      const pick = visible[Math.floor(Math.random() * visible.length)];
+      pick.scrollIntoView({ behavior: "smooth", block: "center" });
+      pick.classList.add("flash");
+      setTimeout(() => pick.classList.remove("flash"), 1600);
+    });
+
+    // ── Reveal on scroll ─────────────────────────────────────────────────
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("revealed");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.05 },
+    );
+    curses.forEach((c) => io.observe(c));
+
+    // ── Easter egg: type "exorcise" ──────────────────────────────────────
+    const target = "exorcise";
+    let buffer = "";
+    let ritualActive = false;
+    const modal = document.getElementById("ritual-modal");
+    const modalClose = document.getElementById("ritual-close");
+    const meterFill = modal?.querySelector(".meter-fill");
+    const meterValue = modal?.querySelector(".meter-value");
+
+    function openRitual() {
+      if (!modal) return;
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      // Animate the meter from 0 → 99% then "fail"
+      let pct = 0;
+      const tick = setInterval(() => {
+        pct += Math.random() * 9 + 3;
+        if (pct >= 99) {
+          pct = 99;
+          clearInterval(tick);
+          modal.classList.add("failed");
+        }
+        if (meterFill) meterFill.style.width = pct + "%";
+        if (meterValue) meterValue.firstChild.textContent = Math.floor(pct).toString();
+      }, 110);
+      modal._tick = tick;
+    }
+
+    function closeRitual() {
+      if (!modal) return;
+      modal.classList.remove("open", "failed");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      if (modal._tick) clearInterval(modal._tick);
+      if (meterFill) meterFill.style.width = "0%";
+      if (meterValue) meterValue.firstChild.textContent = "0";
+      ritualActive = false;
+    }
+
+    modalClose?.addEventListener("click", closeRitual);
+    modal?.querySelector(".ritual-backdrop")?.addEventListener("click", closeRitual);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal?.classList.contains("open")) closeRitual();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+      if (ritualActive) return;
+      if (e.key.length !== 1) return;
+      buffer = (buffer + e.key.toLowerCase()).slice(-target.length);
+      if (buffer === target) {
+        ritualActive = true;
+        document.body.classList.add("banishing");
+        const visible = curses.filter((c) => !c.classList.contains("hidden"));
+        visible.forEach((c, i) => {
+          setTimeout(() => c.classList.add("banished"), i * 60);
+        });
+        setTimeout(
+          () => {
+            openRitual();
+            // Bring curses back after the modal has appeared
+            setTimeout(() => {
+              visible.forEach((c) => c.classList.remove("banished"));
+              document.body.classList.remove("banishing");
+            }, 600);
+          },
+          visible.length * 60 + 800,
+        );
+      }
+    });
+  </script>
+
+  <style>
+    @reference "tailwindcss";
+
+    /* ───────────────────────── PAGE SHELL ───────────────────────── */
+    .cursed-page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1rem 6rem;
+      color: var(--color-text);
+    }
+
+    /* ───────────────────────── HERO ───────────────────────── */
+    .cursed-hero {
+      position: relative;
+      padding: 3rem 0 3rem;
+      isolation: isolate;
+      overflow: hidden;
+      border-radius: 24px;
+      margin-bottom: 2.5rem;
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at top, rgba(220, 38, 38, 0.16), transparent 60%),
+        radial-gradient(ellipse at bottom right, rgba(124, 58, 237, 0.12), transparent 60%),
+        linear-gradient(transparent 95%, rgba(220, 38, 38, 0.18) 95%) 0 0 / 100% 28px,
+        linear-gradient(90deg, transparent 95%, rgba(220, 38, 38, 0.1) 95%) 0 0 / 28px 100%;
+      mask-image: radial-gradient(ellipse at center, black 50%, transparent 100%);
+      z-index: -1;
+    }
+    .hero-inner {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      text-align: center;
+    }
+
+    .terminal-card {
+      max-width: 640px;
+      margin: 0 auto 2rem;
+      text-align: left;
+      border-radius: 12px;
+      border: 1px solid var(--color-border);
+      background: rgba(15, 15, 20, 0.92);
+      box-shadow: 0 10px 40px -10px rgba(220, 38, 38, 0.35);
+      overflow: hidden;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 11px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-r {
+      background: #ff5f56;
+    }
+    .dot-y {
+      background: #ffbd2e;
+    }
+    .dot-g {
+      background: #27c93f;
+    }
+    .terminal-title {
+      margin-left: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .terminal-body {
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #e5e7eb;
+    }
+    .terminal-body p {
+      margin: 0;
+    }
+    .prompt {
+      color: #34d399;
+    }
+    .warn {
+      color: #fbbf24;
+    }
+    .dim {
+      color: rgba(229, 231, 235, 0.45);
+    }
+    .cursor {
+      animation: blink 1s steps(1) infinite;
+      color: #f87171;
+    }
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .glitch {
+      position: relative;
+      color: #f87171;
+      font-weight: 600;
+    }
+    .glitch::before,
+    .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .glitch::before {
+      color: #60a5fa;
+      transform: translate(-1px, 0);
+      clip-path: inset(0 0 55% 0);
+    }
+    .glitch::after {
+      color: #fbbf24;
+      transform: translate(1px, 0);
+      clip-path: inset(55% 0 0 0);
+    }
+
+    .cursed-title {
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.6rem;
+      line-height: 1;
+    }
+    .title-glitch {
+      position: relative;
+      display: inline-block;
+      background: linear-gradient(135deg, #ef4444 0%, #a855f7 50%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .title-glitch::before {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      color: rgba(239, 68, 68, 0.35);
+      transform: translate(2px, 2px);
+      z-index: -1;
+    }
+    .cursed-subtitle {
+      max-width: 580px;
+      margin: 0 auto 2rem;
+      color: var(--color-muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+    .mono {
+      font-family: ui-monospace, monospace;
+      color: var(--color-accent);
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    @media (min-width: 640px) {
+      .hero-stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+    .stat {
+      padding: 0.85rem 0.6rem;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      background: var(--color-surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .stat-num {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--color-text);
+      font-family: ui-monospace, monospace;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+
+    /* ───────────────────────── CONTROLS ───────────────────────── */
+    .cursed-controls {
+      margin-bottom: 2rem;
+      padding: 1.25rem;
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      background: var(--color-surface);
+    }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .control-projects {
+      padding-top: 0.5rem;
+      border-top: 1px dashed var(--color-border);
+      margin-top: 0.5rem;
+    }
+    .control-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-muted);
+      margin-right: 0.25rem;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      border-radius: 999px;
+      border: 1px solid var(--color-border);
+      background: transparent;
+      color: var(--color-text);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      font-family: inherit;
+    }
+    .chip:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+    .chip.active {
+      background: linear-gradient(135deg, #ef4444, #a855f7);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 14px -4px rgba(239, 68, 68, 0.5);
+    }
+    .random-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .random-btn:hover {
+      border-color: #a855f7;
+      color: #a855f7;
+      transform: translateY(-1px);
+    }
+    .exorcism-hint {
+      margin: 0.6rem 0 0;
+      font-size: 0.72rem;
+      color: var(--color-muted);
+    }
+    .exorcism-hint kbd {
+      display: inline-block;
+      padding: 1px 5px;
+      margin: 0 1px;
+      font-size: 0.68rem;
+      font-family: ui-monospace, monospace;
+      border: 1px solid var(--color-border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      background: var(--color-bg);
+      color: var(--color-text);
+    }
+
+    /* ───────────────────────── TIMELINE ───────────────────────── */
+    .timeline-wrap {
+      position: relative;
+    }
+    .timeline {
+      position: relative;
+      padding: 1rem 0;
+    }
+    /* Spine */
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 24px;
+      width: 2px;
+      background: linear-gradient(180deg, transparent 0%, #ef4444 6%, #a855f7 50%, #3b82f6 94%, transparent 100%);
+      opacity: 0.65;
+    }
+    @media (min-width: 820px) {
+      .timeline::before {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+
+    .curse {
+      position: relative;
+      padding-left: 60px;
+      margin-bottom: 1.4rem;
+      opacity: 0;
+      transform: translateY(18px);
+      transition:
+        opacity 0.5s ease,
+        transform 0.5s ease;
+    }
+    .curse.revealed {
+      opacity: 1;
+      transform: none;
+    }
+    .curse.hidden {
+      display: none;
+    }
+
+    @media (min-width: 820px) {
+      .curse {
+        padding-left: 0;
+        width: 50%;
+      }
+      .curse.side-left {
+        padding-right: 44px;
+        text-align: right;
+      }
+      .curse.side-right {
+        margin-left: 50%;
+        padding-left: 44px;
+      }
+    }
+
+    .curse-marker {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-bg);
+      border: 2px solid currentColor;
+      z-index: 2;
+      box-shadow: 0 0 0 4px var(--color-bg);
+    }
+    @media (min-width: 820px) {
+      .curse.side-left .curse-marker {
+        left: auto;
+        right: -16px;
+      }
+      .curse.side-right .curse-marker {
+        left: -16px;
+      }
+    }
+    .sev-1 .curse-marker {
+      color: #f59e0b;
+    }
+    .sev-2 .curse-marker {
+      color: #ef4444;
+    }
+    .sev-3 .curse-marker {
+      color: #a855f7;
+      animation: pulse-skull 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-skull {
+      0%,
+      100% {
+        box-shadow:
+          0 0 0 4px var(--color-bg),
+          0 0 0 0 rgba(168, 85, 247, 0.4);
+      }
+      50% {
+        box-shadow:
+          0 0 0 4px var(--color-bg),
+          0 0 0 8px rgba(168, 85, 247, 0);
+      }
+    }
+
+    .curse-card {
+      position: relative;
+      padding: 1.1rem 1.2rem;
+      border: 1px solid var(--color-border);
+      border-radius: 14px;
+      background: var(--color-surface);
+      transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+    }
+    .curse-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent, transparent);
+      pointer-events: none;
+      transition: background 0.3s ease;
+    }
+    .curse:hover .curse-card {
+      transform: translateY(-3px);
+      border-color: transparent;
+      box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.25);
+    }
+    .sev-1:hover .curse-card {
+      box-shadow: 0 12px 30px -12px rgba(245, 158, 11, 0.45);
+    }
+    .sev-2:hover .curse-card {
+      box-shadow: 0 12px 30px -12px rgba(239, 68, 68, 0.45);
+    }
+    .sev-3:hover .curse-card {
+      box-shadow: 0 12px 30px -12px rgba(168, 85, 247, 0.55);
+    }
+
+    .curse-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .curse.side-left .curse-head {
+      flex-direction: row-reverse;
+    }
+    @media (max-width: 819px) {
+      .curse.side-left .curse-head {
+        flex-direction: row;
+      }
+    }
+
+    .curse-date {
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+    .sev-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 1px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+    }
+    .sev-badge-1 {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.12);
+    }
+    .sev-badge-2 {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.12);
+    }
+    .sev-badge-3 {
+      color: #a855f7;
+      background: rgba(168, 85, 247, 0.14);
+    }
+
+    .curse-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.35;
+      margin: 0 0 0.5rem;
+      color: var(--color-text);
+    }
+    .curse-body {
+      margin: 0 0 0.85rem;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: var(--color-muted);
+    }
+    .curse-body :global(code) {
+      font-family: ui-monospace, monospace;
+      font-size: 0.85em;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+    }
+    .curse-foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: space-between;
+    }
+    .curse.side-left .curse-foot {
+      flex-direction: row-reverse;
+    }
+    @media (max-width: 819px) {
+      .curse.side-left .curse-foot {
+        flex-direction: row;
+      }
+    }
+    .curse-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .curse-tag {
+      font-size: 0.66rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      color: var(--color-muted);
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.04em;
+    }
+    .curse-proj {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    .curse-proj:hover {
+      text-decoration: underline;
+    }
+
+    /* Flash on random pick */
+    .curse.flash .curse-card {
+      animation: flash 1.6s ease;
+    }
+    @keyframes flash {
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+      }
+      30% {
+        box-shadow: 0 0 0 6px rgba(168, 85, 247, 0.5);
+      }
+    }
+
+    /* Banishment animation */
+    .curse.banished .curse-card {
+      animation: banish 1.2s forwards;
+    }
+    @keyframes banish {
+      to {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95) rotate(-2deg);
+        filter: blur(4px);
+      }
+    }
+    body.banishing {
+      cursor: wait;
+    }
+
+    .timeline-end {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 2rem;
+      padding: 1.5rem 0;
+      color: var(--color-muted);
+      font-family: ui-monospace, monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .meta-lesson {
+      margin-top: 3rem;
+      padding: 1.75rem;
+      border-radius: 16px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+    }
+    .meta-lesson h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .meta-lesson p {
+      margin: 0 0 0.75rem;
+      color: var(--color-muted);
+      line-height: 1.7;
+    }
+    .meta-lesson p:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .curse,
+      .cursor,
+      .sev-3 .curse-marker {
+        animation: none !important;
+        transition: none !important;
+      }
+      .curse {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ───────────────────── BANISHMENT RITUAL MODAL ───────────────────── */
+    .ritual-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .ritual-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .ritual-backdrop {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.28), transparent 60%), rgba(8, 6, 14, 0.85);
+      backdrop-filter: blur(8px);
+    }
+    .ritual-stage {
+      position: relative;
+      width: min(440px, 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: scale(0.85) rotate(-2deg);
+      transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .ritual-modal.open .ritual-stage {
+      transform: scale(1) rotate(0);
+    }
+
+    .ritual-circle {
+      position: absolute;
+      inset: -40px;
+      width: calc(100% + 80px);
+      height: calc(100% + 80px);
+      max-width: 540px;
+      max-height: 540px;
+      pointer-events: none;
+      animation: ritual-spin 30s linear infinite;
+      filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.5));
+    }
+    .ritual-circle .ring {
+      fill: none;
+      stroke: rgba(239, 68, 68, 0.55);
+      stroke-width: 0.6;
+    }
+    .ritual-circle .ring-outer {
+      stroke-dasharray: 4 3;
+    }
+    .ritual-circle .ring-inner {
+      stroke: rgba(168, 85, 247, 0.6);
+      stroke-dasharray: 2 2;
+    }
+    .ritual-circle .pentagram {
+      fill: none;
+      stroke: url(#ritualGlow);
+      stroke: rgba(239, 68, 68, 0.7);
+      stroke-width: 0.7;
+      stroke-linejoin: round;
+    }
+    .ritual-circle .ticks line {
+      stroke: rgba(168, 85, 247, 0.5);
+      stroke-width: 0.7;
+    }
+    @keyframes ritual-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Floating runes around the modal */
+    .rune {
+      position: absolute;
+      font-size: 1.4rem;
+      color: rgba(239, 68, 68, 0.7);
+      text-shadow: 0 0 12px rgba(168, 85, 247, 0.7);
+      pointer-events: none;
+      animation: rune-float 5s ease-in-out infinite;
+    }
+    .rune-1 {
+      top: -36px;
+      left: 14%;
+      animation-delay: 0s;
+      color: #ef4444;
+    }
+    .rune-2 {
+      top: 8%;
+      right: -28px;
+      animation-delay: 0.6s;
+      color: #a855f7;
+    }
+    .rune-3 {
+      bottom: 12%;
+      left: -32px;
+      animation-delay: 1.2s;
+      color: #f59e0b;
+    }
+    .rune-4 {
+      bottom: -30px;
+      right: 22%;
+      animation-delay: 1.8s;
+      color: #60a5fa;
+    }
+    .rune-5 {
+      top: 40%;
+      left: -38px;
+      animation-delay: 2.4s;
+      color: #ef4444;
+    }
+    .rune-6 {
+      top: 60%;
+      right: -34px;
+      animation-delay: 3s;
+      color: #a855f7;
+    }
+    @keyframes rune-float {
+      0%,
+      100% {
+        transform: translateY(0) rotate(0);
+        opacity: 0.55;
+      }
+      50% {
+        transform: translateY(-10px) rotate(8deg);
+        opacity: 1;
+      }
+    }
+
+    .ritual-card {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 2.25rem 1.75rem 1.75rem;
+      border-radius: 20px;
+      background: linear-gradient(155deg, rgba(20, 14, 30, 0.95), rgba(30, 10, 20, 0.95));
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      box-shadow:
+        0 30px 80px -20px rgba(0, 0, 0, 0.7),
+        0 0 60px -10px rgba(168, 85, 247, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      text-align: center;
+      color: #e5e7eb;
+      overflow: hidden;
+    }
+    .ritual-card::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: 22px;
+      background: conic-gradient(from 0deg, #ef4444, #a855f7, #3b82f6, #ef4444);
+      filter: blur(12px);
+      opacity: 0.35;
+      z-index: -1;
+      animation: ritual-spin 8s linear infinite;
+    }
+
+    .ritual-skull {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.35), transparent 70%);
+      color: #f87171;
+      animation: skull-bob 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.6));
+    }
+    @keyframes skull-bob {
+      0%,
+      100% {
+        transform: translateY(0) rotate(-2deg);
+      }
+      50% {
+        transform: translateY(-4px) rotate(2deg);
+      }
+    }
+
+    .ritual-eyebrow {
+      margin: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #f87171;
+    }
+    .ritual-title {
+      margin: 0.4rem 0 0.6rem;
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1;
+    }
+    .ritual-title .title-glitch::before {
+      color: rgba(239, 68, 68, 0.5);
+    }
+    .ritual-line {
+      margin: 0 0 0.4rem;
+      font-size: 1.05rem;
+      color: #f3f4f6;
+    }
+    .ritual-sub {
+      margin: 0 0 1.4rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: rgba(229, 231, 235, 0.55);
+    }
+    .ritual-sub .strike {
+      color: #f87171;
+      text-decoration: line-through;
+      text-decoration-color: rgba(239, 68, 68, 0.7);
+      text-decoration-thickness: 2px;
+    }
+
+    .ritual-meter {
+      margin: 0 auto 1.4rem;
+      max-width: 320px;
+      text-align: left;
+    }
+    .meter-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(229, 231, 235, 0.55);
+      margin-bottom: 6px;
+    }
+    .meter-value {
+      font-size: 0.85rem;
+      color: #fbbf24;
+      font-weight: 700;
+    }
+    .ritual-modal.failed .meter-value {
+      color: #f87171;
+    }
+    .meter-track {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      overflow: hidden;
+      position: relative;
+    }
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #fbbf24, #ef4444);
+      transition:
+        width 0.18s ease,
+        background 0.4s ease;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+    }
+    .ritual-modal.failed .meter-fill {
+      background: linear-gradient(90deg, #ef4444, #a855f7);
+      animation: meter-shake 0.4s ease-in-out 3;
+    }
+    @keyframes meter-shake {
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+      25% {
+        transform: translateX(-3px);
+      }
+      75% {
+        transform: translateX(3px);
+      }
+    }
+
+    .ritual-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.6rem;
+      border-radius: 12px;
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(168, 85, 247, 0.25));
+      color: #f3f4f6;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      overflow: hidden;
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+    .ritual-btn:hover {
+      transform: translateY(-2px);
+      border-color: #a855f7;
+      box-shadow: 0 10px 30px -10px rgba(168, 85, 247, 0.7);
+    }
+    .ritual-btn:active {
+      transform: translateY(0);
+    }
+    .ritual-btn span:first-child {
+      position: relative;
+      z-index: 1;
+    }
+    .btn-glow {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.18) 50%, transparent 70%);
+      transform: translateX(-100%);
+      animation: btn-shimmer 2.4s ease-in-out infinite;
+    }
+    @keyframes btn-shimmer {
+      to {
+        transform: translateX(100%);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ritual-circle,
+      .ritual-card::before,
+      .rune,
+      .ritual-skull,
+      .btn-glow {
+        animation: none !important;
+      }
+      .ritual-stage {
+        transition: none !important;
+      }
+    }
+  </style>
+</BaseLayout>
