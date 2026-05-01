@@ -86,10 +86,7 @@ When works for you in the next two weeks?
 
 — `;
 
-const mailto =
-  author.email
-    ? `mailto:${author.email}?subject=${encodeURIComponent(defaultSubject)}&body=${encodeURIComponent(defaultBody)}`
-    : "#";
+const mailto = author.email ? `mailto:${author.email}?subject=${encodeURIComponent(defaultSubject)}&body=${encodeURIComponent(defaultBody)}` : "#";
 
 // "Best to write me about" rows.
 const writeAbout = [
@@ -105,7 +102,9 @@ const writeAbout = [
     <!-- HERO -->
     <section class="hero">
       <p class="prompt">
-        <span class="prompt__user">tm@blog</span><span class="prompt__sep">:</span><span class="prompt__path">~/contact</span><span class="prompt__dollar">$</span>
+        <span class="prompt__user">tm@blog</span><span class="prompt__sep">:</span><span class="prompt__path">~/contact</span><span
+          class="prompt__dollar">$</span
+        >
         <span class="prompt__cmd">cat contact.md</span>
       </p>
       <h1 class="hero__title">
@@ -113,8 +112,9 @@ const writeAbout = [
       </h1>
       <p class="hero__lede">
         I read everything that lands in my inbox. I reply to most of it. The fastest way in is
-        {" "}<a href={`mailto:${author.email}`} class="hero__email">{author.email}</a>;
-        the slowest is <span class="hero__strike">a calendar invite without context</span>.
+        {" "}<a href={`mailto:${author.email}`} class="hero__email">{author.email}</a>; the slowest is <span class="hero__strike"
+          >a calendar invite without context</span
+        >.
       </p>
 
       <!-- Status row -->
@@ -163,16 +163,12 @@ const writeAbout = [
                 <span class="channel__label">{c.label}</span>
                 <span class="channel__handle">{c.handle}</span>
                 <span class="channel__best">{c.bestFor}</span>
-                <span class="channel__arrow" aria-hidden="true">→</span>
+                <span class="channel__arrow" aria-hidden="true">
+                  →
+                </span>
               </a>
               {c.copyable && c.handle && (
-                <button
-                  type="button"
-                  class="channel__copy"
-                  data-copy={c.handle}
-                  aria-label={`Copy ${c.label}`}
-                  title="Copy"
-                >
+                <button type="button" class="channel__copy" data-copy={c.handle} aria-label={`Copy ${c.label}`} title="Copy">
                   <Copy size={14} class="channel__copy-icon" />
                   <CheckCircle2 size={14} class="channel__copy-check" />
                 </button>
@@ -251,9 +247,7 @@ const writeAbout = [
           </button>
         </div>
 
-        <p class="compose__hint">
-          Tip: include a sentence about what you're working on. It almost always gets a faster reply.
-        </p>
+        <p class="compose__hint">Tip: include a sentence about what you're working on. It almost always gets a faster reply.</p>
       </div>
     </section>
 
@@ -311,11 +305,20 @@ const writeAbout = [
     color: var(--color-muted);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-  .prompt__user { color: var(--color-text); font-weight: 600; }
-  .prompt__path { color: var(--color-accent); }
+  .prompt__user {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .prompt__path {
+    color: var(--color-accent);
+  }
   .prompt__sep,
-  .prompt__dollar { color: var(--color-muted); }
-  .prompt__cmd { color: var(--color-text); }
+  .prompt__dollar {
+    color: var(--color-muted);
+  }
+  .prompt__cmd {
+    color: var(--color-text);
+  }
 
   .hero__title {
     @apply text-4xl md:text-6xl font-bold leading-tight tracking-tight m-0;
@@ -337,8 +340,13 @@ const writeAbout = [
     text-decoration: none;
     border-bottom: 1px dashed currentColor;
   }
-  .hero__email:hover { color: var(--color-accent-hover); }
-  .hero__strike { text-decoration: line-through; opacity: 0.7; }
+  .hero__email:hover {
+    color: var(--color-accent-hover);
+  }
+  .hero__strike {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
 
   /* Status row */
   .status {
@@ -353,8 +361,12 @@ const writeAbout = [
     color: var(--color-muted);
     opacity: 0.75;
   }
-  .status__k::after { content: ":"; }
-  .status__v { color: var(--color-text); }
+  .status__k::after {
+    content: ":";
+  }
+  .status__v {
+    color: var(--color-text);
+  }
   .status__dot {
     @apply inline-block w-1.5 h-1.5 rounded-full;
   }
@@ -364,8 +376,13 @@ const writeAbout = [
     animation: pulse-dot 2.4s ease-in-out infinite;
   }
   @keyframes pulse-dot {
-    0%, 100% { box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18); }
-    50%      { box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.05); }
+    0%,
+    100% {
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+    }
+    50% {
+      box-shadow: 0 0 0 5px rgba(22, 163, 74, 0.05);
+    }
   }
 
   /* ── BLOCK ───────────────────────────────────────── */
@@ -402,7 +419,9 @@ const writeAbout = [
   .channel:hover {
     background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
   }
-  .channel--primary .channel__label { color: var(--color-accent); }
+  .channel--primary .channel__label {
+    color: var(--color-accent);
+  }
 
   .channel__main {
     @apply flex flex-1 items-center gap-3 md:gap-5 py-4 px-2 md:px-3 no-underline;
@@ -439,7 +458,9 @@ const writeAbout = [
   .channel__arrow {
     @apply text-base;
     color: var(--color-muted);
-    transition: transform 0.18s ease, color 0.18s ease;
+    transition:
+      transform 0.18s ease,
+      color 0.18s ease;
   }
   .channel__main:hover .channel__arrow {
     color: var(--color-accent);
@@ -455,13 +476,17 @@ const writeAbout = [
     cursor: pointer;
     transition: color 0.18s ease;
   }
-  .channel__copy:hover { color: var(--color-accent); }
+  .channel__copy:hover {
+    color: var(--color-accent);
+  }
   .channel__copy-check {
     position: absolute;
     opacity: 0;
     transform: scale(0.6);
     color: #16a34a;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
   }
   .channel__copy.is-copied .channel__copy-icon {
     opacity: 0;
@@ -529,7 +554,9 @@ const writeAbout = [
     display: inline-block;
     min-width: 5rem;
   }
-  .compose__v { color: var(--color-text); }
+  .compose__v {
+    color: var(--color-text);
+  }
 
   .compose__body {
     @apply px-5 py-4 m-0 text-sm leading-relaxed whitespace-pre-wrap;
@@ -557,7 +584,10 @@ const writeAbout = [
     border: 1px solid transparent;
     cursor: pointer;
     text-decoration: none;
-    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      color 0.18s ease;
   }
   .btn--primary {
     background: var(--color-accent);
@@ -583,8 +613,12 @@ const writeAbout = [
     color: #16a34a;
     transition: opacity 0.2s ease;
   }
-  .btn--ghost.is-copied .btn__copy-icon { opacity: 0; }
-  .btn--ghost.is-copied .btn__copy-check { opacity: 1; }
+  .btn--ghost.is-copied .btn__copy-icon {
+    opacity: 0;
+  }
+  .btn--ghost.is-copied .btn__copy-check {
+    opacity: 1;
+  }
   .btn--ghost.is-copied .btn__copy-text::after {
     content: "  ✓ copied";
     color: #16a34a;
@@ -620,11 +654,17 @@ const writeAbout = [
       column-gap: 0.625rem;
       padding-left: 0.5rem;
     }
-    .channel__handle { font-size: 0.8125rem; }
+    .channel__handle {
+      font-size: 0.8125rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .status__dot--green { animation: none; }
-    .channel__main:hover .channel__arrow { transform: none; }
+    .status__dot--green {
+      animation: none;
+    }
+    .channel__main:hover .channel__arrow {
+      transform: none;
+    }
   }
 </style>

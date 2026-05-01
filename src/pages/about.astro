@@ -2,170 +2,369 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { authors } from "@data/authors";
-import ProjectCard from "@components/projects/ProjectCard.astro";
-import Button from "@components/ui/Button.astro";
-import { Github, Linkedin, Twitter, Globe, MapPin, Briefcase, Code, Server, Cloud, Database, Settings, Users, Layers } from "@lucide/astro";
 import { getPublishedProjects } from "@utils/projects";
-
-const skillIcons: Record<string, any> = {
-  code: Code,
-  globe: Globe,
-  server: Server,
-  cloud: Cloud,
-  database: Database,
-  settings: Settings,
-  users: Users,
-  layers: Layers,
-};
+import {
+  Github,
+  Linkedin,
+  Twitter,
+  Globe,
+  MapPin,
+  Briefcase,
+  ArrowUpRight,
+  ArrowRight,
+  Mail,
+  Skull,
+} from "@lucide/astro";
 
 const author = authors["tapan-meena"];
 
-// Get projects for "What I'm Working On" section
 const allProjects = await getCollection("projects");
-const projects = getPublishedProjects(allProjects);
-const featuredProjects = projects.slice(0, 3);
+const publishedProjects = getPublishedProjects(allProjects);
+const inProgress = publishedProjects.filter((p) => p.data.status === "in-progress");
+const completed = publishedProjects.filter((p) => p.data.status === "completed");
+
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft);
+
+// Stats for the "by the numbers" line
+const stats = [
+  { k: "shipped", v: String(completed.length).padStart(2, "0") },
+  { k: "in-flight", v: String(inProgress.length).padStart(2, "0") },
+  { k: "essays", v: String(posts.length).padStart(2, "0") },
+  { k: "yoe", v: "5+" },
+];
+
+// Personality / honest disclosures
+const facts = [
+  { k: "writes in", v: "TypeScript, C#, the occasional zsh one-liner" },
+  { k: "lives in", v: "VS Code with Vim bindings" },
+  { k: "deploys to", v: "a Raspberry Pi 5 in the next room" },
+  { k: "drinks", v: "filter coffee, no negotiations" },
+  { k: "reads", v: "Hacker News too often, books not often enough" },
+  { k: "argues for", v: "boring tech, small PRs, honest changelogs" },
+];
+
+// Beliefs / "what I value" — third-person-free
+const beliefs = [
+  {
+    title: "Boring tech, when it fits.",
+    body: "I reach for SQLite before Postgres, Fastify before Nest, a cron job before a queue. The exotic choice has to earn its place.",
+  },
+  {
+    title: "Small surface area > clever abstractions.",
+    body: "A function that does one thing, named for what it does, beats a beautifully generic helper nobody else can read.",
+  },
+  {
+    title: "Tests for the parts that touch the world.",
+    body: "Pure logic deserves coverage. Code that touches networks, brokers, or filesystems demands it.",
+  },
+  {
+    title: "Write the post-mortem in public.",
+    body: `That's why /cursed-knowledge exists. Someone is going to make the same mistake — might as well be from my notes.`,
+  },
+];
+
+// Taste — honest pairs of "what I'd pick / what I'd skip" by problem.
+// Tone: opinionated, not absolute. Each row earns its own short reason.
+const taste = [
+  {
+    when: "backend HTTP",
+    reach: "Fastify",
+    skip: "Nest",
+    why: "Schema-first, no decorators-as-religion.",
+  },
+  {
+    when: "database",
+    reach: "SQLite (WAL)",
+    skip: "\u201Clet's add Postgres\u201D",
+    why: "Single file, zero ops, fast enough for 99% of side projects.",
+  },
+  {
+    when: "validation",
+    reach: "Zod",
+    skip: "hand-rolled if/else walls",
+    why: "One schema validates the config and the API body.",
+  },
+  {
+    when: "styling",
+    reach: "Tailwind",
+    skip: "styled-components",
+    why: "Stays close to the markup, dies with the markup.",
+  },
+  {
+    when: "state",
+    reach: "URL + server",
+    skip: "Redux, by default",
+    why: "Most state isn't state, it's a query parameter you forgot to write down.",
+  },
+  {
+    when: "deploy",
+    reach: "Docker on a Pi",
+    skip: "Kubernetes",
+    why: "YAGNI is a load-bearing principle here.",
+  },
+  {
+    when: "tests",
+    reach: "Vitest",
+    skip: "Jest + ts-jest config archaeology",
+    why: "ESM-native, fast, no <em>jest.config.cjs</em> spelunking.",
+  },
+  {
+    when: "auth",
+    reach: "boring sessions",
+    skip: "JWT-everywhere",
+    why: "Cookies were fine. Cookies are still fine.",
+  },
+];
+
+const exp = author.experience ?? [];
 ---
 
 <BaseLayout pageTitle="About">
-  <div class="about-page">
-    <!-- Hero Section -->
-    <section class="about-hero">
-      <div class="hero-content">
-        <img src={author.avatar} alt={author.name} class="hero-avatar" />
-        <div class="hero-info">
-          <h1 class="hero-name">{author.name}</h1>
-          <p class="hero-title">
-            <Briefcase size={18} />
-            {author.title}
-          </p>
-          <p class="hero-location">
-            <MapPin size={16} />
-            {author.location}
-          </p>
+  <div class="about">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__intro">
+        <p class="prompt">
+          <span class="prompt__user">tm@blog</span><span class="prompt__sep">:</span><span class="prompt__path">~/about</span><span class="prompt__dollar">$</span>
+          <span class="prompt__cmd">cat readme.md</span>
+        </p>
+        <h1 class="hero__title">
+          {author.name}.
+        </h1>
+        <p class="hero__role">
+          <Briefcase size={16} /> {author.title} · <MapPin size={14} /> {author.location}
+        </p>
+        <p class="hero__lede">
+          I'm an engineer who likes building the thing more than talking about building the thing. The day job is backend systems and developer tools at <strong>MAQ Software</strong>; the off-hours are CLIs, side bots, and writing about both. If a project I built saved you ten minutes, that's the whole point.
+        </p>
+
+        <!-- Stat row -->
+        <ul class="stats" aria-label="By the numbers">
+          {
+            stats.map((s) => (
+              <li class="stat">
+                <span class="stat__v">{s.v}</span>
+                <span class="stat__k">{s.k}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- Avatar / sticker card -->
+      <aside class="card-id" aria-label="Identity card">
+        <img src={author.avatar} alt={author.name} class="card-id__avatar" />
+        <div class="card-id__lines">
+          <p><span class="card-id__k">name</span><span class="card-id__v">{author.name}</span></p>
+          <p><span class="card-id__k">role</span><span class="card-id__v">{author.title}</span></p>
+          <p><span class="card-id__k">city</span><span class="card-id__v">{author.location}</span></p>
+          <p><span class="card-id__k">tz</span><span class="card-id__v">IST · UTC+5:30</span></p>
+          <p><span class="card-id__k">www</span><span class="card-id__v">tapanmeena.com</span></p>
         </div>
-      </div>
+      </aside>
     </section>
 
-    <!-- Bio Section -->
-    <section class="about-section">
-      <h2 class="section-title">About Me</h2>
-      <div class="bio-content">
-        <p>{author.bio}</p>
-      </div>
-    </section>
+    <!-- BIO / BELIEFS -->
+    <section class="block">
+      <header class="block__header">
+        <p class="kicker">§ How I work</p>
+        <h2 class="block__title">A few opinions, not very strong</h2>
+      </header>
 
-    <!-- Skills Section -->
-    {
-      author.skills && (
-        <section class="about-section">
-          <h2 class="section-title">Skills & Technologies</h2>
-          <div class="skills-grid">
-            {author.skills.map((category) => {
-              const IconComponent = category.icon ? skillIcons[category.icon] : null;
-              return (
-                <div class="skill-card">
-                  <div class="skill-card-header">
-                    {IconComponent && (
-                      <div class="skill-icon">
-                        <IconComponent size={24} />
-                      </div>
-                    )}
-                    <h3 class="skill-card-title">{category.name}</h3>
-                  </div>
-                  {category.description && <p class="skill-card-description">{category.description}</p>}
-                  <div class="skill-tags">
-                    {category.skills.map((skill) => (
-                      <span class="skill-tag">{skill}</span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )
-    }
-
-    <!-- Experience Section -->
-    {
-      author.experience && (
-        <section class="about-section">
-          <h2 class="section-title">Experience</h2>
-          <div class="experience-timeline">
-            {author.experience.map((exp, index) => (
-              <div class="experience-item">
-                <div class="experience-marker" />
-                {index < author.experience!.length - 1 && <div class="experience-line" />}
-                <div class="experience-content">
-                  <h3 class="experience-title">{exp.title}</h3>
-                  <p class="experience-company">{exp.company}</p>
-                  <p class="experience-period">{exp.period}</p>
-                  {exp.description && <p class="experience-description">{exp.description}</p>}
-                </div>
+      <div class="beliefs">
+        {
+          beliefs.map((b, i) => (
+            <article class="belief">
+              <span class="belief__num">{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <h3 class="belief__title">{b.title}</h3>
+                <p class="belief__body">{b.body}</p>
               </div>
-            ))}
-          </div>
-        </section>
-      )
-    }
+            </article>
+          ))
+        }
+      </div>
+    </section>
 
-    <!-- What I'm Working On Section -->
+    <!-- FACTS -->
+    <section class="block">
+      <header class="block__header">
+        <p class="kicker">§ Personal data — declared, not inferred</p>
+        <h2 class="block__title">Things I'm willing to admit</h2>
+      </header>
+
+      <dl class="facts">
+        {
+          facts.map((f) => (
+            <div class="fact">
+              <dt>{f.k}</dt>
+              <dd>{f.v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <!-- EXPERIENCE -->
     {
-      featuredProjects.length > 0 && (
-        <section class="about-section">
-          <h2 class="section-title">What I'm Working On</h2>
-          <p class="section-description">Here are some projects I'm currently building or have recently completed.</p>
-          <div class="projects-grid">
-            {featuredProjects.map((project) => (
-              <ProjectCard project={project} />
+      exp.length > 0 && (
+        <section class="block">
+          <header class="block__header">
+            <p class="kicker">§ Experience</p>
+            <h2 class="block__title">Where I've shipped from</h2>
+          </header>
+
+          <ol class="timeline">
+            {exp.map((e, i) => (
+              <li class="tl">
+                <span class="tl__dot" aria-hidden="true" />
+                {i < exp.length - 1 && <span class="tl__line" aria-hidden="true" />}
+                <div class="tl__body">
+                  <p class="tl__period">{e.period}</p>
+                  <h3 class="tl__title">
+                    {e.title} <span class="tl__at">@</span> <span class="tl__co">{e.company}</span>
+                  </h3>
+                  {e.description && <p class="tl__desc">{e.description}</p>}
+                </div>
+              </li>
             ))}
-          </div>
-          <div class="view-all-projects">
-            <Button href="/projects" variant="outline">
-              View All Projects
-            </Button>
-          </div>
+          </ol>
         </section>
       )
     }
 
-    <!-- Connect Section -->
-    <section class="about-section">
-      <h2 class="section-title">Let's Connect</h2>
-      <p class="section-description">I'm always open to discussing new projects, creative ideas, or opportunities to be part of your visions.</p>
-      <div class="social-links">
+    <!-- TASTE -->
+    <section class="block">
+      <header class="block__header">
+        <p class="kicker">§ Taste</p>
+        <h2 class="block__title">Reach for / reach past</h2>
+        <p class="block__sub">
+          Defaults, not dogma. Every one of these has an exception waiting to be written.
+        </p>
+      </header>
+
+      <div class="taste" role="table" aria-label="Tools I reach for vs. tools I skip, by problem">
+        <div class="taste__head" role="row">
+          <span role="columnheader">when</span>
+          <span role="columnheader">reach for</span>
+          <span role="columnheader">reach past</span>
+          <span role="columnheader" class="taste__why-head">why</span>
+        </div>
+        {
+          taste.map((t) => (
+            <div class="taste__row" role="row">
+              <span class="taste__when" role="cell">{t.when}</span>
+              <span class="taste__reach" role="cell">
+                <span class="taste__plus" aria-hidden="true">+</span> {t.reach}
+              </span>
+              <span class="taste__skip" role="cell">
+                <span class="taste__minus" aria-hidden="true">−</span> {t.skip}
+              </span>
+              <span class="taste__why" role="cell" set:html={t.why} />
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ELSEWHERE -->
+    <section class="block">
+      <header class="block__header">
+        <p class="kicker">§ Elsewhere</p>
+        <h2 class="block__title">Find me, but kindly</h2>
+      </header>
+
+      <ul class="elsewhere">
         {
           author.social?.github && (
-            <a href={author.social.github} class="social-link" target="_blank" rel="noopener noreferrer">
-              <Github size={24} />
-              <span>GitHub</span>
-            </a>
+            <li class="elsewhere__row">
+              <a href={author.social.github} target="_blank" rel="noopener noreferrer" class="elsewhere__link">
+                <span class="elsewhere__icon"><Github size={16} /></span>
+                <span class="elsewhere__label">github</span>
+                <span class="elsewhere__handle">@tapanmeena</span>
+                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+              </a>
+            </li>
           )
         }
         {
           author.social?.linkedin && (
-            <a href={author.social.linkedin} class="social-link" target="_blank" rel="noopener noreferrer">
-              <Linkedin size={24} />
-              <span>LinkedIn</span>
-            </a>
+            <li class="elsewhere__row">
+              <a href={author.social.linkedin} target="_blank" rel="noopener noreferrer" class="elsewhere__link">
+                <span class="elsewhere__icon"><Linkedin size={16} /></span>
+                <span class="elsewhere__label">linkedin</span>
+                <span class="elsewhere__handle">in/tapanmeena</span>
+                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+              </a>
+            </li>
           )
         }
         {
           author.social?.twitter && (
-            <a href={author.social.twitter} class="social-link" target="_blank" rel="noopener noreferrer">
-              <Twitter size={24} />
-              <span>Twitter</span>
-            </a>
+            <li class="elsewhere__row">
+              <a href={author.social.twitter} target="_blank" rel="noopener noreferrer" class="elsewhere__link">
+                <span class="elsewhere__icon"><Twitter size={16} /></span>
+                <span class="elsewhere__label">twitter</span>
+                <span class="elsewhere__handle">@tapanmeena3</span>
+                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+              </a>
+            </li>
+          )
+        }
+        {
+          author.email && (
+            <li class="elsewhere__row">
+              <a href={`mailto:${author.email}`} class="elsewhere__link">
+                <span class="elsewhere__icon"><Mail size={16} /></span>
+                <span class="elsewhere__label">email</span>
+                <span class="elsewhere__handle">{author.email}</span>
+                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+              </a>
+            </li>
           )
         }
         {
           author.social?.website && (
-            <a href={author.social.website} class="social-link" target="_blank" rel="noopener noreferrer">
-              <Globe size={24} />
-              <span>Website</span>
-            </a>
+            <li class="elsewhere__row">
+              <a href={author.social.website} target="_blank" rel="noopener noreferrer" class="elsewhere__link">
+                <span class="elsewhere__icon"><Globe size={16} /></span>
+                <span class="elsewhere__label">website</span>
+                <span class="elsewhere__handle">tapanmeena.com</span>
+                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+              </a>
+            </li>
           )
         }
+      </ul>
+    </section>
+
+    <!-- COLOPHON -->
+    <section class="colophon">
+      <div class="colophon__col">
+        <p class="kicker">§ Colophon</p>
+        <p class="colophon__line">
+          Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer">Astro</a>,
+          {" "}TypeScript, and Tailwind. Body set in
+          <span class="mono">Inter</span>; code in
+          <span class="mono">ui-monospace</span>. Hosted on Vercel; the rest of my stuff probably runs on a Pi.
+          The cursor blinks at 1.05s intervals because anything faster felt anxious.
+        </p>
+      </div>
+      <div class="colophon__col">
+        <p class="kicker">§ Next steps</p>
+        <ul class="colophon__links">
+          <li>
+            <a href="/contact" class="colophon__cta">
+              <Mail size={14} /> Say hi <ArrowRight size={14} />
+            </a>
+          </li>
+          <li>
+            <a href="/cursed-knowledge" class="colophon__cta">
+              <Skull size={14} /> Read what hurt <ArrowRight size={14} />
+            </a>
+          </li>
+        </ul>
       </div>
     </section>
   </div>
@@ -174,202 +373,387 @@ const featuredProjects = projects.slice(0, 3);
 <style>
   @reference "tailwindcss";
 
-  .about-page {
-    @apply mx-auto max-w-6xl px-4 pb-16;
+  .about {
+    @apply mx-auto max-w-5xl px-4 pb-20;
   }
 
-  /* Hero Section */
-  .about-hero {
-    @apply py-12 border-b;
-    border-color: var(--color-border);
+  /* ── HERO ────────────────────────────────────────── */
+  .hero {
+    @apply grid gap-10 py-12 md:py-16 md:grid-cols-[1.5fr_1fr] md:gap-14;
   }
-
-  .hero-content {
-    @apply flex flex-col items-center gap-6 text-center md:flex-row md:text-left;
+  .prompt {
+    @apply inline-flex flex-wrap items-center gap-1.5 text-xs mb-6 m-0;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+  .prompt__user { color: var(--color-text); font-weight: 600; }
+  .prompt__path { color: var(--color-accent); }
+  .prompt__sep, .prompt__dollar { color: var(--color-muted); }
+  .prompt__cmd { color: var(--color-text); }
 
-  .hero-avatar {
-    @apply h-32 w-32 rounded-full border-4 shadow-lg;
-    border-color: var(--color-accent);
-  }
-
-  .hero-info {
-    @apply flex flex-col gap-2;
-  }
-
-  .hero-name {
-    @apply text-4xl font-bold;
-    font-family: var(--font-sans);
+  .hero__title {
+    @apply text-4xl md:text-6xl font-bold tracking-tight m-0 leading-tight;
     color: var(--color-text);
+    font-family: var(--font-sans);
   }
-
-  .hero-title {
-    @apply flex items-center justify-center gap-2 text-xl font-medium md:justify-start;
-    color: var(--color-accent);
+  .hero__role {
+    @apply mt-2 inline-flex flex-wrap items-center gap-1.5 text-sm m-0;
+    color: var(--color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-
-  .hero-location {
-    @apply flex items-center justify-center gap-2 text-sm md:justify-start;
+  .hero__lede {
+    @apply mt-5 text-base md:text-lg leading-relaxed max-w-2xl;
     color: var(--color-muted);
   }
-
-  /* Section Styles */
-  .about-section {
-    @apply py-10 border-b;
-    border-color: var(--color-border);
+  .hero__lede strong {
+    color: var(--color-text);
+    font-weight: 600;
   }
 
-  .about-section:last-child {
-    @apply border-b-0;
+  .stats {
+    @apply mt-7 flex flex-wrap gap-x-6 gap-y-3 list-none p-0 m-0;
   }
-
-  .section-title {
-    @apply text-2xl font-bold mb-4;
-    font-family: var(--font-sans);
+  .stat {
+    @apply flex flex-col leading-tight;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .stat__v {
+    @apply text-xl font-bold;
     color: var(--color-text);
   }
-
-  .section-description {
-    @apply text-base mb-6;
+  .stat__k {
+    @apply text-[11px] uppercase mt-0.5;
     color: var(--color-muted);
+    letter-spacing: 0.1em;
   }
 
-  /* Bio */
-  .bio-content {
-    @apply text-lg leading-relaxed;
-    color: var(--color-text);
-  }
-
-  .bio-content p {
-    @apply mb-4;
-  }
-
-  .bio-content p:last-child {
-    @apply mb-0;
-  }
-
-  /* Skills */
-  .skills-grid {
-    @apply grid gap-5 sm:grid-cols-2 lg:grid-cols-4;
-  }
-
-  .skill-card {
-    @apply flex flex-col gap-4 rounded-xl p-5;
+  /* ID card */
+  .card-id {
+    @apply rounded-xl p-5 md:p-6 self-start flex gap-4;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
-    transition: border-color 0.2s ease;
   }
-
-  .skill-card:hover {
-    border-color: var(--color-accent);
-  }
-
-  .skill-card-header {
-    @apply flex items-center gap-3;
-  }
-
-  .skill-icon {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg;
-    background-color: var(--color-bg);
+  .card-id__avatar {
+    @apply w-20 h-20 rounded-md object-cover shrink-0;
     border: 1px solid var(--color-border);
-    color: var(--color-text);
   }
-
-  .skill-card-title {
-    @apply text-lg font-bold;
-    color: var(--color-text);
+  .card-id__lines {
+    @apply flex flex-col gap-1 m-0 p-0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8125rem;
+    min-width: 0;
   }
-
-  .skill-card-description {
-    @apply text-sm leading-relaxed;
+  .card-id__lines p {
+    @apply m-0 inline-flex gap-2;
+  }
+  .card-id__k {
     color: var(--color-muted);
+    min-width: 3rem;
   }
-
-  .skill-tags {
-    @apply flex flex-wrap gap-2;
-  }
-
-  .skill-tag {
-    @apply rounded-full px-3 py-1 text-sm font-medium;
-    background-color: var(--color-bg);
-    border: 1px solid var(--color-border);
+  .card-id__k::after { content: ":"; }
+  .card-id__v {
     color: var(--color-text);
-    transition: all 0.2s ease;
+    word-break: break-all;
   }
 
-  .skill-tag:hover {
-    border-color: var(--color-accent);
+  /* ── BLOCKS ──────────────────────────────────────── */
+  .block {
+    @apply py-10 border-t;
+    border-color: var(--color-border);
+  }
+  .block__header {
+    @apply mb-6;
+  }
+  .kicker {
+    @apply text-xs uppercase mb-1 m-0;
     color: var(--color-accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.1em;
   }
-
-  /* Experience Timeline */
-  .experience-timeline {
-    @apply relative flex flex-col gap-8;
-  }
-
-  .experience-item {
-    @apply relative pl-8;
-  }
-
-  .experience-marker {
-    @apply absolute left-0 top-1 h-4 w-4 rounded-full;
-    background-color: var(--color-accent);
-  }
-
-  .experience-line {
-    @apply absolute left-1.75 top-5 w-0.5;
-    height: calc(100% + 2rem);
-    background-color: var(--color-border);
-  }
-
-  .experience-content {
-    @apply flex flex-col gap-1;
-  }
-
-  .experience-title {
-    @apply text-lg font-semibold;
+  .block__title {
+    @apply text-2xl md:text-3xl font-bold m-0;
     color: var(--color-text);
+    font-family: var(--font-sans);
+    letter-spacing: -0.02em;
   }
 
-  .experience-company {
-    @apply text-base font-medium;
-    color: var(--color-accent);
+  /* ── BELIEFS ─────────────────────────────────────── */
+  .beliefs {
+    @apply grid gap-5 md:grid-cols-2;
   }
-
-  .experience-period {
-    @apply text-sm;
-    color: var(--color-muted);
-  }
-
-  .experience-description {
-    @apply mt-2 text-sm leading-relaxed;
-    color: var(--color-muted);
-  }
-
-  /* Projects Grid */
-  .projects-grid {
-    @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
-  }
-
-  .view-all-projects {
-    @apply mt-6 text-center;
-  }
-
-  /* Social Links */
-  .social-links {
-    @apply flex flex-wrap gap-4;
-  }
-
-  .social-link {
-    @apply flex items-center gap-3 rounded-lg px-5 py-3 text-sm font-medium no-underline transition-all duration-200;
+  .belief {
+    @apply grid gap-3 p-5 rounded-lg;
+    grid-template-columns: 2.25rem 1fr;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
+  }
+  .belief__num {
+    color: var(--color-accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 700;
+    padding-top: 0.125rem;
+  }
+  .belief__title {
+    @apply text-base font-semibold m-0 mb-1.5;
+    color: var(--color-text);
+  }
+  .belief__body {
+    @apply text-sm leading-relaxed m-0;
+    color: var(--color-muted);
+  }
+
+  /* ── FACTS (key/value list) ──────────────────────── */
+  .facts {
+    @apply m-0 p-0;
+    border-top: 1px solid var(--color-border);
+  }
+  .fact {
+    @apply grid gap-4 py-3 m-0;
+    grid-template-columns: 9rem 1fr;
+    border-bottom: 1px dashed var(--color-border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .fact dt {
+    @apply text-sm uppercase;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .fact dd {
+    @apply text-sm m-0 leading-relaxed;
     color: var(--color-text);
   }
 
-  .social-link:hover {
-    border-color: var(--color-accent);
+  /* ── TIMELINE ────────────────────────────────────── */
+  .timeline {
+    @apply list-none p-0 m-0 relative;
+    padding-left: 1.25rem;
+  }
+  .tl {
+    @apply relative pb-7;
+  }
+  .tl:last-child { @apply pb-0; }
+  .tl__dot {
+    @apply absolute w-2 h-2 rounded-full;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 18%, transparent);
+    left: -1.25rem;
+    top: 0.4rem;
+  }
+  .tl__line {
+    @apply absolute w-px;
+    background: var(--color-border);
+    left: -0.96rem;
+    top: 1rem;
+    bottom: -0.25rem;
+  }
+  .tl__period {
+    @apply text-xs uppercase m-0 mb-1;
+    color: var(--color-muted);
+    letter-spacing: 0.08em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .tl__title {
+    @apply text-base md:text-lg font-semibold m-0;
+    color: var(--color-text);
+  }
+  .tl__at {
+    color: var(--color-muted);
+    font-weight: 400;
+    margin: 0 2px;
+  }
+  .tl__co {
     color: var(--color-accent);
-    transform: translateY(-2px);
+  }
+  .tl__desc {
+    @apply text-sm mt-2 m-0 leading-relaxed;
+    color: var(--color-muted);
+  }
+
+  /* ── TASTE TABLE ─────────────────────────────────── */
+  .block__sub {
+    @apply text-sm mt-1.5 m-0;
+    color: var(--color-muted);
+  }
+  .taste {
+    @apply rounded-lg overflow-hidden;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+  }
+  .taste__head,
+  .taste__row {
+    display: grid;
+    grid-template-columns: 8rem 1fr 1fr 1.6fr;
+    column-gap: 1rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8125rem;
+  }
+  .taste__head {
+    @apply text-xs uppercase;
+    color: var(--color-muted);
+    letter-spacing: 0.08em;
+    background-color: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .taste__why-head {
+    color: var(--color-muted);
+  }
+
+  .taste__row {
+    border-bottom: 1px dashed var(--color-border);
+    transition: background-color 0.18s ease;
+  }
+  .taste__row:last-child {
+    border-bottom: none;
+  }
+  .taste__row:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  }
+
+  .taste__when {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .taste__reach {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .taste__skip {
+    color: var(--color-muted);
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--color-muted) 40%, transparent);
+    text-decoration-thickness: 1px;
+  }
+  .taste__why {
+    color: var(--color-muted);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .taste__why em {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-style: normal;
+    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    padding: 0 0.25rem;
+    border-radius: 3px;
+  }
+  .taste__plus {
+    color: #16a34a;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .taste__minus {
+    color: #ef4444;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  @media (max-width: 720px) {
+    .taste__head {
+      display: none;
+    }
+    .taste__row {
+      grid-template-columns: 1fr;
+      gap: 0.375rem;
+      padding: 1rem;
+    }
+    .taste__when {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-muted);
+      font-weight: 500;
+    }
+    .taste__why {
+      padding-top: 0.375rem;
+      border-top: 1px dashed var(--color-border);
+      margin-top: 0.25rem;
+    }
+  }
+
+  /* ── ELSEWHERE ───────────────────────────────────── */
+  .elsewhere {
+    @apply list-none p-0 m-0;
+    border-top: 1px solid var(--color-border);
+  }
+  .elsewhere__row {
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.18s ease;
+  }
+  .elsewhere__row:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  }
+  .elsewhere__link {
+    @apply grid items-center gap-3 py-3 px-2 text-sm no-underline;
+    grid-template-columns: 1.5rem 6rem 1fr 1.25rem;
+    color: var(--color-text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .elsewhere__icon {
+    color: var(--color-accent);
+    display: inline-flex;
+    justify-content: center;
+  }
+  .elsewhere__label {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .elsewhere__handle {
+    color: var(--color-muted);
+    word-break: break-all;
+  }
+  .elsewhere__arrow {
+    color: var(--color-muted);
+    transition: transform 0.18s ease, color 0.18s ease;
+  }
+  .elsewhere__link:hover .elsewhere__arrow {
+    color: var(--color-accent);
+    transform: translate(2px, -2px);
+  }
+
+  /* ── COLOPHON ────────────────────────────────────── */
+  .colophon {
+    @apply mt-12 pt-8 grid gap-8 md:grid-cols-[2fr_1fr];
+    border-top: 1px dashed var(--color-border);
+  }
+  .colophon__line {
+    @apply text-sm leading-relaxed m-0;
+    color: var(--color-muted);
+  }
+  .colophon__line a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px dashed currentColor;
+  }
+  .colophon__line a:hover { color: var(--color-accent-hover); }
+  .colophon .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--color-text);
+  }
+
+  .colophon__links {
+    @apply list-none p-0 m-0 space-y-2;
+  }
+  .colophon__cta {
+    @apply inline-flex items-center gap-2 text-sm no-underline;
+    color: var(--color-text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    transition: color 0.18s ease, gap 0.2s ease;
+  }
+  .colophon__cta:hover {
+    color: var(--color-accent);
+    gap: 0.625rem;
+  }
+
+  /* ── RESPONSIVE TIGHTEN ──────────────────────────── */
+  @media (max-width: 640px) {
+    .fact { grid-template-columns: 7rem 1fr; }
+    .elsewhere__link {
+      grid-template-columns: 1.25rem 5rem 1fr 1rem;
+      column-gap: 0.625rem;
+    }
   }
 </style>
