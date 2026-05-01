@@ -3,18 +3,7 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { authors } from "@data/authors";
 import { getPublishedProjects } from "@utils/projects";
-import {
-  Github,
-  Linkedin,
-  Twitter,
-  Globe,
-  MapPin,
-  Briefcase,
-  ArrowUpRight,
-  ArrowRight,
-  Mail,
-  Skull,
-} from "@lucide/astro";
+import { Github, Linkedin, Twitter, Globe, MapPin, Briefcase, ArrowUpRight, ArrowRight, Mail, Skull } from "@lucide/astro";
 
 const author = authors["tapan-meena"];
 
@@ -126,17 +115,23 @@ const exp = author.experience ?? [];
     <section class="hero">
       <div class="hero__intro">
         <p class="prompt">
-          <span class="prompt__user">tm@blog</span><span class="prompt__sep">:</span><span class="prompt__path">~/about</span><span class="prompt__dollar">$</span>
+          <span class="prompt__user">tm@blog</span><span class="prompt__sep">:</span><span class="prompt__path">~/about</span><span
+            class="prompt__dollar">$</span
+          >
           <span class="prompt__cmd">cat readme.md</span>
         </p>
         <h1 class="hero__title">
           {author.name}.
         </h1>
         <p class="hero__role">
-          <Briefcase size={16} /> {author.title} · <MapPin size={14} /> {author.location}
+          <Briefcase size={16} />
+          {author.title} · <MapPin size={14} />
+          {author.location}
         </p>
         <p class="hero__lede">
-          I'm an engineer who likes building the thing more than talking about building the thing. The day job is backend systems and developer tools at <strong>MAQ Software</strong>; the off-hours are CLIs, side bots, and writing about both. If a project I built saved you ten minutes, that's the whole point.
+          I'm an engineer who likes building the thing more than talking about building the thing. The day job is backend systems and developer tools
+          at <strong>MAQ Software</strong>; the off-hours are CLIs, side bots, and writing about both. If a project I built saved you ten minutes,
+          that's the whole point.
         </p>
 
         <!-- Stat row -->
@@ -239,9 +234,7 @@ const exp = author.experience ?? [];
       <header class="block__header">
         <p class="kicker">§ Taste</p>
         <h2 class="block__title">Reach for / reach past</h2>
-        <p class="block__sub">
-          Defaults, not dogma. Every one of these has an exception waiting to be written.
-        </p>
+        <p class="block__sub">Defaults, not dogma. Every one of these has an exception waiting to be written.</p>
       </header>
 
       <div class="taste" role="table" aria-label="Tools I reach for vs. tools I skip, by problem">
@@ -254,12 +247,20 @@ const exp = author.experience ?? [];
         {
           taste.map((t) => (
             <div class="taste__row" role="row">
-              <span class="taste__when" role="cell">{t.when}</span>
+              <span class="taste__when" role="cell">
+                {t.when}
+              </span>
               <span class="taste__reach" role="cell">
-                <span class="taste__plus" aria-hidden="true">+</span> {t.reach}
+                <span class="taste__plus" aria-hidden="true">
+                  +
+                </span>{" "}
+                {t.reach}
               </span>
               <span class="taste__skip" role="cell">
-                <span class="taste__minus" aria-hidden="true">−</span> {t.skip}
+                <span class="taste__minus" aria-hidden="true">
+                  −
+                </span>{" "}
+                {t.skip}
               </span>
               <span class="taste__why" role="cell" set:html={t.why} />
             </div>
@@ -280,10 +281,14 @@ const exp = author.experience ?? [];
           author.social?.github && (
             <li class="elsewhere__row">
               <a href={author.social.github} target="_blank" rel="noopener noreferrer" class="elsewhere__link">
-                <span class="elsewhere__icon"><Github size={16} /></span>
+                <span class="elsewhere__icon">
+                  <Github size={16} />
+                </span>
                 <span class="elsewhere__label">github</span>
                 <span class="elsewhere__handle">@tapanmeena</span>
-                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+                <span class="elsewhere__arrow">
+                  <ArrowUpRight size={14} />
+                </span>
               </a>
             </li>
           )
@@ -292,10 +297,14 @@ const exp = author.experience ?? [];
           author.social?.linkedin && (
             <li class="elsewhere__row">
               <a href={author.social.linkedin} target="_blank" rel="noopener noreferrer" class="elsewhere__link">
-                <span class="elsewhere__icon"><Linkedin size={16} /></span>
+                <span class="elsewhere__icon">
+                  <Linkedin size={16} />
+                </span>
                 <span class="elsewhere__label">linkedin</span>
                 <span class="elsewhere__handle">in/tapanmeena</span>
-                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+                <span class="elsewhere__arrow">
+                  <ArrowUpRight size={14} />
+                </span>
               </a>
             </li>
           )
@@ -304,10 +313,14 @@ const exp = author.experience ?? [];
           author.social?.twitter && (
             <li class="elsewhere__row">
               <a href={author.social.twitter} target="_blank" rel="noopener noreferrer" class="elsewhere__link">
-                <span class="elsewhere__icon"><Twitter size={16} /></span>
+                <span class="elsewhere__icon">
+                  <Twitter size={16} />
+                </span>
                 <span class="elsewhere__label">twitter</span>
                 <span class="elsewhere__handle">@tapanmeena3</span>
-                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+                <span class="elsewhere__arrow">
+                  <ArrowUpRight size={14} />
+                </span>
               </a>
             </li>
           )
@@ -316,10 +329,14 @@ const exp = author.experience ?? [];
           author.email && (
             <li class="elsewhere__row">
               <a href={`mailto:${author.email}`} class="elsewhere__link">
-                <span class="elsewhere__icon"><Mail size={16} /></span>
+                <span class="elsewhere__icon">
+                  <Mail size={16} />
+                </span>
                 <span class="elsewhere__label">email</span>
                 <span class="elsewhere__handle">{author.email}</span>
-                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+                <span class="elsewhere__arrow">
+                  <ArrowUpRight size={14} />
+                </span>
               </a>
             </li>
           )
@@ -328,10 +345,14 @@ const exp = author.experience ?? [];
           author.social?.website && (
             <li class="elsewhere__row">
               <a href={author.social.website} target="_blank" rel="noopener noreferrer" class="elsewhere__link">
-                <span class="elsewhere__icon"><Globe size={16} /></span>
+                <span class="elsewhere__icon">
+                  <Globe size={16} />
+                </span>
                 <span class="elsewhere__label">website</span>
                 <span class="elsewhere__handle">tapanmeena.com</span>
-                <span class="elsewhere__arrow"><ArrowUpRight size={14} /></span>
+                <span class="elsewhere__arrow">
+                  <ArrowUpRight size={14} />
+                </span>
               </a>
             </li>
           )
@@ -347,8 +368,8 @@ const exp = author.experience ?? [];
           Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer">Astro</a>,
           {" "}TypeScript, and Tailwind. Body set in
           <span class="mono">Inter</span>; code in
-          <span class="mono">ui-monospace</span>. Hosted on Vercel; the rest of my stuff probably runs on a Pi.
-          The cursor blinks at 1.05s intervals because anything faster felt anxious.
+          <span class="mono">ui-monospace</span>. Hosted on Vercel; the rest of my stuff probably runs on a Pi. The cursor blinks at 1.05s intervals
+          because anything faster felt anxious.
         </p>
       </div>
       <div class="colophon__col">
@@ -374,7 +395,7 @@ const exp = author.experience ?? [];
   @reference "tailwindcss";
 
   .about {
-    @apply mx-auto max-w-5xl px-4 pb-20;
+    @apply mx-auto max-w-6xl px-4 pb-20;
   }
 
   /* ── HERO ────────────────────────────────────────── */
@@ -386,10 +407,20 @@ const exp = author.experience ?? [];
     color: var(--color-muted);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-  .prompt__user { color: var(--color-text); font-weight: 600; }
-  .prompt__path { color: var(--color-accent); }
-  .prompt__sep, .prompt__dollar { color: var(--color-muted); }
-  .prompt__cmd { color: var(--color-text); }
+  .prompt__user {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .prompt__path {
+    color: var(--color-accent);
+  }
+  .prompt__sep,
+  .prompt__dollar {
+    color: var(--color-muted);
+  }
+  .prompt__cmd {
+    color: var(--color-text);
+  }
 
   .hero__title {
     @apply text-4xl md:text-6xl font-bold tracking-tight m-0 leading-tight;
@@ -450,7 +481,9 @@ const exp = author.experience ?? [];
     color: var(--color-muted);
     min-width: 3rem;
   }
-  .card-id__k::after { content: ":"; }
+  .card-id__k::after {
+    content: ":";
+  }
   .card-id__v {
     color: var(--color-text);
     word-break: break-all;
@@ -532,7 +565,9 @@ const exp = author.experience ?? [];
   .tl {
     @apply relative pb-7;
   }
-  .tl:last-child { @apply pb-0; }
+  .tl:last-child {
+    @apply pb-0;
+  }
   .tl__dot {
     @apply absolute w-2 h-2 rounded-full;
     background: var(--color-accent);
@@ -707,7 +742,9 @@ const exp = author.experience ?? [];
   }
   .elsewhere__arrow {
     color: var(--color-muted);
-    transition: transform 0.18s ease, color 0.18s ease;
+    transition:
+      transform 0.18s ease,
+      color 0.18s ease;
   }
   .elsewhere__link:hover .elsewhere__arrow {
     color: var(--color-accent);
@@ -728,7 +765,9 @@ const exp = author.experience ?? [];
     text-decoration: none;
     border-bottom: 1px dashed currentColor;
   }
-  .colophon__line a:hover { color: var(--color-accent-hover); }
+  .colophon__line a:hover {
+    color: var(--color-accent-hover);
+  }
   .colophon .mono {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     color: var(--color-text);
@@ -741,7 +780,9 @@ const exp = author.experience ?? [];
     @apply inline-flex items-center gap-2 text-sm no-underline;
     color: var(--color-text);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    transition: color 0.18s ease, gap 0.2s ease;
+    transition:
+      color 0.18s ease,
+      gap 0.2s ease;
   }
   .colophon__cta:hover {
     color: var(--color-accent);
@@ -750,7 +791,9 @@ const exp = author.experience ?? [];
 
   /* ── RESPONSIVE TIGHTEN ──────────────────────────── */
   @media (max-width: 640px) {
-    .fact { grid-template-columns: 7rem 1fr; }
+    .fact {
+      grid-template-columns: 7rem 1fr;
+    }
     .elsewhere__link {
       grid-template-columns: 1.25rem 5rem 1fr 1rem;
       column-gap: 0.625rem;
