@@ -13,10 +13,7 @@ const navLinks = [
 
 // Build the breadcrumb path segments shown in the logo prompt.
 // "/" → ["~"]; "/blog" → ["~", "blog"]; "/blog/foo/bar" → ["~", "blog", "foo", "bar"]
-const segments = pathname
-  .replace(/\/+$/, "")
-  .split("/")
-  .filter(Boolean);
+const segments = pathname.replace(/\/+$/, "").split("/").filter(Boolean);
 const pathParts = segments.length === 0 ? ["~"] : ["~", ...segments];
 ---
 
