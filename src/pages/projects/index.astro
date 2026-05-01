@@ -1,53 +1,1226 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
-import ProjectTimeline from "@components/projects/ProjectTimeline.astro";
-import TechStackFilter from "@components/projects/TechStackFilter.astro";
-import { getPublishedProjects, collectTechStackWithCounts } from "@utils/projects";
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import { ExternalLink, Github, FileText, Search, X } from "@lucide/astro";
+import { getPublishedProjects, groupProjectsByYear, collectTechStackWithCounts, isOngoing, normalizeTech } from "@utils/projects";
 
 const allProjects = await getCollection("projects");
 const projects = getPublishedProjects(allProjects);
+const projectsByYear = groupProjectsByYear(projects);
 const techStacks = collectTechStackWithCounts(projects);
 
-// Get tech filter from URL if present
-const url = Astro.url;
-const activeTech = url.searchParams.get("tech") || undefined;
+const total = projects.length;
+const inProgress = projects.filter((p) => p.data.status === "in-progress").length;
+const completed = projects.filter((p) => p.data.status === "completed").length;
+const onHold = projects.filter((p) => p.data.status === "on-hold").length;
+
+const yearList = [...projectsByYear.keys()];
+const earliest = Math.min(...yearList);
+const latest = Math.max(...yearList);
+
+// Category palette — used for a quiet accent dot, not as a stripe.
+const catColor: Record<string, string> = {
+  Fintech: "#10b981",
+  "Web Apps": "#3b82f6",
+  "Web Development": "#3b82f6",
+  "Mobile Apps": "#8b5cf6",
+  "Desktop Apps": "#06b6d4",
+  "CLI Tools": "#f59e0b",
+  Libraries: "#ec4899",
+  Games: "#ef4444",
+  "ML/AI": "#a855f7",
+  "IoT/Security": "#14b8a6",
+};
+const colorOf = (c?: string) => (c && catColor[c]) || "#6366f1";
+
+const statusWord: Record<string, string> = {
+  "in-progress": "active",
+  completed: "shipped",
+  "on-hold": "on hold",
+  archived: "archived",
+};
+
+// Numbered chronologically forward (first project = №01)
+const numbered = [...projects].reverse();
+const numberOf = new Map(numbered.map((p, i) => [p.id, i + 1]));
+const pad = (n: number) => String(n).padStart(2, "0");
+
+const monthShort = (d: Date) => d.toLocaleString("default", { month: "short" }).toUpperCase();
 ---
 
-<BaseLayout pageTitle="Projects">
-  <div class="projects-page">
-    <header class="page-header">
-      <h1 class="page-title">Projects</h1>
-      <p class="page-description">A timeline of projects I've worked on. Filter by technology to explore specific areas.</p>
+<BaseLayout pageTitle="Projects — Tapan Meena">
+  <div class="logbook">
+    <!-- ─────────── MASTHEAD ─────────── -->
+    <header class="mast">
+      <div class="mast-rule" aria-hidden="true">
+        <span class="mast-rule-tick"></span>
+        <span class="mast-rule-line"></span>
+        <span class="mast-rule-tick"></span>
+      </div>
+      <div class="mast-row">
+        <div class="mast-issue">
+          <span class="mast-issue-label">vol.&nbsp;01</span>
+          <span class="mast-issue-num">{earliest}–{latest}</span>
+        </div>
+        <h1 class="mast-title">
+          <span class="mast-title-pre">the</span>
+          <span class="mast-title-main">Workshop&nbsp;Log</span>
+        </h1>
+        <div class="mast-counts">
+          <span><b>{total}</b> entries</span>
+          <span><b>{completed}</b> shipped</span>
+          <span><b>{inProgress}</b> live</span>
+          <span><b>{onHold}</b> shelved</span>
+        </div>
+      </div>
+      <p class="mast-note">a chronological dump of things i've built, half-built, abandoned, or am still wrestling with — newest first.</p>
+      <div class="mast-rule" aria-hidden="true">
+        <span class="mast-rule-tick"></span>
+        <span class="mast-rule-line"></span>
+        <span class="mast-rule-tick"></span>
+      </div>
     </header>
 
-    <TechStackFilter techStacks={techStacks} activeTech={activeTech} />
+    <!-- ─────────── INLINE CONTROLS (NOT STICKY) ─────────── -->
+    <section class="controls" aria-label="Search and filter">
+      <div class="controls-row">
+        <label class="ctl-search">
+          <span class="ctl-prompt">grep&nbsp;»</span>
+          <input id="proj-search" type="search" placeholder="title, tech, category…" autocomplete="off" spellcheck="false" />
+          <button id="ctl-clear" type="button" class="ctl-clear" aria-label="Clear search" hidden>
+            <X size={12} />
+          </button>
+        </label>
+        <div class="ctl-views" role="group" aria-label="Layout">
+          <button class="vw active" data-view="log" type="button">log</button>
+          <button class="vw" data-view="cards" type="button">cards</button>
+        </div>
+      </div>
 
-    <ProjectTimeline projects={projects} />
+      <div class="controls-row controls-line">
+        <span class="ctl-tag">status</span>
+        <button class="dl active" data-status="all" type="button">all</button>
+        <button class="dl" data-status="in-progress" type="button">active</button>
+        <button class="dl" data-status="completed" type="button">shipped</button>
+        <button class="dl" data-status="on-hold" type="button">shelved</button>
+      </div>
+
+      <div class="controls-row controls-line">
+        <span class="ctl-tag">tech</span>
+        <button class="dl active" data-tech="all" type="button">all</button>
+        {
+          techStacks.slice(0, 12).map((t) => (
+            <button class="dl" data-tech={normalizeTech(t.name)} type="button">
+              {t.name.toLowerCase()}
+              <span class="dl-num">·{t.count}</span>
+            </button>
+          ))
+        }
+        {
+          techStacks.length > 12 && (
+            <details class="more">
+              <summary class="dl dl-more">+{techStacks.length - 12} more</summary>
+              <div class="more-pop">
+                {techStacks.slice(12).map((t) => (
+                  <button class="dl" data-tech={normalizeTech(t.name)} type="button">
+                    {t.name.toLowerCase()}
+                    <span class="dl-num">·{t.count}</span>
+                  </button>
+                ))}
+              </div>
+            </details>
+          )
+        }
+      </div>
+
+      <div class="controls-foot">
+        <span id="result-count">{total}</span><span class="foot-dim">/{total}&nbsp;showing</span>
+        <button id="reset-filters" type="button" class="reset">— reset</button>
+      </div>
+    </section>
+
+    <!-- ─────────── LOG VIEW (default) ─────────── -->
+    <section class="view view-log active" data-view="log">
+      {
+        [...projectsByYear.entries()].map(([year, yearProjects]) => (
+          <div class="yr" data-year={year}>
+            <div class="yr-mark" aria-hidden="true">
+              <span class="yr-text">{year}</span>
+            </div>
+            <div class="yr-meta">
+              <span>{year}</span>
+              <span class="yr-dot">·</span>
+              <span>
+                {yearProjects.length} project{yearProjects.length === 1 ? "" : "s"}
+              </span>
+            </div>
+            <ul class="entries">
+              {yearProjects.map((p) => {
+                const num = numberOf.get(p.id)!;
+                const accent = colorOf(p.data.category);
+                const start = new Date(p.data.startDate);
+                const ongoing = isOngoing(p);
+                return (
+                  <li
+                    class="entry project-item"
+                    data-status={p.data.status}
+                    data-tech={p.data.techStack.map(normalizeTech).join(",")}
+                    data-search={[p.data.title, p.data.description, p.data.category, ...p.data.techStack].join(" ").toLowerCase()}
+                    style={`--accent:${accent}`}
+                  >
+                    <a class="entry-link" href={`/projects/${p.id}`}>
+                      <div class="e-gutter">
+                        <span class="e-num">№{pad(num)}</span>
+                        <span class="e-month">{monthShort(start)}</span>
+                      </div>
+                      <div class="e-body">
+                        <div class="e-line e-line-1">
+                          <h3 class="e-title">
+                            {p.data.title}
+                            {p.data.featured && (
+                              <span class="e-star" title="featured">
+                                ★
+                              </span>
+                            )}
+                          </h3>
+                          <span class="e-status">
+                            <span class={`e-blip ${ongoing ? "blip-pulse" : ""}`} />
+                            {statusWord[p.data.status]}
+                          </span>
+                        </div>
+                        <p class="e-desc">{p.data.description}</p>
+                        <div class="e-line e-line-2">
+                          <div class="e-tags">
+                            {p.data.category && <span class="e-cat">{p.data.category.toLowerCase()}</span>}
+                            <span class="e-stack">
+                              {p.data.techStack.slice(0, 6).join(" · ")}
+                              {p.data.techStack.length > 6 && ` · +${p.data.techStack.length - 6}`}
+                            </span>
+                          </div>
+                          <div class="e-icons" aria-hidden="true">
+                            {p.data.liveUrl && (
+                              <span title="has live">
+                                <ExternalLink size={11} />
+                              </span>
+                            )}
+                            {p.data.repoUrl && (
+                              <span title="has repo">
+                                <Github size={11} />
+                              </span>
+                            )}
+                            {p.data.blogUrl && (
+                              <span title="has writeup">
+                                <FileText size={11} />
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))
+      }
+    </section>
+
+    <!-- ─────────── CARDS VIEW ─────────── -->
+    <section class="view view-cards" data-view="cards">
+      <div class="cards">
+        {
+          projects.map((p) => {
+            const num = numberOf.get(p.id)!;
+            const img = p.data.coverImage as ImageMetadata | undefined;
+            const accent = colorOf(p.data.category);
+            const ongoing = isOngoing(p);
+            const initials = p.data.title
+              .split(/\s+/)
+              .map((w) => w[0])
+              .filter(Boolean)
+              .slice(0, 2)
+              .join("");
+            return (
+              <article
+                class="card project-item"
+                data-status={p.data.status}
+                data-tech={p.data.techStack.map(normalizeTech).join(",")}
+                data-search={[p.data.title, p.data.description, p.data.category, ...p.data.techStack].join(" ").toLowerCase()}
+                style={`--accent:${accent}`}
+              >
+                <a href={`/projects/${p.id}`} class="card-link">
+                  <div class="card-tape" aria-hidden="true" />
+                  <div class="card-head">
+                    <span class="card-num">№{pad(num)}</span>
+                    <span class="card-stat">
+                      <span class={`e-blip ${ongoing ? "blip-pulse" : ""}`} />
+                      {statusWord[p.data.status]}
+                    </span>
+                  </div>
+                  <div class="card-art">
+                    {img ? (
+                      <Image src={img} alt={`Cover for ${p.data.title}`} width={480} height={270} class="card-img" />
+                    ) : (
+                      <div class="card-noimg">
+                        <span class="ni-mono">{initials}</span>
+                        <span class="ni-grid" aria-hidden="true" />
+                        <span class="ni-corner ni-tl" />
+                        <span class="ni-corner ni-tr" />
+                        <span class="ni-corner ni-bl" />
+                        <span class="ni-corner ni-br" />
+                      </div>
+                    )}
+                    {p.data.featured && <span class="card-stamp">featured</span>}
+                  </div>
+                  <div class="card-body">
+                    {p.data.category && <span class="card-cat">{p.data.category.toLowerCase()}</span>}
+                    <h3 class="card-title">{p.data.title}</h3>
+                    <p class="card-desc">{p.data.description}</p>
+                    <p class="card-stack">
+                      {p.data.techStack.slice(0, 5).join(" · ")}
+                      {p.data.techStack.length > 5 && ` · +${p.data.techStack.length - 5}`}
+                    </p>
+                  </div>
+                </a>
+              </article>
+            );
+          })
+        }
+      </div>
+    </section>
+
+    <div id="empty-state" class="empty hidden">
+      <p>—&nbsp;nothing matches&nbsp;—</p>
+      <button id="empty-reset" type="button" class="reset">reset filters</button>
+    </div>
+
+    <!-- ─────────── COLOPHON ─────────── -->
+    <footer class="colophon">
+      <div class="mast-rule" aria-hidden="true">
+        <span class="mast-rule-tick"></span>
+        <span class="mast-rule-line"></span>
+        <span class="mast-rule-tick"></span>
+      </div>
+      <p>
+        compiled by hand · set in inter & merriweather · timeline auto-generated from
+        <a href="https://github.com/tapanmeena" target="_blank" rel="noopener noreferrer">github</a>
+        and a folder of markdown
+      </p>
+    </footer>
   </div>
+
+  <script is:inline>
+    const state = { status: "all", tech: "all", q: "", view: "log" };
+    const items = Array.from(document.querySelectorAll(".project-item"));
+    const search = document.getElementById("proj-search");
+    const resultEl = document.getElementById("result-count");
+    const emptyEl = document.getElementById("empty-state");
+    const clearBtn = document.getElementById("ctl-clear");
+
+    function applyFilters() {
+      let visible = 0;
+      items.forEach((el) => {
+        const status = el.dataset.status || "";
+        const tech = (el.dataset.tech || "").split(",");
+        const text = el.dataset.search || "";
+        const ok =
+          (state.status === "all" || status === state.status) &&
+          (state.tech === "all" || tech.includes(state.tech)) &&
+          (!state.q || text.includes(state.q));
+        el.classList.toggle("filtered-out", !ok);
+        if (ok) visible++;
+      });
+      document.querySelectorAll(".yr").forEach((y) => {
+        const any = y.querySelector(".project-item:not(.filtered-out)");
+        y.classList.toggle("yr-hidden", !any);
+      });
+      const distinct = new Set();
+      items.forEach((i) => {
+        if (!i.classList.contains("filtered-out")) {
+          const a = i.querySelector("a[href]");
+          if (a) distinct.add(a.getAttribute("href"));
+        }
+      });
+      const count = distinct.size || items.filter((i) => !i.classList.contains("filtered-out")).length;
+      if (resultEl) resultEl.textContent = String(count);
+      emptyEl?.classList.toggle("hidden", visible > 0);
+    }
+
+    document.querySelectorAll(".vw").forEach((b) => {
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".vw").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        state.view = b.dataset.view;
+        document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+        document.querySelector(`.view[data-view="${state.view}"]`)?.classList.add("active");
+      });
+    });
+
+    document.querySelectorAll("[data-status]").forEach((b) => {
+      b.addEventListener("click", () => {
+        document.querySelectorAll("[data-status]").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        state.status = b.dataset.status;
+        applyFilters();
+      });
+    });
+
+    function setActiveTech(tech) {
+      document.querySelectorAll("[data-tech]").forEach((b) => b.classList.toggle("active", b.dataset.tech === tech));
+      state.tech = tech;
+      applyFilters();
+    }
+    document.querySelectorAll("[data-tech]").forEach((b) => {
+      b.addEventListener("click", () => setActiveTech(b.dataset.tech));
+    });
+
+    let timer;
+    search?.addEventListener("input", (e) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        state.q = (e.target.value || "").trim().toLowerCase();
+        if (clearBtn) clearBtn.hidden = !state.q;
+        applyFilters();
+      }, 80);
+    });
+    clearBtn?.addEventListener("click", () => {
+      if (search) search.value = "";
+      state.q = "";
+      clearBtn.hidden = true;
+      applyFilters();
+      search?.focus();
+    });
+
+    function resetAll() {
+      state.status = "all";
+      state.tech = "all";
+      state.q = "";
+      if (search) search.value = "";
+      if (clearBtn) clearBtn.hidden = true;
+      document.querySelectorAll("[data-status]").forEach((b) => b.classList.toggle("active", b.dataset.status === "all"));
+      document.querySelectorAll("[data-tech]").forEach((b) => b.classList.toggle("active", b.dataset.tech === "all"));
+      applyFilters();
+    }
+    document.getElementById("reset-filters")?.addEventListener("click", resetAll);
+    document.getElementById("empty-reset")?.addEventListener("click", resetAll);
+
+    applyFilters();
+  </script>
+
+  <style>
+    @reference "tailwindcss";
+
+    .logbook {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 5rem;
+      color: var(--color-text);
+    }
+
+    /* ─────────── MASTHEAD ─────────── */
+    .mast {
+      margin-bottom: 1.6rem;
+    }
+    .mast-rule {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 0.4rem 0;
+    }
+    .mast-rule-line {
+      flex: 1;
+      height: 1px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
+    .mast-rule-tick {
+      width: 1px;
+      height: 8px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
+    .mast-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.4rem 1rem;
+      align-items: end;
+      padding: 0.6rem 0.1rem 0.4rem;
+    }
+    @media (min-width: 760px) {
+      .mast-row {
+        grid-template-columns: auto 1fr auto;
+      }
+    }
+    .mast-issue {
+      display: flex;
+      flex-direction: column;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1.4;
+    }
+    .mast-issue-num {
+      color: var(--color-text);
+      font-weight: 700;
+    }
+    .mast-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-weight: 700;
+      font-style: italic;
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      letter-spacing: -0.015em;
+      line-height: 0.95;
+      margin: 0;
+      text-align: center;
+    }
+    .mast-title-pre {
+      display: block;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 0.6em;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 4px;
+      font-family: ui-monospace, monospace;
+    }
+    .mast-title-main {
+      display: inline-block;
+    }
+    .mast-counts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 14px;
+      justify-content: center;
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      letter-spacing: 0.04em;
+    }
+    @media (min-width: 760px) {
+      .mast-counts {
+        justify-content: flex-end;
+      }
+    }
+    .mast-counts b {
+      color: var(--color-text);
+      font-weight: 700;
+    }
+    .mast-note {
+      max-width: 640px;
+      margin: 0.6rem auto 0.6rem;
+      text-align: center;
+      font-family: "Merriweather", Georgia, serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--color-muted);
+      line-height: 1.55;
+    }
+
+    /* ─────────── CONTROLS (inline, NOT sticky) ─────────── */
+    .controls {
+      margin: 1.5rem 0 2.5rem;
+      padding: 0;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.78rem;
+    }
+    .controls-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      padding: 6px 0;
+    }
+    .controls-line {
+      border-top: 1px dashed var(--color-border);
+    }
+    .ctl-search {
+      flex: 1;
+      min-width: 220px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      background: var(--color-bg);
+    }
+    .ctl-prompt {
+      color: var(--color-muted);
+      font-weight: 600;
+      user-select: none;
+    }
+    .ctl-search input {
+      flex: 1;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--color-text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 4px 0;
+    }
+    .ctl-search input::placeholder {
+      color: var(--color-muted);
+      opacity: 0.7;
+    }
+    .ctl-clear {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border: 0;
+      background: transparent;
+      color: var(--color-muted);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .ctl-clear:hover {
+      color: var(--color-text);
+      background: var(--color-surface);
+    }
+    .ctl-views {
+      display: inline-flex;
+      gap: 2px;
+      padding: 2px;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      background: var(--color-bg);
+    }
+    .vw {
+      padding: 4px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--color-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.75rem;
+      border-radius: 3px;
+      letter-spacing: 0.05em;
+      transition:
+        color 0.15s ease,
+        background 0.15s ease;
+    }
+    .vw:hover {
+      color: var(--color-text);
+    }
+    .vw.active {
+      background: var(--color-text);
+      color: var(--color-bg);
+    }
+
+    .ctl-tag {
+      color: var(--color-muted);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.66rem;
+      margin-right: 2px;
+      user-select: none;
+    }
+    .ctl-tag::after {
+      content: ":";
+      margin-left: 2px;
+    }
+
+    /* "dieline" pills — minimal, type-only */
+    .dl {
+      padding: 2px 8px;
+      border: 0;
+      background: transparent;
+      color: var(--color-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.78rem;
+      border-radius: 3px;
+      transition:
+        color 0.15s ease,
+        background 0.15s ease;
+      position: relative;
+    }
+    .dl:hover {
+      color: var(--color-text);
+      background: var(--color-surface);
+    }
+    .dl.active {
+      color: var(--color-bg);
+      background: var(--color-text);
+      font-weight: 600;
+    }
+    .dl-num {
+      opacity: 0.55;
+      margin-left: 2px;
+      font-size: 0.92em;
+    }
+    .dl-more {
+      cursor: pointer;
+      list-style: none;
+      color: var(--color-text);
+      font-style: italic;
+    }
+    .dl-more::-webkit-details-marker {
+      display: none;
+    }
+    .more {
+      position: relative;
+    }
+    .more-pop {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      z-index: 50;
+      max-width: 360px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 8px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .controls-foot {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 8px 0 0;
+      margin-top: 4px;
+      border-top: 1px solid var(--color-border);
+      font-size: 0.74rem;
+      color: var(--color-text);
+    }
+    .foot-dim {
+      color: var(--color-muted);
+    }
+    .reset {
+      border: 0;
+      background: transparent;
+      color: var(--color-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0;
+    }
+    .reset:hover {
+      color: var(--color-text);
+    }
+
+    /* ─────────── VIEWS ─────────── */
+    .view {
+      display: none;
+    }
+    .view.active {
+      display: block;
+    }
+    .project-item.filtered-out {
+      display: none !important;
+    }
+
+    /* ─────────── LOG VIEW ─────────── */
+    .yr {
+      position: relative;
+      padding: 0 0 1.25rem 0;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .yr:last-of-type {
+      border-bottom: 0;
+    }
+    .yr-hidden {
+      display: none;
+    }
+
+    .yr-mark {
+      position: absolute;
+      left: -2px;
+      top: 0;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+    }
+    @media (min-width: 920px) {
+      .yr-mark {
+        display: block;
+        left: -110px;
+        top: 8px;
+      }
+    }
+    .yr-text {
+      display: block;
+      font-family: "Merriweather", Georgia, serif;
+      font-weight: 900;
+      font-size: 5.5rem;
+      line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: 1.2px var(--color-border);
+      letter-spacing: -0.04em;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+    .yr-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      padding: 0.4rem 0 0.9rem;
+      border-bottom: 1px dashed var(--color-border);
+      margin-bottom: 0.7rem;
+    }
+    .yr-meta span:first-child {
+      color: var(--color-text);
+      font-weight: 700;
+    }
+    .yr-dot {
+      opacity: 0.5;
+    }
+
+    .entries {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .entry {
+      border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+    }
+    .entry:first-child {
+      border-top: 0;
+    }
+    .entry-link {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 14px;
+      padding: 0.95rem 0.4rem;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.18s ease;
+      position: relative;
+    }
+    @media (min-width: 600px) {
+      .entry-link {
+        grid-template-columns: 90px 1fr;
+        gap: 22px;
+      }
+    }
+    .entry-link::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+    .entry-link:hover {
+      background: var(--color-surface);
+    }
+    .entry-link:hover::before {
+      opacity: 1;
+    }
+
+    .e-gutter {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      font-family: ui-monospace, monospace;
+      padding-top: 2px;
+    }
+    .e-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: 0.02em;
+    }
+    .e-month {
+      font-size: 0.66rem;
+      color: var(--color-muted);
+      letter-spacing: 0.16em;
+    }
+
+    .e-body {
+      min-width: 0;
+    }
+    .e-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .e-line-1 {
+      margin-bottom: 4px;
+    }
+    .e-line-2 {
+      margin-top: 8px;
+    }
+    .e-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.25;
+      margin: 0;
+      color: var(--color-text);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .entry-link:hover .e-title {
+      color: var(--accent);
+    }
+    .e-star {
+      color: #f59e0b;
+      font-size: 0.85em;
+    }
+    .e-status {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      color: var(--color-muted);
+      text-transform: lowercase;
+    }
+    .e-blip {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .blip-pulse {
+      animation: blip 1.8s infinite;
+    }
+    @keyframes blip {
+      0% {
+        box-shadow: 0 0 0 0 var(--accent);
+      }
+      70% {
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent);
+      }
+      100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+      }
+    }
+    .e-desc {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: var(--color-muted);
+    }
+    .e-tags {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 8px;
+      min-width: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+    }
+    .e-cat {
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 0.66rem;
+    }
+    .e-cat::after {
+      content: " //";
+      opacity: 0.4;
+      margin-left: 2px;
+    }
+    .e-stack {
+      color: var(--color-muted);
+      word-break: break-word;
+    }
+    .e-icons {
+      display: flex;
+      gap: 6px;
+      color: var(--color-muted);
+      flex-shrink: 0;
+    }
+    .e-icons span {
+      display: inline-flex;
+    }
+
+    /* ─────────── CARDS VIEW ─────────── */
+    .cards {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    .card {
+      position: relative;
+      transition: transform 0.25s ease;
+    }
+    .card:nth-child(3n + 1) {
+      transform: rotate(-0.3deg);
+    }
+    .card:nth-child(3n + 2) {
+      transform: rotate(0.4deg);
+    }
+    .card:hover {
+      transform: rotate(0deg) translateY(-3px);
+      z-index: 2;
+    }
+    .card-link {
+      display: block;
+      padding: 14px 14px 16px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      text-decoration: none;
+      color: inherit;
+      box-shadow:
+        0 1px 0 var(--color-border),
+        0 8px 22px -16px rgba(0, 0, 0, 0.15);
+      transition:
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+      position: relative;
+    }
+    .card:hover .card-link {
+      border-color: color-mix(in srgb, var(--accent) 50%, var(--color-border));
+      box-shadow:
+        0 1px 0 var(--accent),
+        0 14px 28px -14px color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+    /* Tape strip */
+    .card-tape {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-3deg);
+      width: 70px;
+      height: 14px;
+      background: color-mix(in srgb, var(--accent) 35%, var(--color-bg));
+      border: 1px dashed color-mix(in srgb, var(--accent) 60%, var(--color-border));
+      opacity: 0.7;
+      border-radius: 1px;
+      z-index: 3;
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--color-border);
+    }
+    .card-num {
+      color: var(--color-text);
+      font-weight: 700;
+    }
+    .card-stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-transform: lowercase;
+    }
+
+    .card-art {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+    }
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition:
+        transform 0.4s ease,
+        filter 0.3s ease;
+      filter: grayscale(0.15);
+    }
+    .card:hover .card-img {
+      transform: scale(1.04);
+      filter: grayscale(0);
+    }
+
+    /* No-image art: monogram on a hand-drawn-ish bordered plate */
+    .card-noimg {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      background: radial-gradient(ellipse at center, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%), var(--color-bg);
+    }
+    .ni-mono {
+      font-family: "Merriweather", Georgia, serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: 4rem;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: color-mix(in srgb, var(--accent) 75%, var(--color-text));
+      mix-blend-mode: normal;
+    }
+    .ni-grid {
+      position: absolute;
+      inset: 8px;
+      background-image:
+        linear-gradient(color-mix(in srgb, var(--accent) 18%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--accent) 18%, transparent) 1px, transparent 1px);
+      background-size: 20px 20px;
+      opacity: 0.45;
+      pointer-events: none;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    }
+    .ni-corner {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid color-mix(in srgb, var(--accent) 65%, var(--color-border));
+    }
+    .ni-tl {
+      top: 6px;
+      left: 6px;
+      border-right: 0;
+      border-bottom: 0;
+    }
+    .ni-tr {
+      top: 6px;
+      right: 6px;
+      border-left: 0;
+      border-bottom: 0;
+    }
+    .ni-bl {
+      bottom: 6px;
+      left: 6px;
+      border-right: 0;
+      border-top: 0;
+    }
+    .ni-br {
+      bottom: 6px;
+      right: 6px;
+      border-left: 0;
+      border-top: 0;
+    }
+
+    .card-stamp {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 2px 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #f59e0b;
+      border: 1.5px solid #f59e0b;
+      transform: rotate(-6deg);
+      background: color-mix(in srgb, #f59e0b 12%, var(--color-bg));
+      border-radius: 2px;
+    }
+
+    .card-body {
+      padding-top: 12px;
+    }
+    .card-cat {
+      display: inline-block;
+      font-family: ui-monospace, monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0 0 6px;
+      color: var(--color-text);
+    }
+    .card:hover .card-title {
+      color: var(--accent);
+    }
+    .card-desc {
+      margin: 0 0 8px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--color-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-stack {
+      margin: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* ─────────── EMPTY ─────────── */
+    .empty {
+      padding: 3rem 1rem;
+      text-align: center;
+      font-family: ui-monospace, monospace;
+      color: var(--color-muted);
+    }
+    .empty.hidden {
+      display: none;
+    }
+    .empty p {
+      font-style: italic;
+      margin: 0 0 8px;
+    }
+
+    /* ─────────── COLOPHON ─────────── */
+    .colophon {
+      margin-top: 3rem;
+      text-align: center;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.04em;
+    }
+    .colophon p {
+      margin: 0.6rem 0 0;
+    }
+    .colophon a {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card,
+      .card *,
+      .blip-pulse {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+      }
+    }
+  </style>
 </BaseLayout>
-
-<style>
-  @reference "tailwindcss";
-
-  .projects-page {
-    @apply mx-auto max-w-6xl px-4 pb-12;
-    /* @apply mx-auto max-w-6xl px-4 pb-12; */
-  }
-
-  .page-header {
-    @apply mb-8 pt-8;
-  }
-
-  .page-title {
-    @apply text-4xl font-bold mb-3;
-    font-family: var(--font-sans);
-    color: var(--color-text);
-  }
-
-  .page-description {
-    @apply text-lg;
-    color: var(--color-muted);
-    margin: 0;
-  }
-</style>

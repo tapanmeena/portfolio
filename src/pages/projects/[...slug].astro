@@ -4,8 +4,8 @@ import type { ImageMetadata } from "astro";
 import { getCollection, render } from "astro:content";
 import { Image } from "astro:assets";
 import BaseLayout from "@layouts/BaseLayout.astro";
-import { ExternalLink, Github, ArrowLeft, Calendar, Folder } from "@lucide/astro";
-import { getPublishedProjects, getProjectDateRange, isOngoing } from "@utils/projects";
+import { ExternalLink, Github, FileText, ArrowLeft, ArrowRight } from "@lucide/astro";
+import { getPublishedProjects, formatProjectDate, getProjectDateRange, isOngoing, normalizeTech } from "@utils/projects";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
@@ -17,318 +17,1169 @@ export async function getStaticPaths() {
     }));
 }
 
-type Props = {
-  project: CollectionEntry<"projects">;
-};
-
-const { project } = Astro.props;
+const { project } = Astro.props as { project: CollectionEntry<"projects"> };
 const { Content, headings } = await render(project);
 
-const { title, description, coverImage, techStack, category, liveUrl, repoUrl, status } = project.data;
+const { title, description, coverImage, techStack, category, liveUrl, repoUrl, blogUrl, status, startDate, endDate } = project.data;
 
 const coverImg = coverImage as ImageMetadata | undefined;
 const dateRange = getProjectDateRange(project);
 const ongoing = isOngoing(project);
 
-const statusConfig = {
-  "in-progress": {
-    label: "Currently working on",
-    icon: "🔵",
-    class: "status-ongoing",
-  },
-  completed: { label: "Completed", icon: "⚪", class: "status-completed" },
-  archived: { label: "Archived", icon: "🔴", class: "status-archived" },
-  "on-hold": { label: "On Hold", icon: "🟠", class: "status-on-hold" },
+// ── Status word ────────────────────────────────────────────────────────
+const statusWord: Record<string, string> = {
+  "in-progress": "active",
+  completed: "shipped",
+  "on-hold": "shelved",
+  archived: "archived",
 };
 
-const currentStatus = statusConfig[status];
+// ── Category accent ────────────────────────────────────────────────────
+const catColor: Record<string, string> = {
+  Fintech: "#10b981",
+  "Web Apps": "#3b82f6",
+  "Web Development": "#3b82f6",
+  "Mobile Apps": "#8b5cf6",
+  "Desktop Apps": "#06b6d4",
+  "CLI Tools": "#f59e0b",
+  Libraries: "#ec4899",
+  Games: "#ef4444",
+  "ML/AI": "#a855f7",
+  "IoT/Security": "#14b8a6",
+};
+const accent = (category && catColor[category]) || "#6366f1";
 
-// Get all projects for navigation
+// ── Duration ───────────────────────────────────────────────────────────
+function formatDuration(start: Date, end: Date): string {
+  const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+  if (days < 14) return `${days}d`;
+  if (days < 60) return `${Math.round(days / 7)}w`;
+  if (days < 365) return `${Math.round(days / 30)}mo`;
+  const years = days / 365;
+  return years < 2 ? `${Math.round(years * 10) / 10}y` : `${Math.round(years)}y`;
+}
+const duration = formatDuration(new Date(startDate), endDate ? new Date(endDate) : new Date());
+
+// ── Reading time ───────────────────────────────────────────────────────
+const wordCount = (project.body || "").split(/\s+/).filter(Boolean).length;
+const readingMinutes = Math.max(1, Math.round(wordCount / 220));
+
+// ── TOC ────────────────────────────────────────────────────────────────
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+// ── Index numbering & navigation ──────────────────────────────────────
 const allProjects = await getCollection("projects");
 const publishedProjects = getPublishedProjects(allProjects);
+const numbered = [...publishedProjects].reverse();
+const numberOf = new Map(numbered.map((p, i) => [p.id, i + 1]));
+const pad = (n: number) => String(n).padStart(2, "0");
+const entryNo = numberOf.get(project.id)!;
+const totalEntries = publishedProjects.length;
+
 const currentIndex = publishedProjects.findIndex((p) => p.id === project.id);
 const prevProject = currentIndex > 0 ? publishedProjects[currentIndex - 1] : null;
 const nextProject = currentIndex < publishedProjects.length - 1 ? publishedProjects[currentIndex + 1] : null;
+
+// ── Related (shared tech) ──────────────────────────────────────────────
+const myTechs = new Set(techStack.map(normalizeTech));
+const related = publishedProjects
+  .filter((p) => p.id !== project.id)
+  .map((p) => {
+    const overlap = p.data.techStack.map(normalizeTech).filter((t) => myTechs.has(t)).length;
+    return { p, overlap };
+  })
+  .filter((r) => r.overlap > 0)
+  .sort((a, b) => b.overlap - a.overlap || new Date(b.p.data.startDate).getTime() - new Date(a.p.data.startDate).getTime())
+  .slice(0, 3);
+
+const initials = title
+  .split(/\s+/)
+  .map((w) => w[0])
+  .filter(Boolean)
+  .slice(0, 2)
+  .join("");
 ---
 
-<BaseLayout pageTitle={title}>
-  <div class="project-detail">
-    <a href="/projects" class="back-link">
-      <ArrowLeft size={18} />
-      Back to Projects
-    </a>
+<BaseLayout pageTitle={`${title} — Tapan Meena`}>
+  <article class="logbook-detail" style={`--accent:${accent};`}>
+    <!-- ── BREAD ── -->
+    <nav class="bread" aria-label="Breadcrumb">
+      <a href="/projects" class="bread-back">
+        <ArrowLeft size={12} /> back to log
+      </a>
+      <span class="bread-sep">·</span>
+      <span class="bread-pos">entry №{pad(entryNo)} of {pad(totalEntries)}</span>
+    </nav>
 
-    <article class="project-article">
-      {/* Cover Image */}
-      {coverImg && <Image src={coverImg} alt={`Cover image for ${title}`} class="cover-image" />}
-
-      <header class="project-header">
-        <div class="header-top">
-          {category && <span class="project-category">{category}</span>}
-          <span class={`status-badge ${currentStatus.class}`}>
-            <span class="status-icon">{currentStatus.icon}</span>
-            {currentStatus.label}
-          </span>
-        </div>
-
-        <h1 class="project-title">{title}</h1>
-
-        {description && <p class="project-description">{description}</p>}
-
-        <div class="project-meta">
-          <span class="meta-item">
-            <Calendar size={16} />
-            {dateRange}
-          </span>
-        </div>
-
-        <div class="tech-stack">
-          {
-            techStack.map((tech) => (
-              <a href={`/projects?tech=${tech.toLowerCase().replace(/\s+/g, "-")}`} class="tech-badge">
-                {tech}
-              </a>
-            ))
-          }
-        </div>
-
-        <div class="project-links">
-          {
-            liveUrl && (
-              <a href={liveUrl} target="_blank" rel="noopener noreferrer" class="project-link project-link-primary">
-                <ExternalLink size={18} />
-                View Live
-              </a>
-            )
-          }
-          {
-            repoUrl && (
-              <a href={repoUrl} target="_blank" rel="noopener noreferrer" class="project-link project-link-secondary">
-                <Github size={18} />
-                View Code
-              </a>
-            )
-          }
-        </div>
-      </header>
-
-      <div class="prose">
-        <Content />
+    <!-- ── MASTHEAD ── -->
+    <header class="head">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span>
+        <span class="rule-line"></span>
+        <span class="rule-tick"></span>
       </div>
-    </article>
 
-    {/* Project Navigation */}
-    <nav class="project-nav">
+      <div class="head-meta">
+        <span class="hm-num">№{pad(entryNo)}</span>
+        {category && <span class="hm-cat">{category.toLowerCase()}</span>}
+        <span class="hm-status">
+          <span class={`blip ${ongoing ? "blip-pulse" : ""}`}></span>
+          {statusWord[status]}
+        </span>
+        {project.data.featured && <span class="hm-feat">★ featured</span>}
+      </div>
+
+      <h1 class="head-title">{title}</h1>
+      {description && <p class="head-lede">{description}</p>}
+
+      <dl class="head-facts">
+        <div class="fact">
+          <dt>filed</dt>
+          <dd>{dateRange}</dd>
+        </div>
+        <div class="fact">
+          <dt>{ongoing ? "running" : "took"}</dt>
+          <dd>{duration}</dd>
+        </div>
+        <div class="fact">
+          <dt>stack</dt>
+          <dd>{techStack.length} tech</dd>
+        </div>
+        <div class="fact">
+          <dt>read</dt>
+          <dd>~{readingMinutes} min</dd>
+        </div>
+      </dl>
+
+      <p class="head-stack" aria-label="Tech stack">
+        <span class="hs-label">stack&nbsp;//</span>
+        {
+          techStack.map((t, i) => (
+            <>
+              {i > 0 && (
+                <span class="hs-sep" aria-hidden="true">
+                  {" "}
+                  ·{" "}
+                </span>
+              )}
+              <a href={`/projects?tech=${normalizeTech(t)}`} class="hs-item">
+                {t.toLowerCase()}
+              </a>
+            </>
+          ))
+        }
+      </p>
+
+      <div class="head-actions">
+        {
+          liveUrl && (
+            <a class="act act-primary" href={liveUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink size={13} />
+              <span>view live</span>
+            </a>
+          )
+        }
+        {
+          repoUrl && (
+            <a class="act" href={repoUrl} target="_blank" rel="noopener noreferrer">
+              <Github size={13} />
+              <span>source</span>
+            </a>
+          )
+        }
+        {
+          blogUrl && (
+            <a class="act" href={blogUrl}>
+              <FileText size={13} />
+              <span>writeup</span>
+            </a>
+          )
+        }
+      </div>
+
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span>
+        <span class="rule-line"></span>
+        <span class="rule-tick"></span>
+      </div>
+    </header>
+
+    <!-- ── COVER ── -->
+    <figure class="plate">
+      {
+        coverImg ? (
+          <Image src={coverImg} alt={`Cover for ${title}`} class="plate-img" />
+        ) : (
+          <div class="plate-noimg">
+            <span class="ni-mono">{initials}</span>
+            <span class="ni-grid" aria-hidden="true" />
+            <span class="ni-corner ni-tl" />
+            <span class="ni-corner ni-tr" />
+            <span class="ni-corner ni-bl" />
+            <span class="ni-corner ni-br" />
+          </div>
+        )
+      }
+      <figcaption class="plate-cap">
+        <span class="plate-fig">fig.&nbsp;1</span>
+        <span class="plate-desc">{coverImg ? `cover · ${title.toLowerCase()}` : `monogram · ${title.toLowerCase()}`}</span>
+      </figcaption>
+    </figure>
+
+    <!-- ── BODY ── -->
+    <div class="body">
+      <!-- Sidebar -->
+      <aside class="margin">
+        {
+          toc.length > 0 && (
+            <div class="m-block">
+              <h2 class="m-head">contents</h2>
+              <ol class="m-toc">
+                {toc.map((h, i) => (
+                  <li class={`m-toc-item m-toc-d${h.depth}`}>
+                    <a href={`#${h.slug}`} data-toc={h.slug}>
+                      <span class="m-toc-num">{pad(i + 1)}</span>
+                      <span class="m-toc-text">{h.text}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )
+        }
+
+        <div class="m-block">
+          <h2 class="m-head">links</h2>
+          <ul class="m-links">
+            {
+              liveUrl && (
+                <li>
+                  <a href={liveUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={11} /> live demo →
+                  </a>
+                </li>
+              )
+            }
+            {
+              repoUrl && (
+                <li>
+                  <a href={repoUrl} target="_blank" rel="noopener noreferrer">
+                    <Github size={11} /> github →
+                  </a>
+                </li>
+              )
+            }
+            {
+              blogUrl && (
+                <li>
+                  <a href={blogUrl}>
+                    <FileText size={11} /> blog post →
+                  </a>
+                </li>
+              )
+            }
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Article -->
+      <section class="article">
+        <div class="prose">
+          <Content />
+        </div>
+        <div class="end-rule" aria-hidden="true">
+          <span>—</span>
+          <span class="end-mark">§</span>
+          <span>—</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── RELATED ── -->
+    {
+      related.length > 0 && (
+        <section class="related">
+          <div class="rule" aria-hidden="true">
+            <span class="rule-tick" />
+            <span class="rule-line" />
+            <span class="rule-tick" />
+          </div>
+          <header class="related-head">
+            <span class="rh-tag">see also</span>
+            <h2 class="rh-title">other entries sharing this stack</h2>
+          </header>
+          <ul class="related-list">
+            {related.map(({ p, overlap }) => {
+              const num = numberOf.get(p.id)!;
+              const racc = (p.data.category && catColor[p.data.category]) || "#6366f1";
+              return (
+                <li class="rel" style={`--accent:${racc}`}>
+                  <a href={`/projects/${p.id}`} class="rel-link">
+                    <div class="rel-gutter">
+                      <span class="rel-num">№{pad(num)}</span>
+                      <span class="rel-overlap">{overlap}× shared</span>
+                    </div>
+                    <div class="rel-body">
+                      {p.data.category && <span class="rel-cat">{p.data.category.toLowerCase()}</span>}
+                      <h3 class="rel-title">{p.data.title}</h3>
+                      <p class="rel-desc">{p.data.description}</p>
+                      <p class="rel-date">{formatProjectDate(new Date(p.data.startDate))}</p>
+                    </div>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )
+    }
+
+    <!-- ── PREV / NEXT ── -->
+    <nav class="pn" aria-label="Adjacent entries">
       {
         prevProject ? (
-          <a href={`/projects/${prevProject.id}`} class="nav-link nav-prev">
-            <span class="nav-label">Previous Project</span>
-            <span class="nav-title">{prevProject.data.title}</span>
+          <a href={`/projects/${prevProject.id}`} class="pn-link pn-prev">
+            <span class="pn-arrow">
+              <ArrowLeft size={14} />
+            </span>
+            <span class="pn-meta">
+              <span class="pn-label">← previous · №{pad(numberOf.get(prevProject.id)!)}</span>
+              <span class="pn-title">{prevProject.data.title}</span>
+            </span>
           </a>
         ) : (
-          <div />
+          <span class="pn-edge">— first entry —</span>
         )
       }
       {
         nextProject ? (
-          <a href={`/projects/${nextProject.id}`} class="nav-link nav-next">
-            <span class="nav-label">Next Project</span>
-            <span class="nav-title">{nextProject.data.title}</span>
+          <a href={`/projects/${nextProject.id}`} class="pn-link pn-next">
+            <span class="pn-meta">
+              <span class="pn-label">next · №{pad(numberOf.get(nextProject.id)!)} →</span>
+              <span class="pn-title">{nextProject.data.title}</span>
+            </span>
+            <span class="pn-arrow">
+              <ArrowRight size={14} />
+            </span>
           </a>
         ) : (
-          <div />
+          <span class="pn-edge">— latest entry —</span>
         )
       }
     </nav>
-  </div>
+  </article>
+
+  <script is:inline>
+    // Scroll-spy for TOC
+    const tocLinks = Array.from(document.querySelectorAll("[data-toc]"));
+    if (tocLinks.length) {
+      const map = new Map();
+      tocLinks.forEach((l) => {
+        const id = l.getAttribute("data-toc");
+        const h = id ? document.getElementById(id) : null;
+        if (h) map.set(h, l);
+      });
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            const link = map.get(e.target);
+            if (!link) return;
+            if (e.isIntersecting) {
+              tocLinks.forEach((l) => l.classList.remove("active"));
+              link.classList.add("active");
+            }
+          });
+        },
+        { rootMargin: "-20% 0px -65% 0px", threshold: 0 },
+      );
+      map.forEach((_l, h) => io.observe(h));
+    }
+    tocLinks.forEach((l) => {
+      l.addEventListener("click", (e) => {
+        const id = l.getAttribute("data-toc");
+        const target = id ? document.getElementById(id) : null;
+        if (!target) return;
+        e.preventDefault();
+        const top = target.getBoundingClientRect().top + window.scrollY - 88;
+        window.scrollTo({ top, behavior: "smooth" });
+        history.replaceState(null, "", "#" + id);
+      });
+    });
+  </script>
+
+  <style>
+    @reference "tailwindcss";
+
+    .logbook-detail {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1.25rem 1.25rem 5rem;
+      color: var(--color-text);
+    }
+
+    /* ─── Hairline rule (matches index masthead) ─── */
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 0.4rem 0;
+    }
+    .rule-line {
+      flex: 1;
+      height: 1px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
+    .rule-tick {
+      width: 1px;
+      height: 8px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
+
+    /* ─── Breadcrumb ─── */
+    .bread {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      margin-bottom: 1rem;
+      letter-spacing: 0.04em;
+    }
+    .bread-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--color-muted);
+      text-decoration: none;
+    }
+    .bread-back:hover {
+      color: var(--color-text);
+    }
+    .bread-sep {
+      opacity: 0.45;
+    }
+    .bread-pos {
+      color: var(--color-text);
+    }
+
+    /* ─── Masthead ─── */
+    .head {
+    }
+    .head-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 14px;
+      padding: 0.6rem 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.74rem;
+      color: var(--color-muted);
+      letter-spacing: 0.06em;
+    }
+    .hm-num {
+      color: var(--color-text);
+      font-weight: 700;
+    }
+    .hm-cat {
+      color: var(--accent);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 0.66rem;
+    }
+    .hm-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-transform: lowercase;
+    }
+    .hm-feat {
+      color: #f59e0b;
+      font-size: 0.7rem;
+    }
+    .blip {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .blip-pulse {
+      animation: blip 1.8s infinite;
+    }
+    @keyframes blip {
+      0% {
+        box-shadow: 0 0 0 0 var(--accent);
+      }
+      70% {
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent);
+      }
+      100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+      }
+    }
+
+    .head-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 0.4rem 0 0.6rem;
+      color: var(--color-text);
+    }
+    .head-title::after {
+      content: "";
+      display: block;
+      width: 48px;
+      height: 2px;
+      background: var(--accent);
+      margin-top: 0.7rem;
+    }
+    .head-lede {
+      font-family: "Merriweather", Georgia, serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      max-width: 680px;
+      color: var(--color-muted);
+      margin: 0 0 1.3rem;
+    }
+
+    .head-facts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem 1.5rem;
+      padding: 0.9rem 0;
+      margin: 0 0 1rem;
+      border-top: 1px dashed var(--color-border);
+      border-bottom: 1px dashed var(--color-border);
+      font-family: ui-monospace, monospace;
+    }
+    @media (min-width: 640px) {
+      .head-facts {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    .fact {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .fact dt {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin: 0;
+    }
+    .fact dd {
+      margin: 0;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    .head-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding: 0 0 0.6rem;
+    }
+    .act {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.82rem;
+      color: var(--color-text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--color-border);
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+    }
+    .act:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .act-primary {
+      color: var(--color-bg);
+      background: var(--color-text);
+      padding: 5px 12px;
+      border-bottom: 0;
+      border-radius: 0;
+    }
+    .act-primary:hover {
+      background: var(--accent);
+      color: var(--color-bg);
+    }
+
+    /* ─── Inline tech stack strip (in masthead) ─── */
+    .head-stack {
+      padding: 0 0 1rem;
+      margin: 0 0 0.4rem;
+      border-bottom: 1px dashed var(--color-border);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      line-height: 1.9;
+      max-width: 100%;
+      overflow-wrap: break-word;
+      word-break: normal;
+      white-space: normal;
+    }
+    .hs-label {
+      display: inline;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    .hs-sep {
+      display: inline;
+      color: var(--color-border);
+      user-select: none;
+    }
+    .hs-item {
+      display: inline;
+      font-size: 0.82rem;
+      color: var(--color-text);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+    }
+    .hs-item:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ─── Cover plate ─── */
+    .plate {
+      margin: 1.5rem 0;
+      padding: 0;
+    }
+    .plate-img {
+      width: 100%;
+      height: auto;
+      max-height: 460px;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(0.1);
+      border: 1px solid var(--color-border);
+    }
+    .plate-noimg {
+      position: relative;
+      height: 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      background: radial-gradient(ellipse at center, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%), var(--color-bg);
+      border: 1px solid var(--color-border);
+    }
+    .ni-mono {
+      font-family: "Merriweather", Georgia, serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: 7rem;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: color-mix(in srgb, var(--accent) 75%, var(--color-text));
+    }
+    .ni-grid {
+      position: absolute;
+      inset: 8px;
+      background-image:
+        linear-gradient(color-mix(in srgb, var(--accent) 18%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--accent) 18%, transparent) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.45;
+      pointer-events: none;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    }
+    .ni-corner {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid color-mix(in srgb, var(--accent) 65%, var(--color-border));
+    }
+    .ni-tl {
+      top: 6px;
+      left: 6px;
+      border-right: 0;
+      border-bottom: 0;
+    }
+    .ni-tr {
+      top: 6px;
+      right: 6px;
+      border-left: 0;
+      border-bottom: 0;
+    }
+    .ni-bl {
+      bottom: 6px;
+      left: 6px;
+      border-right: 0;
+      border-top: 0;
+    }
+    .ni-br {
+      bottom: 6px;
+      right: 6px;
+      border-left: 0;
+      border-top: 0;
+    }
+
+    .plate-cap {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 8px 2px 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+    }
+    .plate-fig {
+      color: var(--color-text);
+      font-weight: 700;
+    }
+    .plate-desc {
+      font-style: italic;
+    }
+
+    /* ─── Body grid ─── */
+    .body {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    @media (min-width: 960px) {
+      .body {
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 3rem;
+      }
+    }
+
+    /* ─── Margin notes (sidebar) ─── */
+    .margin {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+    @media (min-width: 960px) {
+      .margin {
+        position: sticky;
+        top: 88px;
+        align-self: start;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+      }
+    }
+    .m-block {
+      padding-bottom: 1rem;
+      border-bottom: 1px dashed var(--color-border);
+    }
+    .m-block:last-child {
+      border-bottom: 0;
+    }
+    .m-head {
+      font-family: ui-monospace, monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin: 0 0 0.7rem;
+      font-weight: 600;
+    }
+    .m-stack {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .m-stack-item {
+      display: block;
+      padding: 2px 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--color-text);
+      text-decoration: none;
+      transition:
+        color 0.15s ease,
+        padding-left 0.15s ease;
+    }
+    .m-stack-item::before {
+      content: "·";
+      color: var(--color-muted);
+      margin-right: 6px;
+    }
+    .m-stack-item:hover {
+      color: var(--accent);
+      padding-left: 4px;
+    }
+
+    .m-toc {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      counter-reset: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .m-toc-item a {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 6px;
+      padding: 4px 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--color-muted);
+      text-decoration: none;
+      line-height: 1.4;
+      border-left: 2px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .m-toc-d3 a {
+      padding-left: 22px;
+      font-size: 0.72rem;
+    }
+    .m-toc-num {
+      color: var(--color-muted);
+      opacity: 0.6;
+    }
+    .m-toc-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .m-toc-item a:hover {
+      color: var(--color-text);
+      background: var(--color-surface);
+    }
+    .m-toc-item a.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+    .m-toc-item a.active .m-toc-num {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    .m-links {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .m-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--color-text);
+      text-decoration: none;
+      padding: 2px 0;
+      transition: color 0.15s ease;
+    }
+    .m-links a:hover {
+      color: var(--accent);
+    }
+
+    /* ─── Article ─── */
+    .article {
+      min-width: 0;
+    }
+    .article .prose {
+      max-width: none;
+    }
+    .article .prose :global(h2) {
+      scroll-margin-top: 96px;
+      font-family: "Merriweather", Georgia, serif;
+      position: relative;
+      padding-left: 0;
+      margin-top: 2.5rem;
+    }
+    .article .prose :global(h2)::before {
+      content: "§";
+      color: var(--accent);
+      margin-right: 0.45em;
+      font-weight: 400;
+      opacity: 0.85;
+    }
+    .article .prose :global(h3) {
+      scroll-margin-top: 96px;
+      font-family: "Merriweather", Georgia, serif;
+    }
+    .article .prose :global(blockquote) {
+      border-left: 2px solid var(--accent);
+      padding-left: 1rem;
+      font-style: italic;
+      color: var(--color-muted);
+    }
+    .article .prose :global(a) {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-decoration-color: var(--accent);
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1.5px;
+    }
+    .article .prose :global(a:hover) {
+      color: var(--accent);
+    }
+
+    .end-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 3rem 0 0;
+      font-family: ui-monospace, monospace;
+      color: var(--color-muted);
+      font-size: 0.85rem;
+    }
+    .end-mark {
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    /* ─── Related ─── */
+    .related {
+      margin-top: 3rem;
+    }
+    .related-head {
+      padding: 0.9rem 0 1rem;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .rh-tag {
+      font-family: ui-monospace, monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      font-weight: 600;
+    }
+    .rh-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin: 0;
+      color: var(--color-text);
+    }
+    .related-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .rel {
+      border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+    }
+    .rel:first-child {
+      border-top: 0;
+    }
+    .rel-link {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 14px;
+      padding: 0.85rem 0.4rem;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.18s ease;
+      position: relative;
+    }
+    .rel-link::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+    .rel-link:hover {
+      background: var(--color-surface);
+    }
+    .rel-link:hover::before {
+      opacity: 1;
+    }
+    .rel-gutter {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-family: ui-monospace, monospace;
+    }
+    .rel-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+    .rel-overlap {
+      font-size: 0.66rem;
+      color: var(--color-muted);
+      letter-spacing: 0.06em;
+    }
+    .rel-body {
+      min-width: 0;
+    }
+    .rel-cat {
+      display: inline-block;
+      font-family: ui-monospace, monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .rel-cat::after {
+      content: " //";
+      opacity: 0.4;
+      margin-left: 2px;
+    }
+    .rel-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0 0 4px;
+      color: var(--color-text);
+    }
+    .rel-link:hover .rel-title {
+      color: var(--accent);
+    }
+    .rel-desc {
+      margin: 0 0 4px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--color-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .rel-date {
+      margin: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── Prev / next ─── */
+    .pn {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      margin-top: 2.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+    @media (min-width: 640px) {
+      .pn {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .pn-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.85rem 0;
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.18s ease;
+    }
+    .pn-prev {
+      justify-content: flex-start;
+    }
+    .pn-next {
+      justify-content: flex-end;
+      text-align: right;
+    }
+    .pn-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-muted);
+      transition:
+        transform 0.18s ease,
+        color 0.18s ease;
+      flex-shrink: 0;
+    }
+    .pn-link:hover .pn-arrow {
+      color: var(--accent);
+    }
+    .pn-prev:hover .pn-arrow {
+      transform: translateX(-3px);
+    }
+    .pn-next:hover .pn-arrow {
+      transform: translateX(3px);
+    }
+    .pn-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .pn-label {
+      font-family: ui-monospace, monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: lowercase;
+      color: var(--color-muted);
+    }
+    .pn-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 320px;
+    }
+    .pn-link:hover .pn-title {
+      color: var(--accent);
+    }
+    .pn-edge {
+      padding: 0.85rem 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--color-muted);
+    }
+    .pn-prev.pn-edge,
+    .pn ~ .pn-edge {
+      text-align: left;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .blip-pulse {
+        animation: none !important;
+      }
+    }
+  </style>
 </BaseLayout>
-
-<style>
-  @reference "tailwindcss";
-
-  .project-detail {
-    @apply mx-auto max-w-6xl px-4 pb-8;
-  }
-
-  .back-link {
-    @apply inline-flex items-center gap-2 mb-6 text-sm font-medium;
-    color: var(--color-muted);
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-
-  .back-link:hover {
-    color: var(--color-accent);
-  }
-
-  .project-article {
-    @apply rounded-xl overflow-hidden;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
-
-  .cover-image {
-    @apply w-full;
-    max-height: 400px;
-    object-fit: cover;
-  }
-
-  .cover-placeholder {
-    @apply flex items-center justify-center;
-    height: 300px;
-    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-    color: white;
-    opacity: 0.7;
-  }
-
-  .project-header {
-    @apply p-8 border-b border-(--color-border);
-  }
-
-  .header-top {
-    @apply flex flex-wrap items-center gap-3 mb-4;
-  }
-
-  .project-category {
-    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider;
-    background-color: var(--color-bg);
-    color: var(--color-muted);
-    border: 1px solid var(--color-border);
-  }
-
-  .status-badge {
-    @apply inline-flex items-center gap-1.5 text-xs font-medium;
-    color: var(--color-muted);
-  }
-
-  .status-icon {
-    font-size: 10px;
-  }
-
-  .status-ongoing {
-    color: var(--color-accent);
-  }
-
-  .project-title {
-    @apply text-3xl font-bold tracking-tight sm:text-4xl mb-4;
-    font-family: var(--font-sans);
-    color: var(--color-text);
-  }
-
-  .project-description {
-    @apply text-lg mb-4;
-    color: var(--color-muted);
-    margin: 0 0 1rem;
-  }
-
-  .project-meta {
-    @apply flex flex-wrap items-center gap-4 mb-4;
-  }
-
-  .meta-item {
-    @apply flex items-center gap-2 text-sm;
-    color: var(--color-muted);
-  }
-
-  .tech-stack {
-    @apply flex flex-wrap gap-2 mb-6;
-  }
-
-  .tech-badge {
-    @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium;
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-    text-decoration: none;
-    transition:
-      border-color 0.2s ease,
-      color 0.2s ease;
-  }
-
-  .tech-badge:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-  }
-
-  .project-links {
-    @apply flex flex-wrap gap-3;
-  }
-
-  .project-link {
-    @apply inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium;
-    text-decoration: none;
-    transition:
-      background-color 0.2s ease,
-      transform 0.2s ease;
-  }
-
-  .project-link:hover {
-    transform: translateY(-2px);
-  }
-
-  .project-link-primary {
-    background-color: var(--color-accent);
-    color: white;
-  }
-
-  .project-link-primary:hover {
-    background-color: var(--color-accent-hover);
-  }
-
-  .project-link-secondary {
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-  }
-
-  .project-link-secondary:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-  }
-
-  .prose {
-    @apply p-8;
-  }
-
-  /* Project Navigation */
-  .project-nav {
-    @apply grid grid-cols-2 gap-4 mt-8;
-  }
-
-  .nav-link {
-    @apply flex flex-col gap-1 p-4 rounded-lg;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    text-decoration: none;
-    transition:
-      border-color 0.2s ease,
-      transform 0.2s ease;
-  }
-
-  .nav-link:hover {
-    border-color: var(--color-accent);
-    transform: translateY(-2px);
-  }
-
-  .nav-prev {
-    text-align: left;
-  }
-
-  .nav-next {
-    text-align: right;
-  }
-
-  .nav-label {
-    @apply text-xs uppercase tracking-wider;
-    color: var(--color-muted);
-  }
-
-  .nav-title {
-    @apply text-sm font-medium line-clamp-1;
-    color: var(--color-text);
-  }
-
-  .nav-link:hover .nav-title {
-    color: var(--color-accent);
-  }
-</style>
