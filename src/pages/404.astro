@@ -1,102 +1,307 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import Button from "@components/ui/Button.astro";
-import { Home, BookOpen, Briefcase } from "@lucide/astro";
+
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
 ---
 
 <BaseLayout pageTitle="404 — Page Not Found">
-  <div class="not-found-page">
-    <section class="not-found-hero">
-      <!-- 404 Heading -->
-      <h1 class="error-code">404</h1>
-      <h2 class="error-title">Page Not Found</h2>
-      <p class="error-description">
-        The page you're looking for doesn't exist or has been moved.<br />
-        Let's get you back on track.
-      </p>
+  <div class="page">
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;01</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;—&nbsp;//&nbsp;errata</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+      <span class="dl-spacer"></span>
+      <span class="dl-warn">err&nbsp;404</span>
+    </p>
 
-      <!-- Navigation Buttons -->
-      <div class="nav-buttons">
-        <Button href="/" variant="primary" size="lg">
-          <Home slot="icon-left" size={18} />
-          Go Home
-        </Button>
-        <Button href="/blog" variant="outline" size="lg">
-          <BookOpen slot="icon-left" size={18} />
-          Read Blog
-        </Button>
-        <Button href="/projects" variant="outline" size="lg">
-          <Briefcase slot="icon-left" size={18} />
-          View Projects
-        </Button>
+    <header class="mast">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
       </div>
-    </section>
+      <p class="mast-pre">an entry that doesn't exist</p>
+      <h1 class="code">404</h1>
+      <p class="mast-by">
+        <span>this page was either</span>
+        <span class="dl-sep">·</span>
+        <em>never written</em>
+        <span class="dl-sep">·</span>
+        <em>filed elsewhere</em>
+        <span class="dl-sep">·</span>
+        <em>or pulled from print</em>
+      </p>
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+    </header>
+
+    <p class="lede">
+      Apologies for the dead end. If you followed a link from somewhere, the address has likely changed since. Try one of the open sections below.
+    </p>
+
+    <ol class="entries">
+      <li class="entry">
+        <a class="entry-link" href="/">
+          <div class="e-gutter"><span class="e-num">00</span><span class="e-month">HOME</span></div>
+          <div class="e-body">
+            <h3 class="e-title">the workshop log</h3>
+            <p class="e-desc">front page · masthead · what i'm currently building</p>
+          </div>
+        </a>
+      </li>
+      <li class="entry">
+        <a class="entry-link" href="/projects">
+          <div class="e-gutter"><span class="e-num">01</span><span class="e-month">A</span></div>
+          <div class="e-body">
+            <h3 class="e-title">projects</h3>
+            <p class="e-desc">a chronological log of things built, half-built &amp; abandoned</p>
+          </div>
+        </a>
+      </li>
+      <li class="entry">
+        <a class="entry-link" href="/blog">
+          <div class="e-gutter"><span class="e-num">02</span><span class="e-month">B</span></div>
+          <div class="e-body">
+            <h3 class="e-title">the writing log</h3>
+            <p class="e-desc">a slow column — essays, notes, retrospectives</p>
+          </div>
+        </a>
+      </li>
+      <li class="entry">
+        <a class="entry-link" href="/cursed-knowledge">
+          <div class="e-gutter"><span class="e-num">03</span><span class="e-month">X</span></div>
+          <div class="e-body">
+            <h3 class="e-title">cursed knowledge</h3>
+            <p class="e-desc">the grimoire — things i learned at 02:47 while something was on fire</p>
+          </div>
+        </a>
+      </li>
+      <li class="entry">
+        <a class="entry-link" href="/contact">
+          <div class="e-gutter"><span class="e-num">05</span><span class="e-month">D</span></div>
+          <div class="e-body">
+            <h3 class="e-title">contact</h3>
+            <p class="e-desc">say hi · or report a broken link</p>
+          </div>
+        </a>
+      </li>
+    </ol>
   </div>
 </BaseLayout>
 
 <style>
   @reference "tailwindcss";
 
-  .not-found-page {
-    @apply mx-auto max-w-3xl px-4 pb-16;
-  }
-
-  .not-found-hero {
-    @apply flex flex-col items-center text-center py-16 md:py-24;
-  }
-
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .error-code,
-    .error-title,
-    .error-description,
-    .nav-buttons {
-      animation: none;
-      opacity: 1;
-    }
-  }
-
-  /* 404 heading */
-  .error-code {
-    @apply text-[8rem] md:text-[10rem] font-bold leading-none mb-2 select-none;
-    font-family: var(--font-sans);
-    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 50%, var(--color-muted) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    opacity: 0;
-    animation: fadeInUp 0.6s ease-out 0.1s forwards;
-  }
-
-  .error-title {
-    @apply text-2xl md:text-3xl font-bold mb-4;
-    font-family: var(--font-sans);
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 5rem;
     color: var(--color-text);
-    opacity: 0;
-    animation: fadeInUp 0.6s ease-out 0.2s forwards;
   }
 
-  .error-description {
-    @apply text-base md:text-lg max-w-md mb-8 leading-relaxed;
+  .rule {
+    display: flex;
+    align-items: center;
+    margin: 0.4rem 0;
+  }
+  .rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+  .rule-tick {
+    width: 1px;
+    height: 8px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+
+  .dateline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0 0 0.6rem;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.7rem;
     color: var(--color-muted);
-    opacity: 0;
-    animation: fadeInUp 0.6s ease-out 0.3s forwards;
+    letter-spacing: 0.04em;
+  }
+  .dl-issue {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .dl-sep {
+    opacity: 0.5;
+  }
+  .dl-spacer {
+    flex: 1;
+    min-width: 8px;
+  }
+  .dl-warn {
+    color: #ef4444;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 
-  .nav-buttons {
-    @apply flex flex-wrap justify-center gap-4;
-    opacity: 0;
-    animation: fadeInUp 0.6s ease-out 0.4s forwards;
+  .mast {
+    margin-bottom: 1.6rem;
+    text-align: center;
+  }
+  .mast-pre {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0.7rem 0 0.5rem;
   }
 
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
+  /* The "404" itself — big serif outline number, like a stamped folio */
+  .code {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(7rem, 22vw, 13rem);
+    line-height: 0.9;
+    margin: 0;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--color-text);
+    letter-spacing: -0.05em;
+    user-select: none;
+    position: relative;
+  }
+  .code::after {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 2px;
+    background: var(--color-accent);
+    margin: 0.6rem auto 0;
+  }
+
+  .mast-by {
+    margin: 0.6rem 0 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+  .mast-by em {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    color: var(--color-text);
+  }
+
+  .lede {
+    max-width: 580px;
+    margin: 1.4rem auto 1.8rem;
+    text-align: center;
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  /* ─── Entries (workshop-log style) ─── */
+  .entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px dashed var(--color-border);
+    padding-top: 0.4rem;
+  }
+  .entry {
+    border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  }
+  .entry:first-child {
+    border-top: 0;
+  }
+  .entry-link {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 14px;
+    padding: 0.95rem 0.4rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.18s ease;
+    position: relative;
+  }
+  @media (min-width: 600px) {
+    .entry-link {
+      grid-template-columns: 90px 1fr;
+      gap: 22px;
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  }
+  .entry-link::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-accent);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .entry-link:hover {
+    background: var(--color-surface);
+  }
+  .entry-link:hover::before {
+    opacity: 1;
+  }
+
+  .e-gutter {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-family: ui-monospace, monospace;
+    padding-top: 2px;
+  }
+  .e-num {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .e-month {
+    font-size: 0.66rem;
+    color: var(--color-muted);
+    letter-spacing: 0.16em;
+  }
+
+  .e-body {
+    min-width: 0;
+  }
+  .e-title {
+    font-family: "Merriweather", Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 4px;
+    color: var(--color-text);
+  }
+  .entry-link:hover .e-title {
+    color: var(--color-accent);
+  }
+  .e-desc {
+    margin: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    line-height: 1.55;
   }
 </style>

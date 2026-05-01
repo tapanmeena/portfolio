@@ -1,83 +1,86 @@
 ---
-import { Search, X, Clock, Trash2, FileText, FolderKanban } from "@lucide/astro";
+import { Search, X } from "@lucide/astro";
 ---
 
 <!-- Search Modal -->
 <div id="search-modal" class="search-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
   <div class="search-backdrop" id="search-backdrop"></div>
 
-  <div class="search-container">
-    <!-- Header -->
-    <div class="search-header">
-      <div class="search-input-wrapper">
-        <Search size={20} class="search-icon" />
-        <input type="text" id="search-input" class="search-input" placeholder="Search posts and projects..." autocomplete="off" aria-label="Search" />
-        <kbd class="search-kbd">ESC</kbd>
+  <div class="search-stage">
+    <div class="search-card">
+      <!-- Issue line -->
+      <p class="sm-issue">
+        <span class="sm-tag">grep</span>
+        <span class="dl-sep">·</span>
+        <span>writing&nbsp;·&nbsp;projects</span>
+        <span class="dl-spacer"></span>
+        <span class="sm-kbd-hint"><kbd>ESC</kbd>&nbsp;to close</span>
+      </p>
+
+      <div class="sm-rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
       </div>
-      <button id="search-close" class="search-close" aria-label="Close search">
-        <X size={20} />
-      </button>
-    </div>
 
-    <!-- Filters -->
-    <div class="search-filters">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="blog">
-        <FileText size={14} />
-        Blog
-      </button>
-      <button class="filter-btn" data-filter="project">
-        <FolderKanban size={14} />
-        Projects
-      </button>
-    </div>
+      <!-- Search input -->
+      <div class="sm-input-row">
+        <span class="sm-prompt" aria-hidden="true">grep&nbsp;»</span>
+        <input
+          type="text"
+          id="search-input"
+          class="sm-input"
+          placeholder="title, description, tag, tech…"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search"
+        />
+        <button id="search-close" class="sm-close" aria-label="Close search" type="button">
+          <X size={14} />
+        </button>
+      </div>
 
-    <!-- Results Container -->
-    <div class="search-results" id="search-results">
-      <!-- Recent Searches (shown when input is empty) -->
-      <div id="recent-searches" class="recent-searches">
-        <div class="recent-header">
-          <span class="recent-title">
-            <Clock size={14} />
-            Recent Searches
-          </span>
-          <button id="clear-recent" class="clear-recent" aria-label="Clear recent searches">
-            <Trash2 size={14} />
-            Clear
-          </button>
+      <!-- Filter chips -->
+      <div class="sm-filters" role="group" aria-label="Filter results">
+        <span class="sm-filter-tag">filter</span>
+        <button class="sm-chip active" data-filter="all" type="button">all</button>
+        <button class="sm-chip" data-filter="blog" type="button">writing</button>
+        <button class="sm-chip" data-filter="project" type="button">projects</button>
+      </div>
+
+      <!-- Results -->
+      <div class="sm-results" id="search-results">
+        <!-- Recent searches -->
+        <section id="recent-searches" class="sm-recent">
+          <header class="sm-section-head">
+            <span>recent</span>
+            <button id="clear-recent" class="sm-clear" type="button" aria-label="Clear recent searches">— clear</button>
+          </header>
+          <ul id="recent-list" class="sm-list"></ul>
+        </section>
+
+        <!-- Live results -->
+        <ul id="results-list" class="sm-list sm-results-list"></ul>
+
+        <!-- No results -->
+        <div id="no-results" class="sm-empty hidden">
+          <p>— no entries match <em>"<span id="search-query"></span>"</em> —</p>
+          <p class="sm-empty-hint">try fewer words, or check the spelling</p>
         </div>
-        <ul id="recent-list" class="recent-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
-        </ul>
+
+        <!-- Loading -->
+        <div id="search-loading" class="sm-loading hidden">
+          <span class="sm-loading-dot" aria-hidden="true"></span>
+          <span>loading index…</span>
+        </div>
       </div>
 
-      <!-- Search Results -->
-      <ul id="results-list" class="results-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
-      </ul>
-
-      <!-- No Results -->
-      <div id="no-results" class="no-results hidden">
-        <p>No results found for "<span id="search-query"></span>"</p>
-        <p class="no-results-hint">Try different keywords or check the spelling</p>
-      </div>
-
-      <!-- Loading -->
-      <div id="search-loading" class="search-loading hidden">
-        <div class="loading-spinner"></div>
-        <span>Loading search index...</span>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="search-footer">
-      <span class="search-hint">
-        <kbd>↑</kbd><kbd>↓</kbd> to navigate
-      </span>
-      <span class="search-hint">
-        <kbd>↵</kbd> to select
-      </span>
-      <span class="search-hint">
-        <kbd>ESC</kbd> to close
-      </span>
+      <!-- Footer / keymap -->
+      <footer class="sm-footer">
+        <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+        <span class="dl-sep">·</span>
+        <span><kbd>↵</kbd> open</span>
+        <span class="dl-sep">·</span>
+        <span><kbd>ESC</kbd> close</span>
+      </footer>
     </div>
   </div>
 </div>
@@ -87,7 +90,6 @@ import { Search, X, Clock, Trash2, FileText, FolderKanban } from "@lucide/astro"
   import type { FuseResult } from "fuse.js";
   import { fuseOptions, saveRecentSearch, getRecentSearches, clearRecentSearches, type SearchItem } from "@utils/search";
 
-  // DOM Elements
   const modal = document.getElementById("search-modal")!;
   const backdrop = document.getElementById("search-backdrop")!;
   const input = document.getElementById("search-input") as HTMLInputElement;
@@ -99,25 +101,21 @@ import { Search, X, Clock, Trash2, FileText, FolderKanban } from "@lucide/astro"
   const noResults = document.getElementById("no-results")!;
   const searchQuery = document.getElementById("search-query")!;
   const loadingEl = document.getElementById("search-loading")!;
-  const filterBtns = document.querySelectorAll(".filter-btn");
+  const filterBtns = document.querySelectorAll(".sm-chip");
 
-  // State
   let searchIndex: SearchItem[] | null = null;
   let fuse: Fuse<SearchItem> | null = null;
   let currentFilter: "all" | "blog" | "project" = "all";
   let selectedIndex = -1;
   let debounceTimer: ReturnType<typeof setTimeout>;
 
-  // Debounce function
   function debounce(fn: () => void, delay: number) {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(fn, delay);
   }
 
-  // Load search index
   async function loadSearchIndex() {
     if (searchIndex) return;
-
     loadingEl.classList.remove("hidden");
     try {
       const response = await fetch("/search-index.json");
@@ -130,20 +128,15 @@ import { Search, X, Clock, Trash2, FileText, FolderKanban } from "@lucide/astro"
     }
   }
 
-  // Open modal
   function openModal() {
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
     loadSearchIndex();
     showRecentSearches();
-    // Focus after a small delay to ensure modal is visible
-    setTimeout(() => {
-      input.focus();
-    }, 50);
+    setTimeout(() => input.focus(), 50);
   }
 
-  // Close modal
   function closeModal() {
     modal.classList.remove("open");
     modal.setAttribute("aria-hidden", "true");
@@ -153,226 +146,128 @@ import { Search, X, Clock, Trash2, FileText, FolderKanban } from "@lucide/astro"
     selectedIndex = -1;
   }
 
-  // Show recent searches
   function showRecentSearches() {
     const recent = getRecentSearches();
     if (recent.length === 0) {
       recentSearches.classList.add("hidden");
       return;
     }
-
     recentList.innerHTML = recent
       .map(
         (query, i) => `
-        <li class="recent-item" data-index="${i}" style="display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px 16px; color: var(--color-text); border-radius: 10px; cursor: pointer; border: 1px solid transparent;">
-          <div class="recent-icon" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--color-bg); border-radius: 8px; color: var(--color-muted); flex-shrink: 0;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <span class="recent-query" style="flex: 1; font-size: 15px; font-weight: 450;">${escapeHtml(query)}</span>
-          <svg class="recent-arrow" style="color: var(--color-muted); flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </li>
-      `,
+        <li class="sm-item sm-item-recent" data-index="${i}" data-query="${escapeHtml(query)}">
+          <span class="sm-item-num">${String(i + 1).padStart(2, "0")}</span>
+          <span class="sm-item-body">
+            <span class="sm-item-title">${escapeHtml(query)}</span>
+            <span class="sm-item-desc">recent search · click to repeat</span>
+          </span>
+          <span class="sm-item-arrow" aria-hidden="true">↺</span>
+        </li>`,
       )
       .join("");
-
     recentSearches.classList.remove("hidden");
     noResults.classList.add("hidden");
     resultsList.innerHTML = "";
   }
 
-  // Escape HTML
   function escapeHtml(text: string): string {
     const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
   }
 
-  // Perform search
   function performSearch(query: string) {
     if (!fuse || !query.trim()) {
       showRecentSearches();
       return;
     }
-
     recentSearches.classList.add("hidden");
-
     let results = fuse.search(query);
-
-    // Apply filter
     if (currentFilter !== "all") {
       results = results.filter((r) => r.item.type === currentFilter);
     }
-
     if (results.length === 0) {
       resultsList.innerHTML = "";
       noResults.classList.remove("hidden");
       searchQuery.textContent = query;
       return;
     }
-
     noResults.classList.add("hidden");
     renderResults(results);
     selectedIndex = -1;
   }
 
-  // Get meta info for result (category, tags, or techStack)
   function getResultMeta(item: SearchItem): string {
     const meta: string[] = [];
-    if (item.category) meta.push(item.category);
-    if (item.tags && item.tags.length > 0) meta.push(...item.tags.slice(0, 2));
-    if (item.techStack && item.techStack.length > 0) meta.push(...item.techStack.slice(0, 2));
+    if (item.tags && item.tags.length > 0) meta.push(...item.tags.slice(0, 3).map((t) => `#${t.toLowerCase().replace(/\s+/g, "-")}`));
+    if (item.techStack && item.techStack.length > 0) meta.push(...item.techStack.slice(0, 3).map((t) => t.toLowerCase()));
+    if (!meta.length) return "";
     return meta
-      .slice(0, 3)
-      .map(
-        (m) =>
-          `<span class="result-tag" style="display: inline-block; padding: 2px 8px; font-size: 11px; font-weight: 500; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 4px; color: var(--color-muted);">${escapeHtml(m)}</span>`,
-      )
-      .join("");
+      .slice(0, 4)
+      .map((m) => escapeHtml(m))
+      .join(" · ");
   }
 
-  // Render results
   function renderResults(results: FuseResult<SearchItem>[]) {
     resultsList.innerHTML = results
-      .map(
-        (result, i) => `
-        <li class="result-item" data-index="${i}" data-url="${result.item.url}" style="display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer;">
-          <div class="result-icon ${result.item.type}" style="flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: ${result.item.type === "blog" ? "rgba(59, 130, 246, 0.1)" : "rgba(16, 185, 129, 0.1)"}; color: ${result.item.type === "blog" ? "#3b82f6" : "#10b981"};">
-            ${result.item.type === "blog" ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5H4a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2"/><path d="M6 14H4a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2"/><path d="M10 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 9h4"/><path d="M14 13h4"/></svg>'}
-          </div>
-          <div class="result-content" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
-            <div class="result-header" style="display: flex; flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <span class="result-title" style="font-weight: 600; font-size: 14px; color: var(--color-text);">${escapeHtml(result.item.title)}</span>
-              <span class="result-type ${result.item.type}" style="display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: 600; border-radius: 4px; text-transform: uppercase; background: ${result.item.type === "blog" ? "rgba(59, 130, 246, 0.15)" : "rgba(16, 185, 129, 0.15)"}; color: ${result.item.type === "blog" ? "#3b82f6" : "#10b981"};">${result.item.type === "blog" ? "Blog" : "Project"}</span>
-            </div>
-            <span class="result-description" style="font-size: 13px; color: var(--color-muted); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(result.item.description.slice(0, 100))}${result.item.description.length > 100 ? "..." : ""}</span>
-            <div class="result-meta" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; margin-top: 2px;">${getResultMeta(result.item)}</div>
-          </div>
-          <svg class="result-arrow" style="flex-shrink: 0; color: var(--color-muted);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </li>
-      `,
-      )
+      .map((result, i) => {
+        const item = result.item;
+        const typeLabel = item.type === "blog" ? "writing" : "project";
+        const cat = item.category ? escapeHtml(item.category.toLowerCase()) : "";
+        const desc = escapeHtml(item.description.slice(0, 160)) + (item.description.length > 160 ? "…" : "");
+        const meta = getResultMeta(item);
+        return `
+        <li class="sm-item sm-item-result" data-index="${i}" data-url="${escapeHtml(item.url)}">
+          <span class="sm-item-num">${String(i + 1).padStart(2, "0")}</span>
+          <span class="sm-item-body">
+            <span class="sm-item-head">
+              <span class="sm-item-type sm-item-type-${item.type}">${typeLabel}</span>
+              ${cat ? `<span class="sm-item-cat">${cat}</span>` : ""}
+            </span>
+            <span class="sm-item-title">${escapeHtml(item.title)}</span>
+            <span class="sm-item-desc">${desc}</span>
+            ${meta ? `<span class="sm-item-meta">${meta}</span>` : ""}
+          </span>
+          <span class="sm-item-arrow" aria-hidden="true">→</span>
+        </li>`;
+      })
       .join("");
   }
 
-  // Navigate to result
   function navigateToResult(url: string, query: string) {
-    if (query.trim()) {
-      saveRecentSearch(query);
-    }
+    if (query.trim()) saveRecentSearch(query);
     window.location.href = url;
   }
 
-  // Update selected item
   function updateSelection(newIndex: number) {
-    const items = resultsList.querySelectorAll(".result-item") as NodeListOf<HTMLElement>;
+    const items = resultsList.querySelectorAll(".sm-item") as NodeListOf<HTMLElement>;
     if (items.length === 0) return;
-
-    // Remove selection styling from all items and restore original styles
-    items.forEach((item) => {
-      item.classList.remove("selected");
-      item.style.backgroundColor = "";
-
-      // Determine item type from the icon class
-      const icon = item.querySelector(".result-icon") as HTMLElement | null;
-      const isBlog = icon?.classList.contains("blog");
-      const accentColor = isBlog ? "#3b82f6" : "#10b981";
-      const accentBg = isBlog ? "rgba(59, 130, 246, 0.1)" : "rgba(16, 185, 129, 0.1)";
-      const typeBg = isBlog ? "rgba(59, 130, 246, 0.15)" : "rgba(16, 185, 129, 0.15)";
-
-      // Restore child elements' original colors
-      const title = item.querySelector(".result-title") as HTMLElement | null;
-      const desc = item.querySelector(".result-description") as HTMLElement | null;
-      const arrow = item.querySelector(".result-arrow") as HTMLElement | null;
-      const tags = item.querySelectorAll(".result-tag") as NodeListOf<HTMLElement>;
-      const type = item.querySelector(".result-type") as HTMLElement | null;
-
-      if (title) title.style.color = "var(--color-text)";
-      if (desc) desc.style.color = "var(--color-muted)";
-      if (arrow) arrow.style.color = "var(--color-muted)";
-      if (icon) {
-        icon.style.backgroundColor = accentBg;
-        icon.style.color = accentColor;
-      }
-      if (type) {
-        type.style.backgroundColor = typeBg;
-        type.style.color = accentColor;
-        type.style.borderColor = "";
-      }
-      tags.forEach((tag) => {
-        tag.style.backgroundColor = "var(--color-bg)";
-        tag.style.color = "var(--color-muted)";
-        tag.style.borderColor = "var(--color-border)";
-      });
-    });
-
+    items.forEach((item) => item.classList.remove("selected"));
     if (newIndex >= 0 && newIndex < items.length) {
       selectedIndex = newIndex;
       const selectedItem = items[selectedIndex];
       selectedItem.classList.add("selected");
-      selectedItem.style.backgroundColor = "var(--color-accent)";
-
-      // Style child elements for selected state
-      const title = selectedItem.querySelector(".result-title") as HTMLElement | null;
-      const desc = selectedItem.querySelector(".result-description") as HTMLElement | null;
-      const arrow = selectedItem.querySelector(".result-arrow") as HTMLElement | null;
-      const icon = selectedItem.querySelector(".result-icon") as HTMLElement | null;
-      const tags = selectedItem.querySelectorAll(".result-tag") as NodeListOf<HTMLElement>;
-      const type = selectedItem.querySelector(".result-type") as HTMLElement | null;
-
-      if (title) title.style.color = "white";
-      if (desc) desc.style.color = "rgba(255, 255, 255, 0.9)";
-      if (arrow) arrow.style.color = "white";
-      if (icon) {
-        icon.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-        icon.style.color = "white";
-      }
-      if (type) {
-        type.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-        type.style.color = "white";
-        type.style.borderColor = "rgba(255, 255, 255, 0.3)";
-      }
-      tags.forEach((tag) => {
-        tag.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-        tag.style.color = "white";
-        tag.style.borderColor = "rgba(255, 255, 255, 0.3)";
-      });
-
       selectedItem.scrollIntoView({ block: "nearest" });
     }
   }
 
-  // Event Listeners
+  // ── Event listeners ──
   document.getElementById("search-btn")?.addEventListener("click", openModal);
   closeBtn.addEventListener("click", closeModal);
   backdrop.addEventListener("click", closeModal);
 
-  // Keyboard shortcuts
   document.addEventListener("keydown", (e) => {
-    // Open with Cmd/Ctrl + K
     if ((e.metaKey || e.ctrlKey) && e.key === "k") {
       e.preventDefault();
-      if (modal.classList.contains("open")) {
-        closeModal();
-      } else {
-        openModal();
-      }
+      modal.classList.contains("open") ? closeModal() : openModal();
     }
-
-    // Close with Escape
-    if (e.key === "Escape" && modal.classList.contains("open")) {
-      closeModal();
-    }
+    if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
   });
 
-  // Search input with debounce
-  input.addEventListener("input", () => {
-    debounce(() => performSearch(input.value), 300);
-  });
+  input.addEventListener("input", () => debounce(() => performSearch(input.value), 200));
 
-  // Keyboard navigation
   input.addEventListener("keydown", (e) => {
-    const items = resultsList.querySelectorAll(".result-item");
-
+    const items = resultsList.querySelectorAll(".sm-item");
     if (e.key === "ArrowDown") {
       e.preventDefault();
       updateSelection(Math.min(selectedIndex + 1, items.length - 1));
@@ -383,50 +278,39 @@ import { Search, X, Clock, Trash2, FileText, FolderKanban } from "@lucide/astro"
       e.preventDefault();
       const selectedItem = items[selectedIndex] as HTMLElement;
       const url = selectedItem.dataset.url;
-      if (url) {
-        navigateToResult(url, input.value);
-      }
+      if (url) navigateToResult(url, input.value);
     }
   });
 
-  // Click on result
   resultsList.addEventListener("click", (e) => {
-    const item = (e.target as HTMLElement).closest(".result-item") as HTMLElement;
-    if (item?.dataset.url) {
-      navigateToResult(item.dataset.url, input.value);
-    }
+    const item = (e.target as HTMLElement).closest(".sm-item-result") as HTMLElement;
+    if (item?.dataset.url) navigateToResult(item.dataset.url, input.value);
   });
 
-  // Click on recent search
   recentList.addEventListener("click", (e) => {
-    const item = (e.target as HTMLElement).closest(".recent-item");
-    if (item) {
-      const query = item.querySelector("span")?.textContent || "";
-      input.value = query;
-      performSearch(query);
+    const item = (e.target as HTMLElement).closest(".sm-item-recent") as HTMLElement;
+    if (item?.dataset.query) {
+      input.value = item.dataset.query;
+      performSearch(item.dataset.query);
     }
   });
 
-  // Clear recent searches
   clearRecentBtn.addEventListener("click", () => {
     clearRecentSearches();
     recentSearches.classList.add("hidden");
   });
 
-  // Filter buttons
   filterBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       filterBtns.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       currentFilter = (btn as HTMLElement).dataset.filter as "all" | "blog" | "project";
-      if (input.value.trim()) {
-        performSearch(input.value);
-      }
+      if (input.value.trim()) performSearch(input.value);
     });
   });
 </script>
 
-<style>
+<style is:global>
   @reference "tailwindcss";
 
   .search-modal {
@@ -436,483 +320,464 @@ import { Search, X, Clock, Trash2, FileText, FolderKanban } from "@lucide/astro"
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 10vh;
+    padding: 8vh 1rem 1rem;
     opacity: 0;
     visibility: hidden;
     transition:
       opacity 0.2s ease,
       visibility 0.2s ease;
   }
-
   .search-modal.open {
     opacity: 1;
     visibility: visible;
   }
-
   .search-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background:
+      radial-gradient(ellipse at top, color-mix(in srgb, var(--color-accent) 6%, transparent), transparent 60%),
+      color-mix(in srgb, var(--color-bg) 86%, transparent);
+    backdrop-filter: blur(6px);
+  }
+  .search-stage {
+    position: relative;
+    width: min(720px, 100%);
+    max-height: calc(100vh - 16vh);
+    transform: translateY(8px);
+    transition: transform 0.25s ease;
+  }
+  .search-modal.open .search-stage {
+    transform: translateY(0);
   }
 
-  .search-container {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    max-height: 70vh;
-    margin: 0 1rem;
+  .search-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 12px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow:
+      0 1px 0 var(--color-border),
+      0 22px 60px -22px rgba(0, 0, 0, 0.35);
+    color: var(--color-text);
+    padding: 1rem 1.1rem 0.9rem;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
     display: flex;
     flex-direction: column;
-    transform: scale(0.95) translateY(-10px);
-    transition: transform 0.2s ease;
+    max-height: calc(100vh - 16vh);
+    overflow: hidden;
   }
 
-  .search-modal.open .search-container {
-    transform: scale(1) translateY(0);
-  }
-
-  .search-header {
+  /* ─── Issue line ─── */
+  .sm-issue {
     display: flex;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .search-input-wrapper {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .search-icon {
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    margin: 0 0 0.5rem;
+    font-size: 0.66rem;
     color: var(--color-muted);
+    letter-spacing: 0.04em;
+  }
+  .sm-tag {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .dl-sep {
+    opacity: 0.5;
+  }
+  .dl-spacer {
+    flex: 1;
+    min-width: 8px;
+  }
+  .sm-kbd-hint kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid var(--color-border);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 0.62rem;
+  }
+
+  /* ─── Hairline rule ─── */
+  .sm-rule {
+    display: flex;
+    align-items: center;
+    margin: 0.4rem -0.2rem 0.7rem;
+  }
+  .rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+  .rule-tick {
+    width: 1px;
+    height: 7px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+
+  /* ─── Input row ─── */
+  .sm-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    margin-bottom: 0.7rem;
+  }
+  .sm-prompt {
+    color: var(--color-muted);
+    font-weight: 600;
+    user-select: none;
     flex-shrink: 0;
   }
-
-  .search-input {
+  .sm-input {
     flex: 1;
+    border: 0;
+    outline: 0;
     background: transparent;
-    border: none;
-    outline: none;
-    font-size: 1rem;
     color: var(--color-text);
-  }
-
-  .search-input::placeholder {
-    color: var(--color-muted);
-  }
-
-  .search-kbd {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
     font-family: inherit;
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
+    font-size: 0.92rem;
+    padding: 4px 0;
+  }
+  .sm-input::placeholder {
     color: var(--color-muted);
+    opacity: 0.7;
   }
-
-  .search-close {
-    margin-left: 0.5rem;
-    padding: 0.5rem;
-    color: var(--color-muted);
-    border-radius: 6px;
-    transition:
-      background-color 0.2s,
-      color 0.2s;
-  }
-
-  .search-close:hover {
-    background: var(--color-bg);
-    color: var(--color-text);
-  }
-
-  .search-filters {
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .filter-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-    color: var(--color-muted);
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    transition: all 0.2s;
-  }
-
-  .filter-btn:hover {
-    background: var(--color-bg);
-    color: var(--color-text);
-  }
-
-  .filter-btn.active {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
-    color: white;
-  }
-
-  .search-results {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.5rem;
-    min-height: 200px;
-  }
-
-  /* Recent Searches */
-  .recent-searches.hidden {
-    display: none;
-  }
-
-  .recent-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0.75rem;
-  }
-
-  .recent-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .clear-recent {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.75rem;
-    color: var(--color-muted);
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    transition:
-      color 0.2s,
-      background-color 0.2s;
-  }
-
-  .clear-recent:hover {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-  }
-
-  .recent-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .recent-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: var(--color-text);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-  }
-
-  .recent-item:hover {
-    background: var(--color-bg);
-    border-color: var(--color-border);
-  }
-
-  .recent-icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
+  .sm-close {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg);
-    border-radius: 8px;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--color-border);
+    background: transparent;
     color: var(--color-muted);
-    flex-shrink: 0;
-  }
-
-  .recent-query {
-    flex: 1;
-    font-size: 0.9375rem;
-    font-weight: 450;
-  }
-
-  .recent-arrow {
-    color: var(--color-muted);
-    opacity: 0;
+    cursor: pointer;
+    border-radius: 0;
     transition:
-      opacity 0.2s,
-      transform 0.2s;
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .sm-close:hover {
+    color: var(--color-text);
+    border-color: var(--color-text);
   }
 
-  .recent-item:hover .recent-arrow {
+  /* ─── Filters ─── */
+  .sm-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    padding: 0 0 0.7rem;
+    border-bottom: 1px dashed var(--color-border);
+    margin-bottom: 0.5rem;
+  }
+  .sm-filter-tag {
+    color: var(--color-muted);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    margin-right: 4px;
+  }
+  .sm-filter-tag::after {
+    content: ":";
+    margin-left: 1px;
+  }
+  .sm-chip {
+    padding: 2px 8px;
+    border: 0;
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.74rem;
+    border-radius: 0;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
+  }
+  .sm-chip:hover {
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
+  .sm-chip.active {
+    color: var(--color-bg);
+    background: var(--color-text);
+    font-weight: 600;
+  }
+
+  /* ─── Results scroller ─── */
+  .sm-results {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0 -0.4rem;
+    padding: 0 0.4rem;
+    scrollbar-width: thin;
+  }
+
+  .sm-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    font-weight: 600;
+  }
+  .sm-clear {
+    border: 0;
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.66rem;
+    padding: 0;
+  }
+  .sm-clear:hover {
+    color: var(--color-text);
+  }
+
+  .sm-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sm-item {
+    display: grid;
+    grid-template-columns: 28px 1fr 16px;
+    gap: 12px;
+    padding: 0.65rem 0.4rem;
+    align-items: start;
+    cursor: pointer;
+    border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.15s ease;
+    position: relative;
+  }
+  .sm-list .sm-item:first-child {
+    border-top: 0;
+  }
+  .sm-item::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-accent);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .sm-item:hover,
+  .sm-item.selected {
+    background: var(--color-bg);
+  }
+  .sm-item:hover::before,
+  .sm-item.selected::before {
     opacity: 1;
+  }
+  .sm-item.selected .sm-item-title {
+    color: var(--color-accent);
+  }
+  .sm-item.selected .sm-item-arrow {
+    color: var(--color-accent);
     transform: translateX(2px);
   }
 
-  /* Results */
-  .results-list {
-    list-style: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 4px !important;
-  }
-
-  .result-item {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 12px !important;
-    padding: 12px !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-    transition: background-color 0.15s ease !important;
-    background-color: transparent !important;
-  }
-
-  .result-item:hover {
-    background-color: var(--color-bg) !important;
-  }
-
-  .result-item.selected {
-    background-color: var(--color-accent) !important;
-  }
-
-  .result-item.selected .result-title,
-  .result-item.selected .result-description,
-  .result-item.selected .result-type,
-  .result-item.selected .result-tag,
-  .result-item.selected .result-arrow {
-    color: white !important;
-  }
-
-  .result-item.selected .result-icon {
-    background-color: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-  }
-
-  .result-item.selected .result-type,
-  .result-item.selected .result-tag {
-    background-color: rgba(255, 255, 255, 0.2) !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-  }
-
-  .result-icon {
-    flex-shrink: 0 !important;
-    width: 40px !important;
-    height: 40px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 8px !important;
-  }
-
-  .result-icon.blog {
-    background-color: rgba(59, 130, 246, 0.1) !important;
-    color: #3b82f6 !important;
-  }
-
-  .result-icon.project {
-    background-color: rgba(16, 185, 129, 0.1) !important;
-    color: #10b981 !important;
-  }
-
-  .result-content {
-    flex: 1 !important;
-    min-width: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 4px !important;
-  }
-
-  .result-header {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 8px !important;
-    flex-wrap: wrap !important;
-  }
-
-  .result-title {
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    color: var(--color-text) !important;
-    line-height: 1.3 !important;
-  }
-
-  .result-description {
-    font-size: 13px !important;
-    color: var(--color-muted) !important;
-    line-height: 1.4 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
-    -webkit-box-orient: vertical !important;
-  }
-
-  .result-meta {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
-    margin-top: 4px !important;
-  }
-
-  .result-tag {
-    display: inline-block !important;
-    padding: 2px 8px !important;
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    background-color: var(--color-bg) !important;
-    border: 1px solid var(--color-border) !important;
-    border-radius: 4px !important;
-    color: var(--color-muted) !important;
-    text-transform: capitalize !important;
-  }
-
-  .result-type {
-    display: inline-block !important;
-    flex-shrink: 0 !important;
-    padding: 2px 8px !important;
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    border-radius: 4px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-  }
-
-  .result-type.blog {
-    background-color: rgba(59, 130, 246, 0.15) !important;
-    color: #3b82f6 !important;
-  }
-
-  .result-type.project {
-    background-color: rgba(16, 185, 129, 0.15) !important;
-    color: #10b981 !important;
-  }
-
-  .result-arrow {
-    flex-shrink: 0 !important;
-    color: var(--color-muted) !important;
-    opacity: 0 !important;
-    transition: opacity 0.15s ease !important;
-  }
-
-  .result-item:hover .result-arrow {
-    opacity: 1 !important;
-  }
-
-  .result-item.selected .result-arrow {
-    opacity: 1 !important;
-    color: white !important;
-  }
-
-  /* No Results */
-  .no-results {
-    text-align: center;
-    padding: 2rem 1rem;
+  .sm-item-num {
+    font-size: 0.7rem;
+    font-weight: 700;
     color: var(--color-muted);
+    padding-top: 4px;
+    font-family: ui-monospace, monospace;
+  }
+  .sm-item-body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sm-item-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+  }
+  .sm-item-type {
+    display: inline-block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border: 1px solid currentColor;
+    line-height: 1;
+  }
+  .sm-item-type-blog {
+    color: #3b82f6;
+  }
+  .sm-item-type-project {
+    color: #10b981;
+  }
+  .sm-item-cat {
+    display: inline;
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+  }
+  .sm-item-cat::before {
+    content: "· ";
+    color: var(--color-border);
+  }
+  .sm-item-title {
+    display: block;
+    font-family: "Merriweather", Georgia, serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.3;
+    color: var(--color-text);
+  }
+  .sm-item-desc {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .sm-item-meta {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    margin-top: 2px;
+    word-break: break-word;
+  }
+  .sm-item-arrow {
+    align-self: center;
+    color: var(--color-muted);
+    transition:
+      color 0.15s ease,
+      transform 0.15s ease;
+    font-size: 0.85rem;
+  }
+  .sm-item:hover .sm-item-arrow {
+    color: var(--color-accent);
+    transform: translateX(2px);
   }
 
-  .no-results.hidden {
+  /* ─── Empty / loading ─── */
+  .sm-empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  .sm-empty p {
+    margin: 0;
+    font-style: italic;
+  }
+  .sm-empty em {
+    font-family: "Merriweather", Georgia, serif;
+    color: var(--color-text);
+    font-style: italic;
+  }
+  .sm-empty-hint {
+    margin-top: 6px !important;
+    font-size: 0.72rem;
+  }
+  .sm-empty.hidden {
     display: none;
   }
 
-  .no-results-hint {
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-  }
-
-  /* Loading */
-  .search-loading {
+  .sm-loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 8px;
     padding: 2rem;
     color: var(--color-muted);
+    font-size: 0.82rem;
+  }
+  .sm-loading.hidden {
+    display: none;
+  }
+  .sm-loading-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    animation: sm-pulse 1s infinite ease-in-out;
+  }
+  @keyframes sm-pulse {
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: scale(0.85);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
-  .search-loading.hidden {
+  .sm-recent.hidden {
     display: none;
   }
 
-  .loading-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--color-border);
-    border-top-color: var(--color-accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  /* Footer */
-  .search-footer {
+  /* ─── Footer keymap ─── */
+  .sm-footer {
+    margin-top: 0.6rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--color-border);
     display: flex;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
-    border-radius: 0 0 12px 12px;
-  }
-
-  .search-hint {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.75rem;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: baseline;
+    font-size: 0.66rem;
     color: var(--color-muted);
+    letter-spacing: 0.04em;
   }
-
-  .search-hint kbd {
-    padding: 0.125rem 0.375rem;
-    font-size: 0.6875rem;
-    background: var(--color-surface);
+  .sm-footer kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    margin: 0 1px;
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 0.62rem;
   }
 
-  /* Mobile adjustments */
-  @media (max-width: 640px) {
-    .search-modal {
-      padding-top: 5vh;
-    }
-
-    .search-container {
-      max-height: 80vh;
-      margin: 0 0.5rem;
-    }
-
-    .search-footer {
-      display: none;
+  @media (prefers-reduced-motion: reduce) {
+    .search-stage,
+    .sm-loading-dot {
+      transition: none !important;
+      animation: none !important;
     }
   }
 </style>
