@@ -1,10 +1,8 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import BlogCard from "@components/blog/BlogCard.astro";
-import InfiniteScroll from "@components/ui/InfiniteScroll.astro";
-import { collectUniqueCategory, normalizeCategory, filterPostsByCategory } from "@utils/category";
 import { getCollection } from "astro:content";
-import { Folder, ArrowLeft } from "@lucide/astro";
+import { collectUniqueCategory, normalizeCategory, filterPostsByCategory } from "@utils/category";
+import { normalizeTag } from "@utils/tags";
 
 export async function getStaticPaths() {
   const allPosts = await getCollection("blog");
@@ -14,53 +12,105 @@ export async function getStaticPaths() {
 
   return uniqueSlugs.map((category) => {
     const filteredPosts = filterPostsByCategory(publishedPosts, category).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
-    return {
-      params: { category },
-      props: { posts: filteredPosts },
-    };
+    return { params: { category }, props: { posts: filteredPosts } };
   });
 }
 
 const { category } = Astro.params;
 const { posts } = Astro.props;
-
-// Get the original category label from the first post
 const categoryLabel = posts?.[0]?.data?.category ?? category;
+
+// Numbering — global across all blog posts (not just this category)
+const allPosts = await getCollection("blog");
+const allPublished = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+const numbered = [...allPublished].reverse();
+const numberOf = new Map(numbered.map((p, i) => [p.id, i + 1]));
+const pad = (n: number) => String(n).padStart(2, "0");
+
+const monthShort = (d: Date) => d.toLocaleString("default", { month: "short" }).toUpperCase();
+
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
 ---
 
-<BaseLayout pageTitle={`${categoryLabel} - Category`}>
-  <div class="category-page">
-    <a href="/blog/category" class="back-link">
-      <ArrowLeft size={16} />
-      All Categories
-    </a>
+<BaseLayout pageTitle={`${categoryLabel} — Tapan Meena`}>
+  <div class="page">
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;01</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;B&nbsp;//&nbsp;category&nbsp;\u00b7&nbsp;{categoryLabel.toLowerCase()}</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+    </p>
 
-    <header class="page-header">
-      <div class="category-badge">
-        <Folder size={20} />
-        <span>Category</span>
+    <nav class="bread" aria-label="Breadcrumb">
+      <a href="/blog/category" class="bread-back">← all categories</a>
+      <span class="dl-sep">·</span>
+      <a href="/blog" class="bread-back">the writing log</a>
+    </nav>
+
+    <header class="mast">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
       </div>
-      <h1>{categoryLabel}</h1>
-      <p class="post-count">
-        {posts.length}
-        {posts.length === 1 ? "post" : "posts"}
+      <h1 class="mast-title">
+        <span class="mast-pre">filed under</span>
+        <span class="mast-main"><em>{categoryLabel}</em></span>
+      </h1>
+      <p class="mast-by">
+        <span>{posts.length}&nbsp;post{posts.length === 1 ? "" : "s"}</span>
+        <span class="dl-sep">·</span>
+        <span>newest first</span>
       </p>
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
     </header>
 
     {
-      posts.length > 0 ? (
-        <InfiniteScroll initialCount={6} loadCount={6}>
-          {posts.map((post) => (
-            <BlogCard post={post} />
-          ))}
-        </InfiniteScroll>
-      ) : (
-        <div class="empty-state">
-          <p>No posts found in this category.</p>
-          <a href="/blog/category" class="back-button">
-            Browse all categories
-          </a>
+      posts.length === 0 ? (
+        <div class="empty">
+          <p>— no posts in this category —</p>
         </div>
+      ) : (
+        <ol class="entries">
+          {posts.map((post) => {
+            const num = numberOf.get(post.id)!;
+            const d = post.data.publishedAt;
+            return (
+              <li class="entry">
+                <a class="entry-link" href={`/blog/${post.id}`}>
+                  <div class="e-gutter">
+                    <span class="e-num">№{pad(num)}</span>
+                    <span class="e-month">
+                      {monthShort(d)}&nbsp;{String(d.getDate()).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <div class="e-body">
+                    <h3 class="e-title">{post.data.title}</h3>
+                    {post.data.description && <p class="e-desc">{post.data.description}</p>}
+                    {post.data.tags && post.data.tags.length > 0 && (
+                      <p class="e-tags">
+                        {post.data.tags.slice(0, 6).map((t, ti) => (
+                          <>
+                            {ti > 0 && (
+                              <span class="e-tag-sep" aria-hidden="true">
+                                {" "}
+                                ·{" "}
+                              </span>
+                            )}
+                            <span class="e-tag">#{normalizeTag(t)}</span>
+                          </>
+                        ))}
+                      </p>
+                    )}
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
       )
     }
   </div>
@@ -68,55 +118,215 @@ const categoryLabel = posts?.[0]?.data?.category ?? category;
 
 <style>
   @reference "tailwindcss";
-
-  .category-page {
-    @apply mx-auto max-w-6xl px-4 pb-12;
-  }
-
-  .back-link {
-    @apply mb-6 inline-flex items-center gap-2 text-sm no-underline;
-    color: var(--color-muted);
-    transition: color 0.2s ease;
-  }
-
-  .back-link:hover {
-    color: var(--color-accent);
-  }
-
-  .page-header {
-    @apply mb-10 text-center;
-  }
-
-  .category-badge {
-    @apply mx-auto mb-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium;
-    background-color: var(--color-accent);
-    color: white;
-  }
-
-  .page-header h1 {
-    @apply mb-2 text-4xl font-bold;
-    font-family: var(--font-sans);
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 5rem;
     color: var(--color-text);
   }
 
-  .post-count {
-    @apply text-lg;
+  .rule {
+    display: flex;
+    align-items: center;
+    margin: 0.4rem 0;
+  }
+  .rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+  .rule-tick {
+    width: 1px;
+    height: 8px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+
+  .dateline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0 0 0.6rem;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    letter-spacing: 0.04em;
+  }
+  .dl-issue {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .dl-sep {
+    opacity: 0.5;
+  }
+
+  .bread {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+    letter-spacing: 0.04em;
+  }
+  .bread-back {
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+  .bread-back:hover {
+    color: var(--color-text);
+  }
+
+  .mast {
+    margin-bottom: 1.4rem;
+  }
+  .mast-title {
+    text-align: center;
+    margin: 0.8rem 0;
+    line-height: 1;
+    font-family: "Merriweather", Georgia, serif;
+  }
+  .mast-pre {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 0.72rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.7rem;
+  }
+  .mast-main {
+    display: inline-block;
+    font-weight: 700;
+    font-style: italic;
+    font-size: clamp(2rem, 5.6vw, 3.6rem);
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    line-height: 1.05;
+  }
+  .mast-by {
+    text-align: center;
+    margin: 0.4rem 0 0.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .entry {
+    border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  }
+  .entry:first-child {
+    border-top: 0;
+  }
+  .entry-link {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 14px;
+    padding: 0.95rem 0.4rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.18s ease;
+    position: relative;
+  }
+  @media (min-width: 600px) {
+    .entry-link {
+      grid-template-columns: 90px 1fr;
+      gap: 22px;
+    }
+  }
+  .entry-link::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-accent);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .entry-link:hover {
+    background: var(--color-surface);
+  }
+  .entry-link:hover::before {
+    opacity: 1;
+  }
+
+  .e-gutter {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-family: ui-monospace, monospace;
+    padding-top: 2px;
+  }
+  .e-num {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+  .e-month {
+    font-size: 0.66rem;
+    color: var(--color-muted);
+    letter-spacing: 0.16em;
+  }
+
+  .e-body {
+    min-width: 0;
+  }
+  .e-title {
+    font-family: "Merriweather", Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 4px;
+    color: var(--color-text);
+    max-width: 720px;
+  }
+  .entry-link:hover .e-title {
+    color: var(--color-accent);
+  }
+  .e-desc {
+    margin: 4px 0 8px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+    max-width: 720px;
+  }
+  .e-tags {
+    margin: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
     color: var(--color-muted);
   }
+  .e-tag-sep {
+    color: var(--color-border);
+    user-select: none;
+  }
 
-  .empty-state {
-    @apply flex flex-col items-center gap-4 py-16 text-center;
+  .empty {
+    padding: 3rem 1rem;
+    text-align: center;
+    font-family: ui-monospace, monospace;
+    font-style: italic;
     color: var(--color-muted);
-  }
-
-  .back-button {
-    @apply rounded-lg px-4 py-2 text-sm font-medium no-underline;
-    background-color: var(--color-accent);
-    color: white;
-    transition: background-color 0.2s ease;
-  }
-
-  .back-button:hover {
-    background-color: var(--color-accent-hover);
   }
 </style>

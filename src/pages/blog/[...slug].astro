@@ -4,9 +4,10 @@ import type { ImageMetadata } from "astro";
 import { getCollection, render } from "astro:content";
 import { Image } from "astro:assets";
 import BaseLayout from "@layouts/BaseLayout.astro";
-import TableOfContent from "@components/blog/TableOfContent.astro";
-import BlogMeta from "@components/blog/BlogMeta.astro";
+import { ArrowLeft, ArrowRight } from "@lucide/astro";
 import { calculateReadTime } from "@utils/readTime";
+import { normalizeCategory, categoryToUrl } from "@utils/category";
+import { normalizeTag, tagToUrl } from "@utils/tags";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -18,107 +19,938 @@ export async function getStaticPaths() {
     }));
 }
 
-type Props = {
-  post: CollectionEntry<"blog">;
-};
-
-const { post } = Astro.props;
+const { post } = Astro.props as { post: CollectionEntry<"blog"> };
 const { Content, headings } = await render(post);
 
-// Calculate read time from raw content
+const { title, description, publishedAt, updatedAt, category, tags, author, coverImage } = post.data;
+const cover = coverImage as ImageMetadata | undefined;
+
 const readTime = calculateReadTime(post.body ?? "");
-const coverImage = post.data.coverImage as ImageMetadata | undefined;
+const wordCount = (post.body ?? "").split(/\s+/).filter(Boolean).length;
+
+// ── Numbering & navigation ────────────────────────────────────────────
+const allPosts = await getCollection("blog");
+const publishedPosts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+const numbered = [...publishedPosts].reverse();
+const numberOf = new Map(numbered.map((p, i) => [p.id, i + 1]));
+const pad = (n: number) => String(n).padStart(2, "0");
+const entryNo = numberOf.get(post.id)!;
+const totalEntries = publishedPosts.length;
+
+const currentIndex = publishedPosts.findIndex((p) => p.id === post.id);
+const prevPost = currentIndex > 0 ? publishedPosts[currentIndex - 1] : null;
+const nextPost = currentIndex < publishedPosts.length - 1 ? publishedPosts[currentIndex + 1] : null;
+
+// ── Related (shared tags) ─────────────────────────────────────────────
+const myTags = new Set((tags ?? []).map(normalizeTag));
+const related = publishedPosts
+  .filter((p) => p.id !== post.id)
+  .map((p) => {
+    const overlap = (p.data.tags ?? []).map(normalizeTag).filter((t) => myTags.has(t)).length;
+    return { p, overlap };
+  })
+  .filter((r) => r.overlap > 0)
+  .sort((a, b) => b.overlap - a.overlap || b.p.data.publishedAt.getTime() - a.p.data.publishedAt.getTime())
+  .slice(0, 3);
+
+// ── TOC ───────────────────────────────────────────────────────────────
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+// ── Dateline ──────────────────────────────────────────────────────────
+const datelineDay = publishedAt.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = publishedAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
+
+const fmtFullDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
+
+const initials = title
+  .split(/\s+/)
+  .map((w) => w[0])
+  .filter(Boolean)
+  .slice(0, 2)
+  .join("");
 ---
 
-<BaseLayout pageTitle={post.data.title}>
-  <div class="blog-layout">
-    <!-- Main Content -->
-    <article class="article-container">
-      {/* Cover Image */}
-      {coverImage && <Image src={coverImage} alt={`Cover image for ${post.data.title}`} class="cover-image" />}
+<BaseLayout pageTitle={`${title} — Tapan Meena`}>
+  <article class="post">
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;01</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;B&nbsp;//&nbsp;№{pad(entryNo)}&nbsp;of&nbsp;{pad(totalEntries)}</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+    </p>
 
-      <header class="article-header">
-        <h1 class="article-title">{post.data.title}</h1>
-        {post.data.description && <p class="article-description">{post.data.description}</p>}
-        <BlogMeta
-          author={post.data.author}
-          publishedAt={post.data.publishedAt}
-          updatedAt={post.data.updatedAt}
-          category={post.data.category}
-          tags={post.data.tags}
-          readTime={readTime}
-        />
-      </header>
-      <div class="prose">
-        <Content />
+    <nav class="bread" aria-label="Breadcrumb">
+      <a href="/blog" class="bread-back">
+        <ArrowLeft size={12} /> back to the writing log
+      </a>
+    </nav>
+
+    <header class="head">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
       </div>
-    </article>
 
-    <!-- Right Sidebar: TOC -->
-    <aside class="toc-sidebar">
-      <TableOfContent headings={headings} />
-    </aside>
-  </div>
-</BaseLayout>
+      <div class="head-meta">
+        <span class="hm-num">№{pad(entryNo)}</span>
+        {
+          category && (
+            <a class="hm-cat" href={categoryToUrl(category)}>
+              {category.toLowerCase()}
+            </a>
+          )
+        }
+        <span class="hm-by">
+          by <span>{author?.toLowerCase()}</span>
+        </span>
+      </div>
 
-<style>
-  @reference "tailwindcss";
+      <h1 class="head-title">{title}</h1>
+      {description && <p class="head-lede">{description}</p>}
 
-  /* 2-column grid layout */
-  .blog-layout {
-    @apply mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
+      <dl class="head-facts">
+        <div class="fact">
+          <dt>filed</dt>
+          <dd>{fmtFullDate(publishedAt)}</dd>
+        </div>
+        {
+          updatedAt && (
+            <div class="fact">
+              <dt>updated</dt>
+              <dd>{fmtFullDate(updatedAt)}</dd>
+            </div>
+          )
+        }
+        <div class="fact">
+          <dt>read</dt>
+          <dd>~{readTime} min</dd>
+        </div>
+        <div class="fact">
+          <dt>length</dt>
+          <dd>{wordCount.toLocaleString()} words</dd>
+        </div>
+      </dl>
 
-  @media (min-width: 1024px) {
-    .blog-layout {
-      grid-template-columns: 1fr 240px;
-      gap: 3rem;
-      align-items: start;
+      {
+        tags && tags.length > 0 && (
+          <p class="head-tags" aria-label="Tags">
+            <span class="ht-label">tags&nbsp;//</span>
+            {tags.map((t, i) => (
+              <>
+                {i > 0 && (
+                  <span class="ht-sep" aria-hidden="true">
+                    {" "}
+                    ·{" "}
+                  </span>
+                )}
+                <a href={tagToUrl(t)} class="ht-item">
+                  #{normalizeTag(t)}
+                </a>
+              </>
+            ))}
+          </p>
+        )
+      }
+
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+    </header>
+
+    {
+      cover && (
+        <figure class="plate">
+          <Image src={cover} alt={`Cover for ${title}`} class="plate-img" />
+          <figcaption class="plate-cap">
+            <span class="plate-fig">fig.&nbsp;1</span>
+            <span class="plate-desc">cover · {title.toLowerCase()}</span>
+          </figcaption>
+        </figure>
+      )
     }
-  }
 
-  /* TOC Sidebar */
-  .toc-sidebar {
-    @apply hidden lg:block;
-    position: sticky;
-    top: 6rem;
-    max-height: calc(100vh - 8rem);
-    overflow-y: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
+    <div class="body">
+      <aside class="margin">
+        {
+          toc.length > 0 && (
+            <div class="m-block">
+              <h2 class="m-head">contents</h2>
+              <ol class="m-toc">
+                {toc.map((h, i) => (
+                  <li class={`m-toc-item m-toc-d${h.depth}`}>
+                    <a href={`#${h.slug}`} data-toc={h.slug}>
+                      <span class="m-toc-num">{pad(i + 1)}</span>
+                      <span class="m-toc-text">{h.text}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )
+        }
 
-  .toc-sidebar::-webkit-scrollbar {
-    display: none;
-  }
+        <div class="m-block">
+          <h2 class="m-head">about</h2>
+          <p class="m-about">
+            written by <a href="/about">{author}</a> in {publishedAt.getFullYear()}. filed under <a href={categoryToUrl(category)}
+              >{category.toLowerCase()}</a
+            >.
+          </p>
+        </div>
 
-  /* Article container */
-  .article-container {
-    @apply w-full;
-  }
+        <div class="m-block">
+          <h2 class="m-head">share</h2>
+          <p class="m-share">
+            spotted a typo or want to argue with a paragraph?
+            <a href="/contact">drop a line →</a>
+          </p>
+        </div>
+      </aside>
 
-  /* Cover Image */
-  .cover-image {
-    @apply w-full rounded-xl mb-8;
-    max-height: 100%;
-    object-fit: cover;
-  }
+      <section class="article">
+        <div class="prose">
+          <Content />
+        </div>
+        <div class="end-rule" aria-hidden="true">
+          <span>—</span>
+          <span class="end-mark">§</span>
+          <span>—</span>
+        </div>
+      </section>
+    </div>
 
-  .article-header {
-    @apply mb-8 border-b border-(--color-border) pb-8;
-  }
+    {
+      related.length > 0 && (
+        <section class="related">
+          <div class="rule" aria-hidden="true">
+            <>
+              <span class="rule-tick" />
+              <span class="rule-line" />
+              <span class="rule-tick" />
+            </>
+          </div>
+          <header class="related-head">
+            <span class="rh-tag">see also</span>
+            <h2 class="rh-title">other posts sharing tags with this one</h2>
+          </header>
+          <ul class="related-list">
+            {related.map(({ p, overlap }) => {
+              const num = numberOf.get(p.id)!;
+              return (
+                <li class="rel">
+                  <a class="rel-link" href={`/blog/${p.id}`}>
+                    <div class="rel-gutter">
+                      <span class="rel-num">№{pad(num)}</span>
+                      <span class="rel-overlap">{overlap}× shared</span>
+                    </div>
+                    <div class="rel-body">
+                      <span class="rel-cat">{p.data.category.toLowerCase()}</span>
+                      <h3 class="rel-title">{p.data.title}</h3>
+                      {p.data.description && <p class="rel-desc">{p.data.description}</p>}
+                      <p class="rel-date">{fmtFullDate(p.data.publishedAt)}</p>
+                    </div>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )
+    }
 
-  .article-title {
-    @apply text-3xl font-bold tracking-tight sm:text-4xl;
-    font-family: var(--font-sans);
-    color: var(--color-text);
-  }
+    <nav class="pn" aria-label="Adjacent entries">
+      {
+        prevPost ? (
+          <a href={`/blog/${prevPost.id}`} class="pn-link pn-prev">
+            <span class="pn-arrow">
+              <ArrowLeft size={14} />
+            </span>
+            <span class="pn-meta">
+              <span class="pn-label">← newer · №{pad(numberOf.get(prevPost.id)!)}</span>
+              <span class="pn-title">{prevPost.data.title}</span>
+            </span>
+          </a>
+        ) : (
+          <span class="pn-edge">— latest entry —</span>
+        )
+      }
+      {
+        nextPost ? (
+          <a href={`/blog/${nextPost.id}`} class="pn-link pn-next">
+            <span class="pn-meta">
+              <span class="pn-label">older · №{pad(numberOf.get(nextPost.id)!)} →</span>
+              <span class="pn-title">{nextPost.data.title}</span>
+            </span>
+            <span class="pn-arrow">
+              <ArrowRight size={14} />
+            </span>
+          </a>
+        ) : (
+          <span class="pn-edge">— first entry —</span>
+        )
+      }
+    </nav>
+  </article>
 
-  .article-description {
-    @apply mt-4 text-lg;
-    color: var(--color-muted);
-  }
-</style>
+  <script is:inline>
+    const tocLinks = Array.from(document.querySelectorAll("[data-toc]"));
+    if (tocLinks.length) {
+      const map = new Map();
+      tocLinks.forEach((l) => {
+        const id = l.getAttribute("data-toc");
+        const h = id ? document.getElementById(id) : null;
+        if (h) map.set(h, l);
+      });
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            const link = map.get(e.target);
+            if (!link) return;
+            if (e.isIntersecting) {
+              tocLinks.forEach((l) => l.classList.remove("active"));
+              link.classList.add("active");
+            }
+          });
+        },
+        { rootMargin: "-20% 0px -65% 0px", threshold: 0 },
+      );
+      map.forEach((_l, h) => io.observe(h));
+    }
+    tocLinks.forEach((l) => {
+      l.addEventListener("click", (e) => {
+        const id = l.getAttribute("data-toc");
+        const target = id ? document.getElementById(id) : null;
+        if (!target) return;
+        e.preventDefault();
+        const top = target.getBoundingClientRect().top + window.scrollY - 88;
+        window.scrollTo({ top, behavior: "smooth" });
+        history.replaceState(null, "", "#" + id);
+      });
+    });
+  </script>
+
+  <style>
+    @reference "tailwindcss";
+
+    .post {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1.25rem 1.25rem 5rem;
+      color: var(--color-text);
+    }
+
+    .rule {
+      display: flex;
+      align-items: center;
+      margin: 0.4rem 0;
+    }
+    .rule-line {
+      flex: 1;
+      height: 1px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
+    .rule-tick {
+      width: 1px;
+      height: 8px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
+
+    .dateline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 8px;
+      margin: 0 0 0.6rem;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.04em;
+    }
+    .dl-issue {
+      color: var(--color-text);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .dl-sep {
+      opacity: 0.5;
+    }
+
+    .bread {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      margin-bottom: 1rem;
+      letter-spacing: 0.04em;
+    }
+    .bread-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--color-muted);
+      text-decoration: none;
+    }
+    .bread-back:hover {
+      color: var(--color-text);
+    }
+
+    .head {
+    }
+    .head-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 14px;
+      padding: 0.6rem 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.74rem;
+      color: var(--color-muted);
+      letter-spacing: 0.06em;
+    }
+    .hm-num {
+      color: var(--color-text);
+      font-weight: 700;
+    }
+    .hm-cat {
+      color: var(--color-accent);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 0.66rem;
+      text-decoration: none;
+    }
+    .hm-cat:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .hm-by {
+      display: inline-flex;
+      gap: 4px;
+    }
+    .hm-by span {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    .head-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 0.4rem 0 0.6rem;
+      color: var(--color-text);
+    }
+    .head-title::after {
+      content: "";
+      display: block;
+      width: 48px;
+      height: 2px;
+      background: var(--color-accent);
+      margin-top: 0.7rem;
+    }
+    .head-lede {
+      font-family: "Merriweather", Georgia, serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      max-width: 680px;
+      color: var(--color-muted);
+      margin: 0 0 1.3rem;
+    }
+
+    .head-facts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem 1.5rem;
+      padding: 0.9rem 0;
+      margin: 0 0 1rem;
+      border-top: 1px dashed var(--color-border);
+      border-bottom: 1px dashed var(--color-border);
+      font-family: ui-monospace, monospace;
+    }
+    @media (min-width: 640px) {
+      .head-facts {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    .fact {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .fact dt {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin: 0;
+    }
+    .fact dd {
+      margin: 0;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    .head-tags {
+      padding: 0 0 1rem;
+      margin: 0 0 0.4rem;
+      border-bottom: 1px dashed var(--color-border);
+      font-family: ui-monospace, monospace;
+      line-height: 1.9;
+      overflow-wrap: break-word;
+    }
+    .ht-label {
+      display: inline;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    .ht-sep {
+      display: inline;
+      color: var(--color-border);
+      user-select: none;
+    }
+    .ht-item {
+      display: inline;
+      font-size: 0.82rem;
+      color: var(--color-text);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+    }
+    .ht-item:hover {
+      color: var(--color-accent);
+      border-bottom-color: var(--color-accent);
+    }
+
+    /* ─── Cover plate ─── */
+    .plate {
+      margin: 1.5rem 0;
+      padding: 0;
+    }
+    .plate-img {
+      width: 100%;
+      height: auto;
+      max-height: 460px;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(0.1);
+      border: 1px solid var(--color-border);
+    }
+    .plate-cap {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 8px 2px 0;
+      margin: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+    }
+    .plate-fig {
+      color: var(--color-text);
+      font-weight: 700;
+    }
+    .plate-desc {
+      font-style: italic;
+    }
+
+    /* ─── Body grid ─── */
+    .body {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    @media (min-width: 960px) {
+      .body {
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 3rem;
+      }
+    }
+    .margin {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+    @media (min-width: 960px) {
+      .margin {
+        position: sticky;
+        top: 88px;
+        align-self: start;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+      }
+    }
+    .m-block {
+      padding-bottom: 1rem;
+      border-bottom: 1px dashed var(--color-border);
+    }
+    .m-block:last-child {
+      border-bottom: 0;
+    }
+    .m-head {
+      font-family: ui-monospace, monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin: 0 0 0.7rem;
+      font-weight: 600;
+    }
+
+    .m-toc {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .m-toc-item a {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 6px;
+      padding: 4px 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--color-muted);
+      text-decoration: none;
+      line-height: 1.4;
+      border-left: 2px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .m-toc-d3 a {
+      padding-left: 22px;
+      font-size: 0.72rem;
+    }
+    .m-toc-num {
+      color: var(--color-muted);
+      opacity: 0.6;
+    }
+    .m-toc-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .m-toc-item a:hover {
+      color: var(--color-text);
+      background: var(--color-surface);
+    }
+    .m-toc-item a.active {
+      color: var(--color-accent);
+      border-left-color: var(--color-accent);
+      background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+    }
+    .m-toc-item a.active .m-toc-num {
+      color: var(--color-accent);
+      opacity: 1;
+    }
+
+    .m-about,
+    .m-share {
+      margin: 0;
+      font-family: "Merriweather", Georgia, serif;
+      font-style: italic;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--color-muted);
+    }
+    .m-about a,
+    .m-share a {
+      color: var(--color-text);
+      font-style: normal;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .m-about a:hover,
+    .m-share a:hover {
+      color: var(--color-accent);
+    }
+
+    /* ─── Article prose ─── */
+    .article {
+      min-width: 0;
+    }
+    .article .prose {
+      max-width: none;
+    }
+    .article .prose :global(h2) {
+      scroll-margin-top: 96px;
+      font-family: "Merriweather", Georgia, serif;
+      position: relative;
+      margin-top: 2.5rem;
+    }
+    .article .prose :global(h2)::before {
+      content: "§";
+      color: var(--color-accent);
+      margin-right: 0.45em;
+      font-weight: 400;
+      opacity: 0.85;
+    }
+    .article .prose :global(h3) {
+      scroll-margin-top: 96px;
+      font-family: "Merriweather", Georgia, serif;
+    }
+    .article .prose :global(blockquote) {
+      border-left: 2px solid var(--color-accent);
+      padding-left: 1rem;
+      font-style: italic;
+      color: var(--color-muted);
+    }
+    .article .prose :global(a) {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-decoration-color: var(--color-accent);
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1.5px;
+    }
+    .article .prose :global(a:hover) {
+      color: var(--color-accent);
+    }
+
+    .end-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 3rem 0 0;
+      font-family: ui-monospace, monospace;
+      color: var(--color-muted);
+      font-size: 0.85rem;
+    }
+    .end-mark {
+      color: var(--color-accent);
+      font-size: 1.1rem;
+    }
+
+    /* ─── Related ─── */
+    .related {
+      margin-top: 3rem;
+    }
+    .related-head {
+      padding: 0.9rem 0 1rem;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .rh-tag {
+      font-family: ui-monospace, monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      font-weight: 600;
+    }
+    .rh-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin: 0;
+      color: var(--color-text);
+    }
+    .related-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .rel {
+      border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+    }
+    .rel:first-child {
+      border-top: 0;
+    }
+    .rel-link {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 14px;
+      padding: 0.85rem 0.4rem;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.18s ease;
+      position: relative;
+    }
+    .rel-link::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--color-accent);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+    .rel-link:hover {
+      background: var(--color-surface);
+    }
+    .rel-link:hover::before {
+      opacity: 1;
+    }
+    .rel-gutter {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-family: ui-monospace, monospace;
+    }
+    .rel-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+    .rel-overlap {
+      font-size: 0.66rem;
+      color: var(--color-muted);
+      letter-spacing: 0.06em;
+    }
+    .rel-body {
+      min-width: 0;
+    }
+    .rel-cat {
+      display: inline-block;
+      font-family: ui-monospace, monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .rel-cat::after {
+      content: " //";
+      opacity: 0.4;
+      margin-left: 2px;
+    }
+    .rel-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0 0 4px;
+      color: var(--color-text);
+    }
+    .rel-link:hover .rel-title {
+      color: var(--color-accent);
+    }
+    .rel-desc {
+      margin: 0 0 4px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--color-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .rel-date {
+      margin: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── Prev / next ─── */
+    .pn {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      margin-top: 2.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+    @media (min-width: 640px) {
+      .pn {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .pn-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.85rem 0;
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.18s ease;
+    }
+    .pn-prev {
+      justify-content: flex-start;
+    }
+    .pn-next {
+      justify-content: flex-end;
+      text-align: right;
+    }
+    .pn-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-muted);
+      transition:
+        transform 0.18s ease,
+        color 0.18s ease;
+      flex-shrink: 0;
+    }
+    .pn-link:hover .pn-arrow {
+      color: var(--color-accent);
+    }
+    .pn-prev:hover .pn-arrow {
+      transform: translateX(-3px);
+    }
+    .pn-next:hover .pn-arrow {
+      transform: translateX(3px);
+    }
+    .pn-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .pn-label {
+      font-family: ui-monospace, monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: lowercase;
+      color: var(--color-muted);
+    }
+    .pn-title {
+      font-family: "Merriweather", Georgia, serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 320px;
+    }
+    .pn-link:hover .pn-title {
+      color: var(--color-accent);
+    }
+    .pn-edge {
+      padding: 0.85rem 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--color-muted);
+    }
+  </style>
+</BaseLayout>
