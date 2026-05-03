@@ -59,35 +59,37 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
 
     <div class="body">
       <aside class="margin">
-        {toc.length > 0 && (
-          <div class="m-block">
-            <h2 class="m-head">contents</h2>
-            <ol class="m-toc">
-              {toc.map((h, i) => (
-                <li class={`m-toc-item m-toc-d${h.depth}`}>
-                  <a href={`#${h.slug}`} data-toc={h.slug}>
-                    <span class="m-toc-num">{pad(i + 1)}</span>
-                    <span class="m-toc-text">{h.text}</span>
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
+        {
+          toc.length > 0 && (
+            <div class="m-block">
+              <h2 class="m-head">contents</h2>
+              <ol class="m-toc">
+                {toc.map((h, i) => (
+                  <li class={`m-toc-item m-toc-d${h.depth}`}>
+                    <a href={`#${h.slug}`} data-toc={h.slug}>
+                      <span class="m-toc-num">{pad(i + 1)}</span>
+                      <span class="m-toc-text">{h.text}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )
+        }
 
         <div class="m-block">
           <h2 class="m-head">why a manual?</h2>
           <p class="m-about">
-            this isn’t a chapter. it’s a habit that compounds across the whole curriculum — beginner through advanced.
-            keep one of these from day one and you’ll find your real edge faster than any book will tell you.
+            this isn’t a chapter. it’s a habit that compounds across the whole curriculum — beginner through advanced. keep one of these from day one
+            and you’ll find your real edge faster than any book will tell you.
           </p>
         </div>
 
         <div class="m-block">
           <h2 class="m-head">tiers</h2>
           <p class="m-about">
-            <a href="/trading/beginner">beginner →</a><br>
-            <a href="/trading/intermediate">intermediate →</a><br>
+            <a href="/trading/beginner">beginner →</a><br />
+            <a href="/trading/intermediate">intermediate →</a><br />
             <a href="/trading/advanced">advanced →</a>
           </p>
         </div>
@@ -144,40 +146,141 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
   <style>
     @reference "tailwindcss";
 
-    .manual { max-width: 1080px; margin: 0 auto; padding: 1.25rem 1.25rem 5rem; color: var(--color-text); }
-    .rule { display: flex; align-items: center; margin: 0.4rem 0; }
-    .rule-line { flex: 1; height: 1px; background: var(--color-text); opacity: 0.85; }
-    .rule-tick { width: 1px; height: 8px; background: var(--color-text); opacity: 0.85; }
-
-    .dateline { display: flex; flex-wrap: wrap; gap: 4px 8px; font-family: ui-monospace, monospace; font-size: 0.7rem; color: var(--color-muted); margin: 0 0 0.6rem; letter-spacing: 0.04em; }
-    .dl-issue { color: var(--color-text); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-    .dl-sep { opacity: 0.5; }
-
-    .bread { font-family: ui-monospace, monospace; font-size: 0.72rem; color: var(--color-muted); margin-bottom: 1rem; letter-spacing: 0.04em; }
-    .bread-back { display: inline-flex; align-items: center; gap: 4px; color: var(--color-muted); text-decoration: none; }
-    .bread-back:hover { color: var(--color-text); }
-
-    .stamp {
-      display: inline-flex; gap: 0.4rem; align-items: center;
-      padding: 0.25rem 0.6rem; margin: 0.5rem 0 0.4rem;
-      border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
-      color: var(--accent);
-      font-family: ui-monospace, monospace; font-size: 0.7rem;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      transform: rotate(-2deg); transform-origin: left center;
+    .manual {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1.25rem 1.25rem 5rem;
+      color: var(--color-text);
+    }
+    .rule {
+      display: flex;
+      align-items: center;
+      margin: 0.4rem 0;
+    }
+    .rule-line {
+      flex: 1;
+      height: 1px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
+    .rule-tick {
+      width: 1px;
+      height: 8px;
+      background: var(--color-text);
+      opacity: 0.85;
     }
 
-    .head-title { font-family: "Playfair Display", Georgia, serif; font-size: clamp(2.2rem, 5vw, 3.2rem); margin: 0.4rem 0 0.5rem; line-height: 1.05; letter-spacing: -0.02em; }
-    .head-lede { font-size: 1.05rem; line-height: 1.55; max-width: 62ch; opacity: 0.88; margin: 0 0 1rem; }
-    .head-facts { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin: 0; }
-    .fact { display: flex; gap: 0.4rem; font-size: 0.78rem; align-items: baseline; }
-    .fact dt { font-family: ui-monospace, monospace; color: var(--color-muted); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; }
-    .fact dd { margin: 0; opacity: 0.9; }
+    .dateline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      margin: 0 0 0.6rem;
+      letter-spacing: 0.04em;
+    }
+    .dl-issue {
+      color: var(--color-text);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .dl-sep {
+      opacity: 0.5;
+    }
 
-    .body { display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; margin-top: 1.5rem; align-items: start; }
+    .bread {
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      margin-bottom: 1rem;
+      letter-spacing: 0.04em;
+    }
+    .bread-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--color-muted);
+      text-decoration: none;
+    }
+    .bread-back:hover {
+      color: var(--color-text);
+    }
+
+    .stamp {
+      display: inline-flex;
+      gap: 0.4rem;
+      align-items: center;
+      padding: 0.25rem 0.6rem;
+      margin: 0.5rem 0 0.4rem;
+      border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+      color: var(--accent);
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transform: rotate(-2deg);
+      transform-origin: left center;
+    }
+
+    .head-title {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      margin: 0.4rem 0 0.5rem;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+    .head-lede {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      max-width: 62ch;
+      opacity: 0.88;
+      margin: 0 0 1rem;
+    }
+    .head-facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.4rem;
+      margin: 0;
+    }
+    .fact {
+      display: flex;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      align-items: baseline;
+    }
+    .fact dt {
+      font-family: ui-monospace, monospace;
+      color: var(--color-muted);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .fact dd {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .body {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 2.5rem;
+      margin-top: 1.5rem;
+      align-items: start;
+    }
     @media (max-width: 900px) {
-      .body { grid-template-columns: 1fr; }
-      .margin { order: 2; border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); padding-top: 1rem; position: static; max-height: none; overflow: visible; }
+      .body {
+        grid-template-columns: 1fr;
+      }
+      .margin {
+        order: 2;
+        border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+        padding-top: 1rem;
+        position: static;
+        max-height: none;
+        overflow: visible;
+      }
     }
 
     .margin {
@@ -190,27 +293,112 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       padding-right: 0.4rem;
       scrollbar-width: thin;
     }
-    .margin .m-block { margin-bottom: 1.6rem; }
-    .m-head { font-family: ui-monospace, monospace; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-muted); margin: 0 0 0.5rem; }
-    .m-toc { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.25rem; }
-    .m-toc-item a { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.4rem; padding: 0.2rem 0; color: var(--color-muted); text-decoration: none; line-height: 1.35; transition: color 0.15s ease; }
-    .m-toc-item a:hover, .m-toc-item a.active { color: var(--accent); }
-    .m-toc-num { font-family: ui-monospace, monospace; font-size: 0.7rem; opacity: 0.7; }
-    .m-toc-d3 { padding-left: 1.2rem; font-size: 0.78rem; }
-    .m-about { line-height: 1.5; opacity: 0.8; }
-    .m-about a { color: var(--accent); text-decoration: none; }
+    .margin .m-block {
+      margin-bottom: 1.6rem;
+    }
+    .m-head {
+      font-family: ui-monospace, monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin: 0 0 0.5rem;
+    }
+    .m-toc {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.25rem;
+    }
+    .m-toc-item a {
+      display: grid;
+      grid-template-columns: 1.6rem 1fr;
+      gap: 0.4rem;
+      padding: 0.2rem 0;
+      color: var(--color-muted);
+      text-decoration: none;
+      line-height: 1.35;
+      transition: color 0.15s ease;
+    }
+    .m-toc-item a:hover,
+    .m-toc-item a.active {
+      color: var(--accent);
+    }
+    .m-toc-num {
+      font-family: ui-monospace, monospace;
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+    .m-toc-d3 {
+      padding-left: 1.2rem;
+      font-size: 0.78rem;
+    }
+    .m-about {
+      line-height: 1.5;
+      opacity: 0.8;
+    }
+    .m-about a {
+      color: var(--accent);
+      text-decoration: none;
+    }
 
-    .article { min-width: 0; }
-    .end-rule { display: flex; gap: 0.8rem; align-items: center; justify-content: center; margin: 2.5rem 0 1.5rem; color: var(--color-muted); font-family: ui-monospace, monospace; font-size: 0.85rem; }
-    .end-mark { font-size: 1.1rem; }
+    .article {
+      min-width: 0;
+    }
+    .end-rule {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      justify-content: center;
+      margin: 2.5rem 0 1.5rem;
+      color: var(--color-muted);
+      font-family: ui-monospace, monospace;
+      font-size: 0.85rem;
+    }
+    .end-mark {
+      font-size: 1.1rem;
+    }
 
-    .prose :global(h2) { font-family: "Playfair Display", Georgia, serif; font-size: 1.6rem; margin: 2rem 0 0.8rem; letter-spacing: -0.01em; scroll-margin-top: 88px; }
-    .prose :global(h3) { font-family: "Playfair Display", Georgia, serif; font-size: 1.25rem; margin: 1.4rem 0 0.5rem; scroll-margin-top: 88px; }
-    .prose :global(p) { line-height: 1.7; margin: 0.7rem 0; font-size: 1rem; }
-    .prose :global(ul), .prose :global(ol) { line-height: 1.7; padding-left: 1.4rem; margin: 0.7rem 0; }
-    .prose :global(li) { margin: 0.25rem 0; }
-    .prose :global(a) { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
-    .prose :global(code) { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em; background: color-mix(in srgb, var(--color-text) 8%, transparent); padding: 0.1em 0.35em; border-radius: 3px; }
+    .prose :global(h2) {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 1.6rem;
+      margin: 2rem 0 0.8rem;
+      letter-spacing: -0.01em;
+      scroll-margin-top: 88px;
+    }
+    .prose :global(h3) {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 1.25rem;
+      margin: 1.4rem 0 0.5rem;
+      scroll-margin-top: 88px;
+    }
+    .prose :global(p) {
+      line-height: 1.7;
+      margin: 0.7rem 0;
+      font-size: 1rem;
+    }
+    .prose :global(ul),
+    .prose :global(ol) {
+      line-height: 1.7;
+      padding-left: 1.4rem;
+      margin: 0.7rem 0;
+    }
+    .prose :global(li) {
+      margin: 0.25rem 0;
+    }
+    .prose :global(a) {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .prose :global(code) {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.88em;
+      background: color-mix(in srgb, var(--color-text) 8%, transparent);
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
     .prose :global(pre) {
       background: color-mix(in srgb, var(--accent) 6%, transparent);
       border-left: 3px solid var(--accent);
@@ -220,7 +408,10 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       font-size: 0.82rem;
       line-height: 1.55;
     }
-    .prose :global(pre code) { background: none; padding: 0; }
+    .prose :global(pre code) {
+      background: none;
+      padding: 0;
+    }
     .prose :global(blockquote) {
       border-left: 3px solid var(--accent);
       padding: 0.4rem 0 0.4rem 1rem;
@@ -229,11 +420,41 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       opacity: 0.9;
       background: color-mix(in srgb, var(--accent) 5%, transparent);
     }
-    .prose :global(table) { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
-    .prose :global(th), .prose :global(td) { padding: 0.5rem 0.6rem; border-bottom: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent); text-align: left; vertical-align: top; }
-    .prose :global(th) { font-family: ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-muted); }
-    .prose :global(hr) { border: none; border-top: 1px dashed color-mix(in srgb, var(--color-text) 25%, transparent); margin: 2rem 0; }
-    .prose :global(strong) { font-weight: 700; }
-    .prose :global(img) { display: block; max-width: 100%; height: auto; margin: 1.2rem auto; border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent); border-radius: 4px; }
+    .prose :global(table) {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    .prose :global(th),
+    .prose :global(td) {
+      padding: 0.5rem 0.6rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+      text-align: left;
+      vertical-align: top;
+    }
+    .prose :global(th) {
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+    .prose :global(hr) {
+      border: none;
+      border-top: 1px dashed color-mix(in srgb, var(--color-text) 25%, transparent);
+      margin: 2rem 0;
+    }
+    .prose :global(strong) {
+      font-weight: 700;
+    }
+    .prose :global(img) {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 1.2rem auto;
+      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      border-radius: 4px;
+    }
   </style>
 </BaseLayout>

@@ -489,20 +489,21 @@ const mistakes = [
     background: color-mix(in srgb, var(--ft-color) 5%, transparent);
     color: var(--color-text);
     text-decoration: none;
-    transition: transform 0.15s ease, background 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
   }
   .feature:hover {
     transform: translateY(-2px);
     background: color-mix(in srgb, var(--ft-color) 9%, transparent);
   }
   .ft-stripe {
-    background: repeating-linear-gradient(
-      135deg,
-      var(--ft-color) 0 6px,
-      transparent 6px 12px
-    );
+    background: repeating-linear-gradient(135deg, var(--ft-color) 0 6px, transparent 6px 12px);
   }
-  .ft-body { display: grid; gap: 0.4rem; }
+  .ft-body {
+    display: grid;
+    gap: 0.4rem;
+  }
   .ft-kicker {
     font-family: ui-monospace, monospace;
     font-size: 0.7rem;
@@ -548,9 +549,16 @@ const mistakes = [
     transform: rotate(-4deg);
     align-self: center;
   }
-  .ft-stamp-line { display: block; }
+  .ft-stamp-line {
+    display: block;
+  }
   @media (max-width: 640px) {
-    .feature { grid-template-columns: 6px 1fr; padding-right: 1rem; }
-    .ft-stamp { display: none; }
+    .feature {
+      grid-template-columns: 6px 1fr;
+      padding-right: 1rem;
+    }
+    .ft-stamp {
+      display: none;
+    }
   }
 </style>

@@ -117,7 +117,10 @@ async function main() {
       const isSpecial = !/^\d+[-_]/.test(file);
       const tierForFile = isSpecial ? "special" : tier;
       const { order, slug } = isSpecial
-        ? { order: 1, slug: file.replace(/\.md$/i, "").replace(/^special[-_]/i, "") }
+        ? {
+            order: 1,
+            slug: file.replace(/\.md$/i, "").replace(/^special[-_]/i, ""),
+          }
         : slugFromFilename(file);
 
       // Description = first paragraph (collapsed) after the H1, truncated.
@@ -154,15 +157,16 @@ async function main() {
         )
         // Strip "← [Back to ...]" / "← [Beginner] · [Intermediate] · [Advanced]"
         // footer-nav lines that some chapters end with — same reason.
-        .replace(
-          /\n+(?:---\s*\n+)?←[^\n]*\n?/g,
-          "\n",
-        )
+        .replace(/\n+(?:---\s*\n+)?←[^\n]*\n?/g, "\n")
         .replace(/\s+$/, "\n");
 
       const destFile = isSpecial
         ? path.join(destRoot, "special", `${slug}.md`)
-        : path.join(destRoot, tier, `${String(order).padStart(2, "0")}-${slug}.md`);
+        : path.join(
+            destRoot,
+            tier,
+            `${String(order).padStart(2, "0")}-${slug}.md`,
+          );
       await fs.writeFile(destFile, frontmatter + rewritten);
       if (isSpecial) specialTotal += 1;
       else total += 1;

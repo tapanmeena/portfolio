@@ -62,7 +62,9 @@ export const TIER_META: Record<Tier, TierMeta> = {
 export function getPublishedTrading(entries: CollectionEntry<"trading">[]) {
   return entries.slice().sort((a, b) => {
     if (a.data.tier !== b.data.tier) {
-      return TIERS.indexOf(a.data.tier as Tier) - TIERS.indexOf(b.data.tier as Tier);
+      return (
+        TIERS.indexOf(a.data.tier as Tier) - TIERS.indexOf(b.data.tier as Tier)
+      );
     }
     return a.data.order - b.data.order;
   });
