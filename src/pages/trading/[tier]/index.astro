@@ -1,0 +1,349 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { ArrowLeft, ArrowRight } from "@lucide/astro";
+import { TIERS, TIER_META, getTier, tierUrl, chapterUrl, nextTier, prevTier, pad, type Tier } from "@utils/trading";
+
+export async function getStaticPaths() {
+  return TIERS.map((tier) => ({ params: { tier } }));
+}
+
+const { tier } = Astro.params as { tier: Tier };
+const meta = TIER_META[tier];
+
+const all = await getCollection("trading");
+const chapters = getTier(all, tier);
+const next = nextTier(tier);
+const prev = prevTier(tier);
+
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
+---
+
+<BaseLayout pageTitle={`${meta.label} · the trading desk — Tapan Meena`}>
+  <main class="tier" style={`--tier-color:${meta.color}`}>
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;02</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;C&nbsp;//&nbsp;tier&nbsp;{meta.abbr}&nbsp;of&nbsp;03</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+      <span class="dl-sep">·</span>
+      <span>{chapters.length}&nbsp;chapters</span>
+    </p>
+
+    <nav class="bread" aria-label="Breadcrumb">
+      <a href="/trading" class="bread-back"><ArrowLeft size={12} /> back to the trading desk</a>
+    </nav>
+
+    <header class="head">
+      <div class="rule" aria-hidden="true"><span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span></div>
+      <div class="head-meta">
+        <span class="signal" aria-hidden="true">{meta.signal}</span>
+        <span class="hm-num">tier&nbsp;{meta.abbr}</span>
+        <span class="hm-label">{meta.label}</span>
+      </div>
+      <h1 class="head-title">{meta.label} course</h1>
+      <p class="head-lede">{meta.blurb}</p>
+
+      <dl class="head-facts">
+        {
+          meta.prereq && (
+            <div class="fact">
+              <>
+                <dt>prereq</dt>
+                <dd>{meta.prereq}</dd>
+              </>
+            </div>
+          )
+        }
+        <div class="fact"><dt>outcome</dt><dd>{meta.outcome}</dd></div>
+        <div class="fact"><dt>pace</dt><dd>{meta.pace}</dd></div>
+        <div class="fact"><dt>chapters</dt><dd>{chapters.length}</dd></div>
+      </dl>
+
+      <div class="rule" aria-hidden="true"><span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span></div>
+    </header>
+
+    <ol class="chapters">
+      {
+        chapters.map((c) => (
+          <li class="ch">
+            <a href={chapterUrl(c)} class="ch-link">
+              <span class="ch-num">№{pad(c.data.order)}</span>
+              <span class="ch-body">
+                <span class="ch-title">{c.data.title}</span>
+                {c.data.description && <span class="ch-desc">{c.data.description}</span>}
+              </span>
+              <span class="ch-arrow">
+                <ArrowRight size={14} />
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+
+    <nav class="pn" aria-label="Adjacent tiers">
+      {
+        prev ? (
+          <a href={tierUrl(prev)} class="pn-link pn-prev">
+            <span class="pn-arrow">
+              <ArrowLeft size={14} />
+            </span>
+            <span class="pn-meta">
+              <span class="pn-label">← previous tier</span>
+              <span class="pn-title">{TIER_META[prev].label} course</span>
+            </span>
+          </a>
+        ) : (
+          <span class="pn-edge">— first tier —</span>
+        )
+      }
+      {
+        next ? (
+          <a href={tierUrl(next)} class="pn-link pn-next">
+            <span class="pn-meta">
+              <span class="pn-label">next tier →</span>
+              <span class="pn-title">{TIER_META[next].label} course</span>
+            </span>
+            <span class="pn-arrow">
+              <ArrowRight size={14} />
+            </span>
+          </a>
+        ) : (
+          <span class="pn-edge">— final tier —</span>
+        )
+      }
+    </nav>
+  </main>
+</BaseLayout>
+
+<style>
+  @reference "tailwindcss";
+
+  .tier {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 5rem;
+    color: var(--color-text);
+  }
+  .rule {
+    display: flex;
+    align-items: center;
+    margin: 0.4rem 0;
+  }
+  .rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+  .rule-tick {
+    width: 1px;
+    height: 8px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+
+  .dateline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    margin: 0 0 0.6rem;
+    letter-spacing: 0.04em;
+  }
+  .dl-issue {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .dl-sep {
+    opacity: 0.5;
+  }
+
+  .bread {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+    letter-spacing: 0.04em;
+  }
+  .bread-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+  .bread-back:hover {
+    color: var(--color-text);
+  }
+
+  .head-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0.6rem 0 0.4rem;
+  }
+  .signal {
+    color: var(--tier-color);
+    font-size: 0.9rem;
+  }
+  .hm-label {
+    color: var(--tier-color);
+    font-weight: 700;
+  }
+
+  .head-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(2.1rem, 5vw, 3rem);
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.02em;
+  }
+  .head-lede {
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: 60ch;
+    margin: 0 0 1rem;
+    opacity: 0.85;
+  }
+
+  .head-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.4rem 1rem;
+    margin: 0 0 0.4rem;
+  }
+  .fact {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+  .fact dt {
+    font-family: ui-monospace, monospace;
+    color: var(--color-muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .fact dd {
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  .chapters {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 2rem;
+    display: grid;
+    gap: 0;
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+  }
+  .ch {
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+  }
+  .ch-link {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.9rem 0.4rem;
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      background 0.15s ease,
+      padding 0.15s ease;
+  }
+  .ch-link:hover {
+    background: color-mix(in srgb, var(--tier-color) 6%, transparent);
+    padding-left: 0.8rem;
+  }
+  .ch-num {
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--tier-color);
+    letter-spacing: 0.06em;
+  }
+  .ch-body {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .ch-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.15rem;
+    line-height: 1.25;
+  }
+  .ch-desc {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    line-height: 1.45;
+  }
+  .ch-arrow {
+    color: var(--color-muted);
+  }
+
+  .pn {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+  }
+  .pn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--color-text);
+    text-decoration: none;
+    max-width: 48%;
+  }
+  .pn-link:hover {
+    color: var(--tier-color);
+  }
+  .pn-meta {
+    display: grid;
+    gap: 0.15rem;
+    font-size: 0.85rem;
+  }
+  .pn-label {
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pn-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1rem;
+  }
+  .pn-prev {
+    text-align: left;
+  }
+  .pn-next {
+    text-align: right;
+    margin-left: auto;
+  }
+  .pn-next .pn-meta {
+    justify-items: end;
+  }
+  .pn-edge {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+  }
+</style>

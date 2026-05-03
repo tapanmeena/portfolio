@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import {
   blogToSearchItem,
   projectToSearchItem,
+  tradingToSearchItem,
   type SearchItem,
 } from "@utils/search";
 
@@ -17,10 +18,14 @@ export const GET: APIRoute = async () => {
     (project) => !project.data.draft,
   );
 
+  // Trading curriculum chapters
+  const tradingEntries = await getCollection("trading");
+
   // Build search index
   const searchIndex: SearchItem[] = [
     ...publishedPosts.map(blogToSearchItem),
     ...publishedProjects.map(projectToSearchItem),
+    ...tradingEntries.map(tradingToSearchItem),
   ];
 
   return new Response(JSON.stringify(searchIndex), {

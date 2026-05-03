@@ -1,0 +1,556 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { ArrowRight } from "@lucide/astro";
+import { TIERS, TIER_META, getTier, getSpecial, tierUrl, pad } from "@utils/trading";
+
+const all = await getCollection("trading");
+const journal = getSpecial(all, "trading-journal");
+
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toLowerCase();
+
+const tierData = TIERS.map((t) => {
+  const chapters = getTier(all, t);
+  return { meta: TIER_META[t], chapters, count: chapters.length, first: chapters[0] };
+});
+
+const totalChapters = tierData.reduce((s, t) => s + t.count, 0);
+
+const timeline = [
+  { phase: "months 0–3", focus: "Read beginner course, paper trade, journal", outcome: "Foundation" },
+  { phase: "months 3–9", focus: "Live small (10% intended capital), one strategy mastered", outcome: "Discipline" },
+  { phase: "months 9–18", focus: "Read intermediate course, scale capital cautiously, add 1–2 strategies", outcome: "Expansion" },
+  { phase: "months 18–36", focus: "Add derivatives or stat arb, build screeners, backtest seriously", outcome: "Sophistication" },
+  { phase: "year 3+", focus: "Read advanced course incrementally, automate winners, build portfolio of strategies", outcome: "Professionalization" },
+];
+
+const mistakes = [
+  "Trading without a stop-loss. One bad trade wipes out 20 good ones.",
+  "Position sizing by gut. 'I feel good about this one' is not a system.",
+  "Confusing investing and trading. Different timeframes, different rules, different mindsets.",
+];
+---
+
+<BaseLayout pageTitle="The Trading Desk — Tapan Meena">
+  <main class="desk">
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;02</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;C&nbsp;//&nbsp;curriculum</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+      <span class="dl-sep">·</span>
+      <span>{totalChapters}&nbsp;chapters</span>
+    </p>
+
+    <header class="masthead">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+      <p class="kicker">a self-paced curriculum · NSE / BSE focused, broadly applicable</p>
+      <h1 class="title">the trading desk</h1>
+      <p class="lede">
+        Three tiers, twenty-nine chapters. From "what is a stock" to running a book. Read in order, practice between levels, and don't believe anyone
+        (including me) who promises a shortcut.
+      </p>
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+    </header>
+
+    <section class="tiers" aria-label="Course tiers">
+      {
+        tierData.map(({ meta, chapters, count, first }) => (
+          <a class="tier-card" href={tierUrl(meta.tier)} style={`--tier-color:${meta.color}`}>
+            <div class="tc-head">
+              <span class="tc-signal" aria-hidden="true">
+                {meta.signal}
+              </span>
+              <span class="tc-num">№{meta.abbr}</span>
+              <span class="tc-label">{meta.label}</span>
+              <span class="tc-count">{count} chapters</span>
+            </div>
+            <p class="tc-blurb">{meta.blurb}</p>
+            <dl class="tc-facts">
+              {meta.prereq && (
+                <div class="tc-fact">
+                  <dt>prereq</dt>
+                  <dd>{meta.prereq}</dd>
+                </div>
+              )}
+              <div class="tc-fact">
+                <dt>outcome</dt>
+                <dd>{meta.outcome}</dd>
+              </div>
+              <div class="tc-fact">
+                <dt>pace</dt>
+                <dd>{meta.pace}</dd>
+              </div>
+            </dl>
+            <ol class="tc-list">
+              {chapters.slice(0, 5).map((c) => (
+                <li>
+                  <span class="tcl-num">{pad(c.data.order)}</span>
+                  <span class="tcl-title">{c.data.title}</span>
+                </li>
+              ))}
+              {count > 5 && <li class="tcl-more">+ {count - 5} more</li>}
+            </ol>
+            {first && (
+              <span class="tc-cta">
+                start with “{first.data.title}” <ArrowRight size={13} />
+              </span>
+            )}
+          </a>
+        ))
+      }
+    </section>
+
+    {
+      journal && (
+        <a class="feature" href="/trading/journal">
+          <div class="ft-stripe" aria-hidden="true" />
+          <div class="ft-body">
+            <p class="ft-kicker">field manual · applies at every tier</p>
+            <h2 class="ft-title">{journal.data.title.toLowerCase()}</h2>
+            <p class="ft-blurb">{journal.data.description}</p>
+            <span class="ft-cta">
+              open the manual <ArrowRight size={14} />
+            </span>
+          </div>
+          <div class="ft-stamp" aria-hidden="true">
+            <span class="ft-stamp-line">log</span>
+            <span class="ft-stamp-line">№00</span>
+          </div>
+        </a>
+      )
+    }
+
+    <section class="block" aria-labelledby="how">
+      <h2 id="how" class="block-title">how to use this curriculum</h2>
+      <ol class="rules">
+        <li><strong>Don't skip levels.</strong> Each course assumes the previous. Gaps in fundamentals cost real money later.</li>
+        <li><strong>Read in order within a course.</strong> Chapters build on each other.</li>
+        <li><strong>Pace yourself.</strong> Beginner: 2–4 weeks. Intermediate: 1–2 months. Advanced: ongoing.</li>
+        <li><strong>Practice before progressing.</strong> Don't move on until you've actually applied the current level.</li>
+      </ol>
+    </section>
+
+    <section class="block" aria-labelledby="timeline">
+      <h2 id="timeline" class="block-title">a realistic timeline</h2>
+      <div class="tl">
+        {
+          timeline.map((t, i) => (
+            <div class="tl-row">
+              <span class="tl-num">{pad(i + 1)}</span>
+              <div class="tl-body">
+                <p class="tl-phase">{t.phase}</p>
+                <p class="tl-focus">{t.focus}</p>
+              </div>
+              <span class="tl-out">{t.outcome.toLowerCase()}</span>
+            </div>
+          ))
+        }
+      </div>
+      <p class="tl-foot">Most who fail compress this into six months and trade real money before they should. Don't.</p>
+    </section>
+
+    <section class="block mistakes" aria-labelledby="mistakes">
+      <h2 id="mistakes" class="block-title">the three mistakes 90% of beginners make</h2>
+      <ol class="m-list">
+        {
+          mistakes.map((m, i) => (
+            <li>
+              <span class="m-num">{pad(i + 1)}</span>
+              <span class="m-text">{m}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <aside class="disclaimer" role="note">
+      <p>
+        <strong>Educational content. Not financial advice.</strong> Past performance does not predict future results. Trading involves substantial risk
+        including the loss of principal. You are responsible for your own decisions and outcomes.
+      </p>
+    </aside>
+  </main>
+</BaseLayout>
+
+<style>
+  @reference "tailwindcss";
+
+  .desk {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 5rem;
+    color: var(--color-text);
+  }
+
+  .rule {
+    display: flex;
+    align-items: center;
+    margin: 0.4rem 0;
+  }
+  .rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+  .rule-tick {
+    width: 1px;
+    height: 8px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+
+  .dateline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0 0 0.6rem;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    letter-spacing: 0.04em;
+  }
+  .dl-issue {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .dl-sep {
+    opacity: 0.5;
+  }
+
+  .masthead {
+    margin-bottom: 2rem;
+  }
+  .kicker {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+    margin: 0.6rem 0 0.4rem;
+  }
+  .title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    line-height: 1.02;
+    margin: 0 0 0.6rem;
+    letter-spacing: -0.02em;
+  }
+  .lede {
+    font-size: 1.05rem;
+    line-height: 1.55;
+    max-width: 60ch;
+    color: var(--color-text);
+    opacity: 0.85;
+    margin: 0 0 1rem;
+  }
+
+  .tiers {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    margin: 1.5rem 0 2.5rem;
+  }
+  .tier-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 1.1rem 1.1rem 1.2rem;
+    border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
+    border-top: 3px solid var(--tier-color, var(--color-text));
+    background: color-mix(in srgb, var(--tier-color) 4%, transparent);
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .tier-card:hover {
+    transform: translateY(-2px);
+    background: color-mix(in srgb, var(--tier-color) 8%, transparent);
+    border-color: color-mix(in srgb, var(--tier-color) 40%, transparent);
+  }
+  .tc-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.6rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .tc-signal {
+    color: var(--tier-color);
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+  .tc-num {
+    color: var(--color-muted);
+  }
+  .tc-label {
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .tc-count {
+    margin-left: auto;
+    color: var(--color-muted);
+  }
+  .tc-blurb {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    opacity: 0.88;
+    margin: 0;
+  }
+
+  .tc-facts {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.2rem 0 0;
+  }
+  .tc-fact {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+  }
+  .tc-fact dt {
+    font-family: ui-monospace, monospace;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    padding-top: 2px;
+  }
+  .tc-fact dd {
+    margin: 0;
+    opacity: 0.85;
+  }
+
+  .tc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.2rem 0 0;
+    border-top: 1px dashed color-mix(in srgb, var(--color-text) 20%, transparent);
+    padding-top: 0.6rem;
+    display: grid;
+    gap: 0.25rem;
+  }
+  .tc-list li {
+    display: grid;
+    grid-template-columns: 1.8rem 1fr;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+  }
+  .tcl-num {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+  }
+  .tcl-more {
+    font-style: italic;
+    color: var(--color-muted);
+    grid-template-columns: 1fr;
+  }
+
+  .tc-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.4rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--tier-color);
+    letter-spacing: 0.04em;
+  }
+
+  .block {
+    margin: 2rem 0;
+  }
+  .block-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.5rem;
+    margin: 0 0 0.8rem;
+    letter-spacing: -0.01em;
+  }
+  .rules {
+    padding-left: 1.2rem;
+    line-height: 1.6;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .rules li {
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+
+  .tl {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .tl-row {
+    display: grid;
+    grid-template-columns: 2rem 1fr auto;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.55rem 0;
+    border-bottom: 1px dashed color-mix(in srgb, var(--color-text) 18%, transparent);
+  }
+  .tl-num {
+    font-family: ui-monospace, monospace;
+    color: var(--color-muted);
+    font-size: 0.72rem;
+  }
+  .tl-phase {
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .tl-focus {
+    margin: 0.15rem 0 0;
+    font-size: 0.92rem;
+    opacity: 0.85;
+    line-height: 1.45;
+  }
+  .tl-out {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+  }
+  .tl-foot {
+    font-style: italic;
+    opacity: 0.8;
+    margin-top: 0.8rem;
+    font-size: 0.92rem;
+  }
+
+  .mistakes .m-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .mistakes .m-list li {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    gap: 0.6rem;
+    padding: 0.7rem 0.9rem;
+    border-left: 2px solid #ef4444;
+    background: color-mix(in srgb, #ef4444 5%, transparent);
+  }
+  .m-num {
+    font-family: ui-monospace, monospace;
+    color: #ef4444;
+    font-weight: 700;
+  }
+  .m-text {
+    line-height: 1.5;
+  }
+
+  .disclaimer {
+    margin-top: 2rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+    background: color-mix(in srgb, var(--color-text) 4%, transparent);
+    font-size: 0.85rem;
+    line-height: 1.55;
+    opacity: 0.9;
+  }
+  .disclaimer p {
+    margin: 0;
+  }
+
+  .feature {
+    --ft-color: #6366f1;
+    display: grid;
+    grid-template-columns: 6px 1fr auto;
+    gap: 1.1rem;
+    align-items: stretch;
+    margin: 0 0 2rem;
+    padding: 1.1rem 1.2rem 1.3rem 0;
+    border: 1px solid color-mix(in srgb, var(--ft-color) 30%, transparent);
+    background: color-mix(in srgb, var(--ft-color) 5%, transparent);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .feature:hover {
+    transform: translateY(-2px);
+    background: color-mix(in srgb, var(--ft-color) 9%, transparent);
+  }
+  .ft-stripe {
+    background: repeating-linear-gradient(
+      135deg,
+      var(--ft-color) 0 6px,
+      transparent 6px 12px
+    );
+  }
+  .ft-body { display: grid; gap: 0.4rem; }
+  .ft-kicker {
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0;
+  }
+  .ft-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .ft-blurb {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    opacity: 0.85;
+    margin: 0;
+    max-width: 60ch;
+  }
+  .ft-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--ft-color);
+    letter-spacing: 0.04em;
+  }
+  .ft-stamp {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    padding: 0.4rem 0.7rem;
+    border: 1px dashed color-mix(in srgb, var(--ft-color) 50%, transparent);
+    color: var(--ft-color);
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transform: rotate(-4deg);
+    align-self: center;
+  }
+  .ft-stamp-line { display: block; }
+  @media (max-width: 640px) {
+    .feature { grid-template-columns: 6px 1fr; padding-right: 1rem; }
+    .ft-stamp { display: none; }
+  }
+</style>

@@ -152,6 +152,7 @@ const socialLinks = socials.filter((s) => s.href);
   .footer {
     margin-top: auto;
     background: var(--color-bg);
+    overflow-x: hidden;
   }
   .footer-inner {
     max-width: 1080px;
@@ -347,6 +348,7 @@ const socialLinks = socials.filter((s) => s.href);
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    min-width: 0;
   }
   .status-cell b {
     color: var(--color-text);
@@ -358,6 +360,15 @@ const socialLinks = socials.filter((s) => s.href);
   }
   .status-grow em {
     font-style: italic;
+  }
+  @media (max-width: 640px) {
+    .status {
+      font-size: 0.65rem;
+    }
+    .status-grow {
+      flex: 1 1 100%;
+      order: 5;
+    }
   }
   .status-dot {
     width: 7px;

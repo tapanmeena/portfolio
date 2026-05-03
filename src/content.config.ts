@@ -41,7 +41,19 @@ export const projectsCollection = defineCollection({
     }),
 });
 
+export const tradingCollection = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/trading" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string().default(""),
+    tier: z.enum(["beginner", "intermediate", "advanced", "special"]),
+    order: z.number().int().positive(),
+    source: z.string().optional(),
+  }),
+});
+
 export const collections = {
   blog: blogCollection,
   projects: projectsCollection,
+  trading: tradingCollection,
 };

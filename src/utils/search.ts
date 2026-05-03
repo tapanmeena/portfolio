@@ -1,7 +1,7 @@
 import type { CollectionEntry } from "astro:content";
 
 export interface SearchItem {
-  type: "blog" | "project";
+  type: "blog" | "project" | "trading";
   slug: string;
   title: string;
   description: string;
@@ -40,6 +40,28 @@ export function projectToSearchItem(
     url: `/projects/${project.id}`,
     techStack: project.data.techStack,
     category: project.data.category,
+  };
+}
+
+/**
+ * Build a search item from a trading curriculum chapter
+ */
+export function tradingToSearchItem(
+  entry: CollectionEntry<"trading">,
+): SearchItem {
+  // Specials live at /trading/<slug> rather than /trading/<tier>/<slug>.
+  const url =
+    entry.data.tier === "special"
+      ? `/trading/${entry.id.split("/").pop()}`
+      : `/trading/${entry.id}`;
+  return {
+    type: "trading",
+    slug: entry.id,
+    title: entry.data.title,
+    description: entry.data.description,
+    url,
+    category: entry.data.tier,
+    tags: ["trading", entry.data.tier],
   };
 }
 

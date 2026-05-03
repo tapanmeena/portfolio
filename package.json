@@ -25,9 +25,13 @@
     "astro": "^6.2.1",
     "clsx": "^2.1.1",
     "fuse.js": "^7.1.0",
+    "katex": "^0.16.45",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.1.18",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "prettier": "3.8.1",
