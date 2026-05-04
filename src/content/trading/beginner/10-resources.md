@@ -2,8 +2,8 @@
 title: "Tools & Resources"
 description: "A curated list. Not exhaustive — just what actually gets used."
 tier: beginner
-order: 9
-source: "../TradingBot/docs/learn/09-resources.md"
+order: 10
+source: "../TradingBot/docs/learn/10-resources.md"
 ---
 # 9. Tools & Resources
 

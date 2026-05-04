@@ -35,6 +35,11 @@ $$ \text{SMA}_N = \frac{P_1 + P_2 + \dots + P_N}{N} $$
 - **Golden Cross** (50 crosses above 200) = bullish signal.
 - **Death Cross** (50 crosses below 200) = bearish signal.
 
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> the market is in a clear, sustained trend — the line acts as dynamic support/resistance and as a regime filter.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> price is choppy or sideways — the line gets crossed back and forth daily, every signal is a fakeout, and crossover systems get sliced apart. SMA <em>always</em> lags by half its period, so at sharp turning points it's the slowest to react.</p>
+</div>
+
 ![BSE Sensex daily with a 9-period simple moving average overlaid](/trading-assets/learn/05/sma-50-200.png)
 
 The smooth blue line drifting through the candles is a 9-period SMA on the BSE Sensex daily chart — it averages the last 9 closing prices. Notice how it lags the actual bars; by definition it can't react to a single day. A short 9-SMA hugs price tightly. Now picture two slower companions in your head: a **50 SMA** would draw a much smoother curve through the middle of the candles, and a **200 SMA** would be smoother still, almost a straight glide path. The longer the period, the slower the line and the more "institutional" the signal it gives.
@@ -46,6 +51,11 @@ Like SMA but weights recent prices more. Reacts faster.
 
 - Day traders prefer **9 EMA / 21 EMA** crossovers.
 - Use EMA when you need responsiveness, SMA when you want smoothness.
+
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> trends are intact but you need the line to react quickly — intraday and short-swing setups, especially the 9/21 EMA pullback. Faster reaction = earlier entries near pivots.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> range-bound stocks with frequent reversals — EMA's responsiveness becomes a liability, firing crossover after crossover with no follow-through. Also unreliable on illiquid small-caps where one big print can yank the line around.</p>
+</div>
 
 ![Reliance daily with a 9-period exponential moving average overlay](/trading-assets/learn/05/ema-9-21.png)
 
@@ -62,11 +72,24 @@ Signals:
 - MACD crosses **below** signal → bearish.
 - **Divergence** (price makes new high, MACD doesn't) → trend weakening.
 
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> medium-term trends and momentum shifts on daily/weekly charts. Divergence calls between price and MACD have flagged many real reversals before the candle confirmed.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> the market is flat (both lines hug zero — every crossover is meaningless noise) or on fast V-shaped reversals where MACD lags hopelessly because it's an <em>average of an average</em>. Don't act on signals when both lines are sitting on the centre line.</p>
+</div>
+
 ![Infosys daily with MACD lines and histogram below](/trading-assets/learn/05/macd.png)
 
-The lower panel of the chart is MACD. The two wavy lines crossing each other are the **MACD line** and the **signal line**; the bars sticking up and down from zero are the **histogram** (= MACD − signal, drawn as a column). Three things to look for:
+The lower panel of the chart is MACD. On most charting platforms (TradingView's defaults shown above):
 
-1. **Crossovers**: every time the faster line crosses up through the slower line, the histogram flips green and grows above zero — that's the bullish trigger. Cross down = histogram flips red below zero = bearish.
+- **Blue line = MACD line** (12 EMA − 26 EMA) — the *faster* line, reacts to price first.
+- **Orange line = Signal line** (9 EMA of the MACD line) — the *slower*, smoothed line.
+- **Pink histogram bars** = MACD − Signal — positive (above zero) when MACD is above signal, negative below.
+
+> Colours can be customised, but the **faster-reacting line is always the MACD**; the smoother one is always the signal. If you ever forget which is which, look at which line moves first when price turns — that's the MACD.
+
+Three things to look for:
+
+1. **Crossovers**: every time the **blue MACD line** crosses up through the **orange signal line**, the histogram flips green and grows above zero — that's the bullish trigger. Cross down = histogram flips red below zero = bearish.
 2. **Distance from zero**: the further both lines are from the centre line, the stronger the trend. Hugging zero = no trend, ignore signals.
 3. **Divergence** (the most valuable use): if price makes a new high but the MACD does *not* make a corresponding new high, momentum is fading even though price still looks healthy. Reversal warning.
 
@@ -75,6 +98,11 @@ A line that flips from below price (green, bullish) to above price (red, bearish
 - Default: period 10, multiplier 3.
 - Excellent for **trailing stop-loss** and trend confirmation.
 - Choppy markets = whipsaws (false signals).
+
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> smooth one-way trends — Supertrend hugs price as a near-perfect trailing stop and the flip points line up with the actual regime change.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> sideways or news-driven choppy markets — flips green/red/green/red within days, each flip costs you a stop-out plus a re-entry. Always pair with a trend filter (ADX > 20 or price above 200 SMA).</p>
+</div>
 
 ![ICICI Bank daily with Supertrend trailing line](/trading-assets/learn/05/supertrend.png)
 
@@ -87,6 +115,11 @@ Measures **trend strength**, not direction.
 - ADX > 40 → strong trend.
 
 Comes with **+DI** and **−DI** lines for direction.
+
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> used as a <em>filter</em> on top of other tools — it answers "is there even a trend right now?" so you only fire trend strategies when the answer is yes (>25). Excellent for switching between trend-following and mean-reversion modes.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> used as a <em>signal</em> on its own — ADX is rising means the trend is <em>already strong</em>, so by the time it confirms you've missed the early entry. It also stays low right <em>before</em> big breakouts, lulling you into thinking nothing's happening.</p>
+</div>
 
 ![SBI daily with the DMI panel showing ADX, +DI and −DI lines](/trading-assets/learn/05/adx.png)
 
@@ -111,6 +144,11 @@ $$ \text{RSI} = 100 - \frac{100}{1 + \frac{\text{avg gain}}{\text{avg loss}}} $$
 - **Bullish divergence:** price ↓, RSI ↑ → reversal hint.
 - **Bearish divergence:** price ↑, RSI ↓ → reversal hint.
 
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> range-bound stocks oscillating between support and resistance — the 30/70 rebounds are tradeable. Best of all, <strong>divergence</strong> between price and RSI on swing-highs/lows is one of the most reliable warning signs of momentum exhaustion.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> strong trends — RSI can sit above 70 (or below 30) for weeks. Shorting every 70-cross during a bull run is a known account-killer. Use it <em>with</em> a trend filter, not against one.</p>
+</div>
+
 ![HDFC Bank daily with RSI(14) panel showing overbought (>70) and oversold (<30) zones](/trading-assets/learn/05/rsi.png)
 
 The lower panel shows RSI bouncing inside a 0–100 band, with two horizontal lines marking the classic 30 and 70 levels. Find the spots where it crossed *up* through 30 (often a short-term low in price right above) and where it crossed *down* through 70 (often a short-term peak). That's the simple version of how to use it.
@@ -121,6 +159,11 @@ Now find the spots where RSI sat *above* 70 for a long stretch — if you'd shor
 Compares close to its high-low range over *N* periods. %K (fast) and %D (slow) lines.
 - > 80 overbought, < 20 oversold.
 - Crossovers between %K and %D = signals.
+
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> range-bound or low-volatility stocks — Stochastic fires more often than RSI and the %K/%D crossovers in extreme zones often catch short-term turning points cleanly.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> trending markets — same trap as RSI but worse, because Stochastic reaches 80/20 much faster. Every cross-down from 80 in a strong uptrend is a fake reversal. Filter with trend direction first.</p>
+</div>
 
 ![Axis Bank daily with Stochastic %K and %D lines](/trading-assets/learn/05/stochastic.png)
 
@@ -142,6 +185,11 @@ A 20 SMA with bands at **±2 standard deviations**.
 - **Expansion** → trend in progress.
 - Touching upper band ≠ "sell" automatically (in uptrends, price walks the band).
 
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> spotting volatility regimes — squeezes reliably precede expansion moves, and band-walking confirms a strong trend. Mean-reversion plays back to the middle band work in clearly range-bound stocks.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> treated as a binary buy/sell signal — fading every upper-band touch in a trending stock will get you steamrolled ("price walks the band"). The squeeze tells you a move is coming but <strong>not which direction</strong> — you still need a trigger.</p>
+</div>
+
 ![TCS daily with Bollinger Bands (20, 2)](/trading-assets/learn/05/bollinger.png)
 
 The three lines wrapping around price are: a **middle line** (20-period SMA), an **upper band** (middle + 2σ), and a **lower band** (middle − 2σ). The bands breathe — they tighten when volatility is low and expand when it's high. Two things to spot in the chart:
@@ -156,6 +204,11 @@ Average of the daily true range over *N* periods (default 14).
 - Doesn't give direction — only **how much price typically moves**.
 - **Use case:** Set stops at 1.5× to 2× ATR below entry. Adapts to the stock's natural volatility.
 - A ₹3,000 stock with ATR ₹60 vs a ₹100 stock with ATR ₹3 — same % volatility, very different absolute SL distance.
+
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> sizing stops and targets in <em>units the stock actually moves in</em>. Adapts automatically to changing volatility regimes.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> used as a directional or signal indicator — it has no opinion on direction. Also misleading immediately after a news spike (ATR jumps, suddenly your "adaptive" stop is wider than the move you're trying to capture).</p>
+</div>
 
 ![Reliance daily with ATR(14) panel](/trading-assets/learn/05/atr.png)
 
@@ -176,6 +229,11 @@ $$ \text{VWAP} = \frac{\sum (\text{Price} \times \text{Volume})}{\sum \text{Volu
 - **Price < VWAP** = sellers in control.
 - A common intraday strategy: long pullbacks **to** VWAP in an uptrend.
 
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> liquid stocks during regular intraday trading — VWAP acts as the day's centre of gravity, with institutional algos defending it. Pullback-to-VWAP entries in a trending session are a high-quality intraday template.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> the first 15 minutes (VWAP is still forming on too few prints), illiquid small-caps (one block trade can warp the line), and <strong>swing or positional timeframes</strong> — VWAP resets every day, so it's meaningless beyond a single session.</p>
+</div>
+
 ![Apple 5-minute chart with VWAP overlay and standard-deviation bands](/trading-assets/learn/05/vwap.png)
 
 The blue line winding through the bars is VWAP, with light green standard-deviation bands above and below it. Unlike a moving average, VWAP **resets every trading day** — in this Apple 5-minute chart you can see it begin fresh at each session open (the obvious vertical jump in the middle of the chart is the next session starting). Big institutions use it as their fair-value benchmark: their algo desks try to *beat* VWAP on buys (fill below it) and *exceed* VWAP on sells. That's why VWAP itself acts like dynamic intraday support/resistance. The tradeable pattern: in an upward intraday trend, watch for price to dip *back to* VWAP and then bounce — that's institutions stepping in to buy at their benchmark price. The opposite (rejection rallies into VWAP from below) works as intraday short setups in downtrends.
@@ -184,6 +242,11 @@ The blue line winding through the bars is VWAP, with light green standard-deviat
 
 ### OBV — On-Balance Volume
 Cumulative: add volume on up days, subtract on down days. Confirms whether volume supports the trend.
+
+<div class="pn-callout">
+  <p class="pn-good"><span class="pn-tag">Works when</span> confirming or warning on multi-week trends — when OBV's slope agrees with price, the trend has real volume behind it. Divergence at swing highs has called many tops.</p>
+  <p class="pn-bad"><span class="pn-tag">Fails when</span> intraday or single-day signals — OBV needs many bars to be meaningful. Also susceptible to one-off volume spikes (block deals, index rebalancing) that distort the cumulative line for weeks.</p>
+</div>
 
 ![Infosys daily with OBV panel](/trading-assets/learn/05/obv.png)
 

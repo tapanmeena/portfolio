@@ -2,8 +2,8 @@
 title: "Strategy Foundations"
 description: "A strategy is a repeatable set of rules with a positive expected value over many trades. Not a single tip, not a hunch."
 tier: beginner
-order: 7
-source: "../TradingBot/docs/learn/07-strategies.md"
+order: 8
+source: "../TradingBot/docs/learn/08-strategies.md"
 ---
 # 7. Strategy Foundations
 
@@ -18,7 +18,7 @@ Every strategy must define:
 3. **Entry trigger** — what fires the order (e.g., break of high).
 4. **Stop loss** — where the thesis is invalidated.
 5. **Target / exit** — where you take profit (or how you trail).
-6. **Position sizing** — derived from risk (see [Chapter 6](06-risk-management.md)).
+6. **Position sizing** — derived from risk (see [Chapter 7](07-risk-management.md)).
 7. **Time stop** — exit if nothing happens within X bars/days.
 
 If any one is missing, you don't have a strategy — you have a guess.

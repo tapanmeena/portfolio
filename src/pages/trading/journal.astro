@@ -61,7 +61,7 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       <aside class="margin">
         {
           toc.length > 0 && (
-            <div class="m-block">
+            <div class="m-block m-hide-mobile">
               <h2 class="m-head">contents</h2>
               <ol class="m-toc">
                 {toc.map((h, i) => (
@@ -280,6 +280,9 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
         position: static;
         max-height: none;
         overflow: visible;
+      }
+      .m-hide-mobile {
+        display: none;
       }
     }
 

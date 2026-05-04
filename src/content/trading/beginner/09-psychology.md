@@ -2,8 +2,8 @@
 title: "Trading Psychology"
 description: "You can have a perfect system and still lose money — because you are the weakest link. The market is a mirror; it will find every flaw in your discipline and exploit it."
 tier: beginner
-order: 8
-source: "../TradingBot/docs/learn/08-psychology.md"
+order: 9
+source: "../TradingBot/docs/learn/09-psychology.md"
 ---
 # 8. Trading Psychology
 

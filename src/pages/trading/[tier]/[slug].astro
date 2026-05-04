@@ -79,7 +79,7 @@ const wordCount = (entry.body ?? "").split(/\s+/).filter(Boolean).length;
       <aside class="margin">
         {
           toc.length > 0 && (
-            <div class="m-block">
+            <div class="m-block m-hide-mobile">
               <h2 class="m-head">contents</h2>
               <ol class="m-toc">
                 {toc.map((h, i) => (
@@ -95,7 +95,7 @@ const wordCount = (entry.body ?? "").split(/\s+/).filter(Boolean).length;
           )
         }
 
-        <div class="m-block">
+        <div class="m-block m-hide-mobile">
           <h2 class="m-head">tier</h2>
           <ol class="m-tier">
             {
@@ -365,6 +365,9 @@ const wordCount = (entry.body ?? "").split(/\s+/).filter(Boolean).length;
         max-height: none;
         overflow: visible;
       }
+      .m-hide-mobile {
+        display: none;
+      }
     }
 
     .margin {
@@ -606,6 +609,50 @@ const wordCount = (entry.body ?? "").split(/\s+/).filter(Boolean).length;
       font-style: italic;
       opacity: 0.88;
       background: color-mix(in srgb, var(--tier-color) 4%, transparent);
+    }
+    /* Positive / negative scenario callouts (".pn-callout > .pn-good / .pn-bad") */
+    .prose :global(.pn-callout) {
+      display: grid;
+      gap: 0;
+      margin: 1.2rem 0;
+      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .prose :global(.pn-callout p) {
+      margin: 0;
+      padding: 0.7rem 0.9rem 0.7rem 0.85rem;
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+    .prose :global(.pn-callout .pn-tag) {
+      display: inline-block;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.18rem 0.45rem;
+      border-radius: 2px;
+      white-space: nowrap;
+      margin-right: 0.55rem;
+      vertical-align: 0.08em;
+    }
+    .prose :global(.pn-callout .pn-good) {
+      background: color-mix(in srgb, #10b981 8%, transparent);
+      border-left: 3px solid #10b981;
+    }
+    .prose :global(.pn-callout .pn-bad) {
+      background: color-mix(in srgb, #ef4444 8%, transparent);
+      border-left: 3px solid #ef4444;
+      border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    }
+    .prose :global(.pn-callout .pn-good .pn-tag) {
+      background: #10b981;
+      color: #fff;
+    }
+    .prose :global(.pn-callout .pn-bad .pn-tag) {
+      background: #ef4444;
+      color: #fff;
     }
     .prose :global(table) {
       width: 100%;

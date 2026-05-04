@@ -2,8 +2,8 @@
 title: "Risk Management"
 description: "This is the most important chapter in this guide. You cannot control profits; you can only control losses. Master this and you've already beaten 80% of retail."
 tier: beginner
-order: 6
-source: "../TradingBot/docs/learn/06-risk-management.md"
+order: 7
+source: "../TradingBot/docs/learn/07-risk-management.md"
 ---
 # 6. Risk Management
 
@@ -25,7 +25,7 @@ Why? Math.
 | 75% | 300% |
 | 90% | 900% |
 
-![Drawdown vs gain-needed-to-recover — the math of why losses are vicious](/trading-assets/learn/06/drawdown-recovery.png)
+![Drawdown vs gain-needed-to-recover — the math of why losses are vicious](/trading-assets/learn/07/drawdown-recovery.png)
 
 Look at how the right column **explodes** as the left column grows. The first row is forgiving — a 10% drawdown only needs an 11% gain to recover, almost symmetric. By a 50% drawdown you need to *double* what's left just to get back to even. By 75% you need to **quadruple**. By 90%, you need a tenfold return on a tiny remaining account. Almost no one in history has done that.
 
@@ -49,7 +49,7 @@ Total position size = 66 × ₹500 = **₹33,000** (33% of capital).
 
 If the stop hits → you lose ₹990 (≤ 1% of capital). ✅
 
-![Position sizing worked example — quantity derived from risk, not gut](/trading-assets/learn/06/position-sizing.png)
+![Position sizing worked example — quantity derived from risk, not gut](/trading-assets/learn/07/position-sizing.png)
 
 The diagram walks through the formula end-to-end. Start at the **inputs box on the left**: capital, risk %, entry, stop. Notice that the **risk per share** (₹15) falls out automatically once you decide entry and stop — you didn't pick it, the chart did. The **outputs box on the right** then divides total allowed loss (₹1,000) by per-share risk (₹15) to give the quantity (66 shares). Multiply by entry price and you get a position value of **₹33,000 — a third of your capital**, even though you're only risking 1%. That's the magic: by anchoring your sizing on *stop distance* rather than *position value*, you can take meaningful exposure on tight setups without ever risking more than your rules allow.
 
@@ -65,7 +65,7 @@ Always know your R:R *before* entering.
 - **Reward** = target − entry (per share)
 - Aim for **minimum 1:2**, prefer **1:3** or better.
 
-![A 1 : 3 risk-reward setup with entry, stop and target marked](/trading-assets/learn/06/risk-reward.png)
+![A 1 : 3 risk-reward setup with entry, stop and target marked](/trading-assets/learn/07/risk-reward.png)
 
 The chart visualizes a 1:3 trade. The **blue dashed line** in the middle is your entry at ₹500. Below it, the **red zone** is the small slice of price action between entry and your stop at ₹485 — ₹15 of risk per share, equal to **1R**. Above entry, the **much bigger green zone** stretches all the way up to your target at ₹545 — ₹45 per share, **3R**. The right-side bracket makes the asymmetry visual: the green strip is three times as tall as the red strip.
 
@@ -112,7 +112,7 @@ Set a circuit breaker on yourself:
 - **Daily stop:** if you lose 3% in a day → stop trading, close laptop.
 - **Weekly stop:** lose 6% in a week → take the rest of the week off.
 
-This prevents tilt and revenge trading (covered in [Psychology](08-psychology.md)).
+This prevents tilt and revenge trading (covered in [Psychology](09-psychology.md)).
 
 ## Don't average a loser
 
