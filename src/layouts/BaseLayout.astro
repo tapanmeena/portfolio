@@ -88,5 +88,22 @@ const fullTitle = pageTitle.includes("Tapan Meena") ? pageTitle : `${pageTitle} 
     <Footer />
     <SpeedInsights />
     <Analytics />
+
+    <script>
+      // Render ```mermaid code blocks (transformed by remarkMermaid into
+      // <pre class="mermaid">) on pages that contain them.
+      const nodes = Array.from(document.querySelectorAll<HTMLElement>("pre.mermaid"));
+      if (nodes.length > 0) {
+        const isDark = document.documentElement.classList.contains("dark");
+        const { default: mermaid } = await import("mermaid");
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDark ? "dark" : "default",
+          securityLevel: "loose",
+          fontFamily: "Inter, system-ui, sans-serif",
+        });
+        await mermaid.run({ nodes });
+      }
+    </script>
   </body>
 </html>

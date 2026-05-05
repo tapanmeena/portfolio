@@ -1,7 +1,7 @@
 ---
 title: "Multi-broker auth: TOTP, OAuth, and token persistence done right"
 description: "How StalkMarket abstracts four Indian broker APIs (Angel One, Upstox, Zerodha, Groww) behind one provider interface — with TOTP, OAuth token injection, persisted tokens, proactive refresh, and a 401 retry path."
-publishedAt: 2026-05-16
+publishedAt: 2026-05-21
 category: Fintech
 tags:
   - Trading
