@@ -1,6 +1,6 @@
 ---
 title: "CultBot"
-description: "A Node.js CLI and scheduled GitHub Action that automatically books your preferred Cult.fit fitness classes — with priority-ordered workouts, waitlist support, retries, and notifications."
+description: "A Node.js CLI and scheduled GitHub Action that automatically books your preferred Cult.fit classes, with priority-ordered workouts, waitlists, and retries."
 techStack:
   - Node.js
   - JavaScript
@@ -10,7 +10,7 @@ techStack:
 category: "CLI Tools"
 repoUrl: "https://github.com/tapanmeena/CultBot"
 blogUrl: "/blog/cli-tools/cultbot"
-startDate: 2026-07-01
+startDate: 2026-07-05
 endDate: 2026-07-06
 status: "completed"
 featured: false
@@ -70,6 +70,16 @@ node index.js book --dry-run
 node index.js book --center 1018
 node index.js list-slots --center 1018
 ```
+
+## Configuration
+
+CultBot reads everything from `.env` locally, or from GitHub secrets and variables in CI:
+
+- `CURL_COMMAND` — a `Copy as cURL` request from your browser, used for authentication
+- `PREFERRED_CENTER` — the center ID to book at
+- `PREFERRED_SLOTS` — time slots to try, in priority order
+- `PREFERRED_WORKOUTS` — workouts to book, in priority order
+- `ENABLE_WAITLIST` — whether to join the waitlist when a class is full
 
 ## Architecture
 

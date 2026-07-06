@@ -1,6 +1,6 @@
 ---
 title: "CultBot: Auto-Booking My Cult.fit Classes the Moment Slots Open"
-description: "How I built CultBot — a Node.js CLI and scheduled GitHub Action that books my preferred Cult.fit class the moment slots open at 10 PM IST, with priority-ordered workouts, waitlist support, retries, and notifications."
+description: "How I built CultBot, a Node.js CLI and GitHub Action that auto-books my Cult.fit class the instant slots open at 10 PM IST, with waitlists and retries."
 publishedAt: 2026-07-06
 category: Cli Tools
 tags:
@@ -28,6 +28,8 @@ npm run book
 ```
 
 No passwords stored. No brittle UI automation. Just the same API the app already uses, driven by a small, testable CLI.
+
+📦 [View CultBot on GitHub](https://github.com/tapanmeena/CultBot)
 
 ---
 
