@@ -19,7 +19,11 @@ const numberOf = new Map(numbered.map((p, i) => [p.id, i + 1]));
 const pad = (n: number) => String(n).padStart(2, "0");
 
 const inProgress = projects.filter((p) => p.data.status === "in-progress");
-const nowBuilding = inProgress[0];
+// Pin a project to the "currently" spotlight; falls back to the newest in-progress one.
+const spotlightId = "cultbot";
+const nowBuilding = projects.find((p) => p.id === spotlightId) ?? inProgress[0];
+const nowActive = nowBuilding?.data.status === "in-progress";
+const nowLabel = nowActive ? "currently" : "just shipped";
 
 const recentProjects = projects.slice(0, 4);
 const recentPosts = posts.slice(0, 4);
@@ -108,13 +112,13 @@ const expEntries = experience.map((e) => {
       </div>
       <h1 class="mast-title">
         <span class="mast-pre">an honest log of</span>
-        <span class="mast-main">things I've built<br />&amp; learned the hard way</span>
+        <span class="mast-main">things (A)I've built<br />&amp; learned the hard way</span>
       </h1>
       <p class="mast-by">
         <span>by</span>
         <span class="mast-by-name">Tapan Meena</span>
         <span class="dl-sep">·</span>
-        <span>senior software engineer</span>
+        <span>senior supervisor of artificial intelligence</span>
       </p>
       <div class="rule" aria-hidden="true">
         <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
@@ -125,8 +129,9 @@ const expEntries = experience.map((e) => {
     <section class="intro">
       <div class="intro-text">
         <p class="lede">
-          I build scalable backends, developer tools, and the occasional Raspberry-Pi trading bot out of <strong>Hyderabad</strong>. This is where I
-          keep the receipts — every project, every writeup, every cursed lesson — in one running log.
+          I build scalable backends, developer tools, and the occasional Raspberry-Pi trading bot out of <strong>Hyderabad</strong> — lately with help from
+          my <strong>artificial friends</strong>. They autocomplete; I take the blame. This is where I keep the receipts — every project, every
+          writeup, every cursed lesson — in one running log.
         </p>
         <ul class="quick-nav">
           <li><a href="/projects">→ the workshop log</a></li>
@@ -179,8 +184,8 @@ const expEntries = experience.map((e) => {
       <!-- NOW BOX -->
       <aside class="now">
         <div class="now-head">
-          <span class="now-tag">currently</span>
-          <span class="now-blip" aria-hidden="true"></span>
+          <span class="now-tag">{nowLabel}</span>
+          <span class={`now-blip ${nowActive ? "" : "now-blip-shipped"}`} aria-hidden="true"></span>
         </div>
         {
           nowBuilding ? (
@@ -204,7 +209,7 @@ const expEntries = experience.map((e) => {
           )
         }
         <p class="now-foot">
-          mentoring · scaling backends · <a href="/about">more →</a>
+          mentoring · scaling&nbsp;backends · shipping&nbsp;tiny&nbsp;robots · <a href="/about">more&nbsp;→</a>
         </p>
       </aside>
     </section>
@@ -681,6 +686,9 @@ const expEntries = experience.map((e) => {
     background: #16a34a;
     display: inline-block;
     animation: blip 1.8s infinite;
+  }
+  .now-blip-shipped {
+    animation: none;
   }
   @keyframes blip {
     0% {

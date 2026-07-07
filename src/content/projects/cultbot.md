@@ -13,7 +13,7 @@ blogUrl: "/blog/cli-tools/cultbot"
 startDate: 2026-07-05
 endDate: 2026-07-06
 status: "completed"
-featured: false
+featured: true
 draft: false
 ---
 
