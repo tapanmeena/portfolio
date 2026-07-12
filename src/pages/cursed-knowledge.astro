@@ -15,6 +15,16 @@ interface Curse {
 
 // Newest → oldest. Severity: 1 = mildly cursed, 2 = deeply cursed, 3 = eldritch.
 const curses: Curse[] = [
+  // ── 2026-07 — GitHub Actions ──
+  {
+    date: "2026-07",
+    project: "GitHub Actions",
+    tags: ["CI/CD", "Scheduling"],
+    severity: 2,
+    title: "GitHub Actions cron is a suggestion, not an appointment",
+    body: "A scheduled workflow is not guaranteed to run at the specified time. Jobs can be delayed—or even dropped—during periods of high load, especially at the start of the hour. Pick an odd minute, make the job idempotent, and use an external scheduler when timing is a requirement rather than a preference.",
+  },
+
   // ── 2026-04 — StalkMarket ──
   {
     date: "2026-04",
