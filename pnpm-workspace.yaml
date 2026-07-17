@@ -1,3 +1,6 @@
 onlyBuiltDependencies:
   - esbuild
   - sharp
+
+overrides:
+  rollup: 4.62.2

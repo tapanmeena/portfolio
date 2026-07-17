@@ -96,7 +96,7 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
                     {post.data.description && <p class="e-desc">{post.data.description}</p>}
                     {post.data.tags && post.data.tags.length > 0 && (
                       <p class="e-tags">
-                        {post.data.tags.slice(0, 6).map((t, ti) => (
+                        {post.data.tags.slice(0, 6).map((t: string, ti: number) => (
                           <>
                             {ti > 0 && (
                               <span class="e-tag-sep" aria-hidden="true">

@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config";
+import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
 
 import tailwindcss from "@tailwindcss/vite";
@@ -15,8 +16,10 @@ export default defineConfig({
   integrations: [sitemap()],
 
   markdown: {
-    remarkPlugins: [remarkTradingLinks, remarkMermaid, remarkMath],
-    rehypePlugins: [[rehypeKatex, { strict: false, throwOnError: false }]],
+    processor: unified({
+      remarkPlugins: [remarkTradingLinks, remarkMermaid, remarkMath],
+      rehypePlugins: [[rehypeKatex, { strict: false, throwOnError: false }]],
+    }),
   },
 
   vite: {
