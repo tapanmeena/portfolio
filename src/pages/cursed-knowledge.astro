@@ -1078,11 +1078,26 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       stroke: var(--color-text);
       stroke-width: 0.5;
     }
-    .ritual-circle .ring-outer { stroke-dasharray: 3 3; }
-    .ritual-circle .ring-inner { stroke-dasharray: 1 3; opacity: 0.6; }
-    .ritual-circle .pentagram { stroke-linejoin: round; opacity: 0.7; }
-    .ritual-circle .ticks line { stroke: var(--color-muted); stroke-width: 0.5; }
-    @keyframes ritual-spin { to { transform: rotate(360deg); } }
+    .ritual-circle .ring-outer {
+      stroke-dasharray: 3 3;
+    }
+    .ritual-circle .ring-inner {
+      stroke-dasharray: 1 3;
+      opacity: 0.6;
+    }
+    .ritual-circle .pentagram {
+      stroke-linejoin: round;
+      opacity: 0.7;
+    }
+    .ritual-circle .ticks line {
+      stroke: var(--color-muted);
+      stroke-width: 0.5;
+    }
+    @keyframes ritual-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* Runes — typographic glyphs in muted ink */
     .rune {
@@ -1094,15 +1109,46 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       opacity: 0.55;
       animation: rune-float 6s ease-in-out infinite;
     }
-    .rune-1 { top: -34px; left: 14%; animation-delay: 0s; }
-    .rune-2 { top: 8%; right: -28px; animation-delay: 0.7s; }
-    .rune-3 { bottom: 12%; left: -32px; animation-delay: 1.4s; }
-    .rune-4 { bottom: -28px; right: 22%; animation-delay: 2.1s; }
-    .rune-5 { top: 40%; left: -36px; animation-delay: 2.8s; }
-    .rune-6 { top: 60%; right: -32px; animation-delay: 3.5s; }
+    .rune-1 {
+      top: -34px;
+      left: 14%;
+      animation-delay: 0s;
+    }
+    .rune-2 {
+      top: 8%;
+      right: -28px;
+      animation-delay: 0.7s;
+    }
+    .rune-3 {
+      bottom: 12%;
+      left: -32px;
+      animation-delay: 1.4s;
+    }
+    .rune-4 {
+      bottom: -28px;
+      right: 22%;
+      animation-delay: 2.1s;
+    }
+    .rune-5 {
+      top: 40%;
+      left: -36px;
+      animation-delay: 2.8s;
+    }
+    .rune-6 {
+      top: 60%;
+      right: -32px;
+      animation-delay: 3.5s;
+    }
     @keyframes rune-float {
-      0%, 100% { transform: translateY(0); opacity: 0.4; }
-      50%      { transform: translateY(-6px); opacity: 0.75; }
+      0%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+      50% {
+        transform: translateY(-6px);
+        opacity: 0.75;
+      }
     }
 
     /* Card — paper page, no rounded corners, no halo */
@@ -1145,8 +1191,18 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       gap: 0;
       margin: 0.4rem -0.2rem 0.6rem;
     }
-    .ritual-rule .rule-line { flex: 1; height: 1px; background: var(--color-text); opacity: 0.85; }
-    .ritual-rule .rule-tick { width: 1px; height: 7px; background: var(--color-text); opacity: 0.85; }
+    .ritual-rule .rule-line {
+      flex: 1;
+      height: 1px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
+    .ritual-rule .rule-tick {
+      width: 1px;
+      height: 7px;
+      background: var(--color-text);
+      opacity: 0.85;
+    }
 
     .ritual-eyebrow {
       margin: 0.6rem 0 0.4rem;
@@ -1163,7 +1219,9 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       line-height: 1;
       color: var(--color-text);
     }
-    .ritual-title em { font-style: italic; }
+    .ritual-title em {
+      font-style: italic;
+    }
     .ritual-line {
       margin: 0 0 0.6rem;
       font-family: "Merriweather", Georgia, serif;
@@ -1189,7 +1247,9 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       border-bottom: 1px dashed var(--color-border);
       align-items: baseline;
     }
-    .rf:last-child { border-bottom: 0; }
+    .rf:last-child {
+      border-bottom: 0;
+    }
     .rf dt {
       margin: 0;
       font-size: 0.6rem;
@@ -1233,7 +1293,9 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       font-weight: 700;
       letter-spacing: 0.04em;
     }
-    .ritual-modal.failed .meter-value { color: #ef4444; }
+    .ritual-modal.failed .meter-value {
+      color: #ef4444;
+    }
     .meter-track {
       height: 4px;
       background: var(--color-bg);
@@ -1250,17 +1312,20 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
         background 0.4s ease;
     }
     .ritual-modal.failed .meter-fill {
-      background: repeating-linear-gradient(
-        45deg,
-        #ef4444 0 4px,
-        color-mix(in srgb, #ef4444 60%, transparent) 4px 8px
-      );
+      background: repeating-linear-gradient(45deg, #ef4444 0 4px, color-mix(in srgb, #ef4444 60%, transparent) 4px 8px);
       animation: meter-shake 0.4s ease-in-out 3;
     }
     @keyframes meter-shake {
-      0%, 100% { transform: translateX(0); }
-      25%      { transform: translateX(-2px); }
-      75%      { transform: translateX(2px); }
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+      25% {
+        transform: translateX(-2px);
+      }
+      75% {
+        transform: translateX(2px);
+      }
     }
     .meter-foot {
       margin: 6px 0 0;
@@ -1309,14 +1374,18 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
       color: var(--color-text);
       font-size: 0.78rem;
     }
-    .sig-name em { font-style: italic; }
+    .sig-name em {
+      font-style: italic;
+    }
 
     @media (prefers-reduced-motion: reduce) {
       .ritual-circle,
       .rune {
         animation: none !important;
       }
-      .ritual-stage { transition: none !important; }
+      .ritual-stage {
+        transition: none !important;
+      }
     }
   </style>
 </BaseLayout>
