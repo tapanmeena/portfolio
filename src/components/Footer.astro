@@ -12,6 +12,7 @@ const browse = [
   { href: "/blog", label: "writing log", abbr: "02" },
   { href: "/trading", label: "trading desk", abbr: "03" },
   { href: "/cursed-knowledge", label: "cursed", abbr: "04" },
+  { href: "/lab", label: "machine room", abbr: "08" },
 ];
 const more = [
   { href: "/about", label: "about", abbr: "05" },
@@ -43,7 +44,7 @@ const socialLinks = socials.filter((s) => s.href);
         <em>thanks for reading.</em>
       </p>
       <p class="signoff-by">
-        <span>compiled by</span>
+        <span>compiled by </span>
         <span class="signoff-name">{author.name}</span>
         <span class="dot">·</span>
         <span>{author.location?.toLowerCase()}</span>
