@@ -246,6 +246,10 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
   <script is:inline>
     const COPY_RESET_MS = 1600;
     document.querySelectorAll("[data-copy]").forEach((btn) => {
+      const label = btn.querySelector(".copy-text");
+      const defaultLabel = label?.textContent ?? "copy";
+      let resetTimer;
+
       btn.addEventListener("click", async (e) => {
         e.preventDefault();
         const text = btn.getAttribute("data-copy");
@@ -263,7 +267,12 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
           document.body.removeChild(ta);
         }
         btn.classList.add("is-copied");
-        setTimeout(() => btn.classList.remove("is-copied"), COPY_RESET_MS);
+        if (label) label.textContent = "copied";
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+          btn.classList.remove("is-copied");
+          if (label) label.textContent = defaultLabel;
+        }, COPY_RESET_MS);
       });
     });
   </script>
@@ -274,7 +283,7 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
     .page {
       max-width: 1080px;
       margin: 0 auto;
-      padding: 1.25rem 1.25rem 5rem;
+      padding: 1.25rem 1.25rem 2rem;
       color: var(--color-text);
     }
 
@@ -621,16 +630,9 @@ const datelineDate = today.toLocaleDateString("en-US", { month: "short", day: "n
     .copy-btn.is-copied .copy-check {
       display: inline-flex;
     }
-    .copy-btn.is-copied .copy-text::before {
-      content: "copied";
-    }
     .copy-btn.is-copied .copy-text {
       color: #10b981;
     }
-    .copy-btn.is-copied .copy-text :global(*) {
-      display: none;
-    }
-    /* Override 'copy' label when copied */
     .copy-btn.is-copied {
       color: #10b981;
       border-color: #10b981;
