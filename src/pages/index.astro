@@ -2,6 +2,7 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { authors } from "@data/authors";
+import { curseStats } from "@data/curses";
 import { labEntries } from "@data/lab";
 import { Github, Linkedin, Twitter, Mail, Rss, ArrowUpRight } from "@lucide/astro";
 import { getPublishedProjects, normalizeTech, isOngoing } from "@utils/projects";
@@ -31,6 +32,8 @@ const recentPosts = posts.slice(0, 4);
 const publicLabEntry = labEntries.find((entry) => entry.access === "public");
 const privateLabEntry = labEntries.find((entry) => entry.id === "personal-media-cloud");
 const restrictedLabEntries = labEntries.filter((entry) => entry.access === "restricted");
+const curseYearRange =
+  curseStats.earliestYear === curseStats.latestYear ? String(curseStats.earliestYear) : `${curseStats.earliestYear} to ${curseStats.latestYear}`;
 
 // ── Category palette (matches /projects) ──────────────────────────────
 const catColor: Record<string, string> = {
@@ -483,12 +486,12 @@ const expEntries = experience.map((e) => {
         </div>
         <h2 class="cursed-title">
           things i wish i'd known
-          <em>before</em>
+          <em> before </em>
           shipping them
         </h2>
         <p class="cursed-desc">
-          47 cursed entries from 2018 to 2026 — auth gone wrong, SQLite at 1× speed, OCR backed by zero reasoning. Tagged by project, sortable by
-          regret.
+          {curseStats.total} cursed {curseStats.total === 1 ? "entry" : "entries"} from {curseYearRange} — auth gone wrong, SQLite at 1x speed, OCR
+          backed by zero reasoning. Tagged by project, sortable by regret.
         </p>
         <span class="cursed-cta">open the grimoire →</span>
       </a>
