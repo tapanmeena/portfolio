@@ -1,0 +1,234 @@
+---
+// Standalone shell for theme mockups. Deliberately does NOT import global.css,
+// the site Header, or the site Footer so each mockup renders its own full theme.
+interface Props {
+  title: string;
+  fontHref?: string;
+  active: string;
+  bg?: string;
+  fg?: string;
+}
+
+const { title, fontHref, active, bg = "#101014", fg = "#e6e6e6" } = Astro.props as Props;
+
+const themes = [
+  { key: "terminal", num: "01", label: "terminal" },
+  { key: "brutalist", num: "02", label: "brutalist" },
+  { key: "blueprint", num: "03", label: "blueprint" },
+  { key: "aurora", num: "04", label: "aurora" },
+  { key: "atelier", num: "05", label: "atelier" },
+  { key: "desk", num: "06", label: "trading desk", newRound: true },
+  { key: "zine", num: "07", label: "riso zine" },
+  { key: "desktop", num: "08", label: "desktop os" },
+  { key: "notebook", num: "09", label: "notebook" },
+  { key: "swiss", num: "10", label: "swiss grid" },
+  { key: "y2k", num: "11", label: "y2k", newRound: true },
+  { key: "hud", num: "12", label: "hud" },
+  { key: "canvas", num: "13", label: "canvas" },
+  { key: "vinyl", num: "14", label: "vinyl" },
+  { key: "transit", num: "15", label: "departure board" },
+  { key: "comic", num: "16", label: "comic", newRound: true },
+  { key: "timeline", num: "17", label: "git timeline" },
+  { key: "deck", num: "18", label: "card deck" },
+  { key: "packaging", num: "19", label: "packaging" },
+  { key: "bauhaus", num: "20", label: "bauhaus" },
+];
+---
+
+<html lang="en" data-preview={active}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title}</title>
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    {fontHref && <link href={fontHref} rel="stylesheet" />}
+    <style is:global define:vars={{ shellBg: bg, shellFg: fg }}>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        background: var(--shellBg);
+        color: var(--shellFg);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+      body {
+        min-height: 100vh;
+        padding-bottom: 4.5rem;
+      }
+      img,
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+      a {
+        color: inherit;
+      }
+      button {
+        font: inherit;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      p,
+      figure,
+      ul,
+      ol,
+      dl,
+      dd,
+      pre {
+        margin: 0;
+        padding: 0;
+      }
+      ul,
+      ol {
+        list-style: none;
+      }
+      ::selection {
+        background: currentColor;
+        color: var(--shellBg);
+      }
+    </style>
+  </head>
+
+  <body>
+    <slot />
+
+    <nav class="pv-switch" aria-label="Theme mockups">
+      <a href="/preview" class="pv-home" title="All mockups">⌂</a>
+      <span class="pv-div" aria-hidden="true"></span>
+      {
+        themes.map((t) => (
+          <>
+            {t.newRound && <span class="pv-div" aria-hidden="true" />}
+            <a href={`/preview/${t.key}`} class:list={["pv-item", { on: t.key === active }]}>
+              <b>{t.num}</b>
+              <span class="pv-lbl">{t.label}</span>
+              <span class="pv-tip">{t.label}</span>
+            </a>
+          </>
+        ))
+      }
+    </nav>
+
+    <style>
+      .pv-switch {
+        position: fixed;
+        left: 50%;
+        bottom: 14px;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 5px;
+        border-radius: 999px;
+        background: rgba(14, 14, 18, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(14px) saturate(160%);
+        -webkit-backdrop-filter: blur(14px) saturate(160%);
+        box-shadow:
+          0 10px 30px -8px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        max-width: calc(100vw - 20px);
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .pv-switch::-webkit-scrollbar {
+        display: none;
+      }
+      .pv-home,
+      .pv-item {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px;
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.55);
+        text-decoration: none;
+        white-space: nowrap;
+        transition:
+          color 0.16s ease,
+          background 0.16s ease;
+      }
+      .pv-home {
+        font-size: 13px;
+        padding: 6px 10px;
+      }
+      .pv-item b {
+        font-weight: 700;
+        font-size: 11px;
+      }
+      .pv-lbl {
+        display: none;
+      }
+      .pv-item.on .pv-lbl {
+        display: inline;
+      }
+      .pv-tip {
+        position: absolute;
+        bottom: calc(100% + 9px);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 3px 9px;
+        border-radius: 6px;
+        background: rgba(10, 10, 14, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: #fff;
+        font-size: 10.5px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.14s ease;
+      }
+      .pv-item:hover .pv-tip {
+        opacity: 1;
+      }
+      .pv-item.on .pv-tip {
+        display: none;
+      }
+      .pv-home:hover,
+      .pv-item:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .pv-item.on {
+        color: #0a0a0c;
+        background: #f4f4f5;
+        padding: 6px 12px 6px 10px;
+      }
+      .pv-item.on b {
+        opacity: 0.5;
+        font-size: 10px;
+      }
+      .pv-div {
+        width: 1px;
+        height: 16px;
+        background: rgba(255, 255, 255, 0.16);
+        margin: 0 3px;
+        flex: none;
+      }
+      @media (max-width: 720px) {
+        .pv-item.on .pv-lbl {
+          display: none;
+        }
+      }
+    </style>
+  </body>
+</html>

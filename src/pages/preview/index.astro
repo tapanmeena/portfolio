@@ -1,0 +1,835 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+
+type Mock = {
+  key: string;
+  num: string;
+  round: 1 | 2 | 3 | 4;
+  name: string;
+  tagline: string;
+  pitch: string;
+  vibe: string[];
+  palette: string[];
+  bg: string;
+  fg: string;
+  ui: string;
+  fontClass: string;
+  sample: string;
+  good: string;
+  cost: string;
+};
+
+const mocks: Mock[] = [
+  {
+    key: "terminal",
+    num: "01",
+    round: 1,
+    name: "Terminal",
+    tagline: "the whole site is a shell session",
+    pitch:
+      "Every section is a command and its output. Projects render as `ls -lh`, posts as a tailed log, the homelab as `systemctl status`. CRT scanlines, phosphor green, blinking cursor.",
+    vibe: ["engineer-coded", "dark only", "high personality"],
+    palette: ["#080b0a", "#4ade80", "#22d3ee", "#fbbf24", "#f472b6"],
+    bg: "#080b0a",
+    fg: "#4ade80",
+    ui: "#4ade80",
+    fontClass: "f-jet",
+    sample: "$ ls -lh ~/projects",
+    good: "Instantly memorable, screams backend engineer, trivially extends to every page.",
+    cost: "Monospace everywhere hurts long-form reading; needs a softer 'article mode'.",
+  },
+  {
+    key: "brutalist",
+    num: "02",
+    round: 1,
+    name: "Brutalist Press",
+    tagline: "loud type, hard rules, one angry red",
+    pitch:
+      "Archivo Black at 11rem, hairline grids, a scrolling red ticker, hover states that invert whole rows. Confident and physical — closer to a printed poster than a website.",
+    vibe: ["bold", "light mode", "high contrast"],
+    palette: ["#f2efe6", "#0d0d0d", "#ff2d16", "#8c887c", "#ffffff"],
+    bg: "#f2efe6",
+    fg: "#0d0d0d",
+    ui: "#ff2d16",
+    fontClass: "f-archivo-black",
+    sample: "BUILDS BACKENDS.",
+    good: "Enormous personality, great for portfolio/hiring impact, very fast to read.",
+    cost: "Loud. Needs discipline on dense pages like the trading curriculum.",
+  },
+  {
+    key: "blueprint",
+    num: "03",
+    round: 1,
+    name: "Blueprint",
+    tagline: "the site as an engineering drawing",
+    pitch:
+      "Navy sheet with a real drafting grid, dimension lines, callout balloons, a schedule-of-works table, and a proper title block in the footer. Content is 'issued', not 'posted'.",
+    vibe: ["technical", "dark", "systematic"],
+    palette: ["#08131f", "#5fc8f0", "#ffb454", "#6f93ab", "#d6ecfa"],
+    bg: "#08131f",
+    fg: "#5fc8f0",
+    ui: "#5fc8f0",
+    fontClass: "f-plex",
+    sample: "FIG. 03 — SCHEDULE",
+    good: "Tables, specs, and the trading curriculum fit this frame perfectly.",
+    cost: "Strong metaphor — every new section has to earn a place on the drawing.",
+  },
+  {
+    key: "aurora",
+    num: "04",
+    round: 1,
+    name: "Aurora Bento",
+    tagline: "glass cards over a drifting gradient sky",
+    pitch:
+      "Modern product-site energy: floating pill nav, gradient display type, and an asymmetric bento grid where each card is a live surface — now-building, stats, stack marquee, homelab LEDs.",
+    vibe: ["polished", "dark", "recruiter-friendly"],
+    palette: ["#06060a", "#a78bfa", "#22d3ee", "#f472b6", "#e9e9ef"],
+    bg: "#06060a",
+    fg: "#a78bfa",
+    ui: "#a78bfa",
+    fontClass: "f-inter-tight",
+    sample: "the quiet systems",
+    good: "The safest 'wow' — reads as senior and current, scales to any page.",
+    cost: "Least unique of the ten; lots of sites look adjacent to this in 2026.",
+  },
+  {
+    key: "atelier",
+    num: "05",
+    round: 1,
+    name: "Atelier",
+    tagline: "a gallery catalogue for software",
+    pitch:
+      "Warm paper, Playfair Display, huge whitespace. Projects become numbered plates with museum labels (medium, commenced, state). Posts are 'notebooks'. Quiet, expensive-feeling.",
+    vibe: ["editorial", "light mode", "calm"],
+    palette: ["#f7f3ea", "#1a1714", "#b0522a", "#6a6157", "#f1ece0"],
+    bg: "#f7f3ea",
+    fg: "#b0522a",
+    ui: "#e08a5a",
+    fontClass: "f-playfair",
+    sample: "Software, made carefully",
+    good: "Best long-form reading of the set; ages extremely well.",
+    cost: "Understated — less immediate impact than 02 or 04.",
+  },
+  {
+    key: "desk",
+    num: "06",
+    round: 2,
+    name: "Trading Desk",
+    tagline: "a Bloomberg terminal for your career",
+    pitch:
+      "Black panels, amber command line, `<GO>` function keys and a scrolling tape. Projects become a watchlist with tickers, % change and sparklines; posts are the news wire; the homelab is a load monitor; cursed knowledge is the alert queue.",
+    vibe: ["dense", "dark", "finance-coded"],
+    palette: ["#050505", "#ff9d00", "#26c6f5", "#00e07a", "#ff4d4d"],
+    bg: "#050505",
+    fg: "#ff9d00",
+    ui: "#ff9d00",
+    fontClass: "f-roboto-mono",
+    sample: "TPMN <EQUITY> DES",
+    good: "Ties the trading curriculum and StalkMarket straight into the identity. Huge information density.",
+    cost: "Intense. Needs a calmer reading view for the long-form curriculum pages.",
+  },
+  {
+    key: "zine",
+    num: "07",
+    round: 2,
+    name: "Riso Zine",
+    tagline: "photocopied, misregistered, stapled",
+    pitch:
+      "Two-colour risograph print: halftone dots, off-register pink/blue shadows, taped-down cut-outs at slight angles, marker scrawl, rubber stamps and a hand-set colophon. Projects are literal paper cut-outs.",
+    vibe: ["playful", "light mode", "very unusual"],
+    palette: ["#f2ecdd", "#141414", "#2b4bd8", "#ff3d8b", "#ffd400"],
+    bg: "#f2ecdd",
+    fg: "#ff3d8b",
+    ui: "#ff3d8b",
+    fontClass: "f-anton",
+    sample: "THE WORKSHOP ZINE",
+    good: "Nothing else on the internet looks like this. Memorable and genuinely fun.",
+    cost: "Hardest to keep readable at scale; risky for a hiring audience.",
+  },
+  {
+    key: "desktop",
+    num: "08",
+    round: 2,
+    name: "Desktop OS",
+    tagline: "your portfolio, as an operating system",
+    pitch:
+      "Menu bar with a live clock, desktop icons, a magnifying dock, and real app windows: README.rtf, a Finder list of projects with Kind/Date/Size columns, a Console tailing writing.log, Activity Monitor for the homelab, and a sticky note for cursed knowledge.",
+    vibe: ["interactive", "colourful", "playful-pro"],
+    palette: ["#1a2364", "#57265c", "#0a6cff", "#ffffff", "#ffec6b"],
+    bg: "#1e2a63",
+    fg: "#ffffff",
+    ui: "#5aa9ff",
+    fontClass: "f-inter",
+    sample: "Projects — 12 items",
+    good: "Delightful and instantly navigable; every site section maps cleanly to an 'app'.",
+    cost: "Most engineering work of the ten if you later want real dragging and minimising.",
+  },
+  {
+    key: "notebook",
+    num: "09",
+    round: 2,
+    name: "Working Notebook",
+    tagline: "graph paper, red margin, handwriting",
+    pitch:
+      "Squared paper with a spiral binding and a red margin rule. Headings are handwritten, boxes are hand-drawn, key phrases are highlighted, writeups are ticked-off todos, and cursed knowledge is corrections in red pen.",
+    vibe: ["personal", "light mode", "warm"],
+    palette: ["#fdfbf3", "#22262e", "#2f5bd0", "#d3382f", "#ffee74"],
+    bg: "#fdfbf3",
+    fg: "#2f5bd0",
+    ui: "#5b86dd",
+    fontClass: "f-caveat",
+    sample: "Tapan's working notebook",
+    good: "Matches the 'honest log, mistakes included' voice better than anything else here.",
+    cost: "Handwriting fonts get tiring; needs strict limits on where they appear.",
+  },
+  {
+    key: "swiss",
+    num: "10",
+    round: 2,
+    name: "Swiss Grid",
+    tagline: "twelve columns, one red, nothing else",
+    pitch:
+      "International Style discipline: a visible 12-column grid, numbered sections in the left margin, hairline rules, tabular figures and a single red accent. Loud typography replaced by ruthless alignment.",
+    vibe: ["precise", "light mode", "timeless"],
+    palette: ["#ffffff", "#111111", "#e2231a", "#8c8c8c", "#dcdcdc"],
+    bg: "#ffffff",
+    fg: "#111111",
+    ui: "#e2231a",
+    fontClass: "f-archivo",
+    sample: "Backend systems,",
+    good: "The most 'senior designer' option. Scales to the densest pages without breaking.",
+    cost: "Quiet by design — leans on content quality rather than visual fireworks.",
+  },
+  {
+    key: "y2k",
+    num: "11",
+    round: 3,
+    name: "Y2K Web",
+    tagline: "1999 personal homepage, fully committed",
+    pitch:
+      "Beveled Win98 chrome inside an Internet Explorer window: WordArt nameplate, scrolling marquee, LED visitor counter, 'made with Notepad' badges, a projects table, a guestbook and a working taskbar.",
+    vibe: ["nostalgic", "chaotic", "very memorable"],
+    palette: ["#008080", "#c0c0c0", "#000080", "#ffff00", "#00ff41"],
+    bg: "#008080",
+    fg: "#ffffff",
+    ui: "#5ce1e6",
+    fontClass: "f-tahoma",
+    sample: "Welcome to my Home Page!!",
+    good: "Instantly disarming and genuinely funny. Nobody forgets it.",
+    cost: "A joke you have to keep telling. Hard to take seriously for consulting leads.",
+  },
+  {
+    key: "hud",
+    num: "12",
+    round: 3,
+    name: "Cyberpunk HUD",
+    tagline: "angular panels, neon, targeting reticle",
+    pitch:
+      "Clipped-corner panels with bracket markers, a rotating reticle, scan sweep, glitch-offset headline, and edge readouts. Projects are 'deployed modules', posts are 'intercepted transmissions', cursed knowledge is a threat log.",
+    vibe: ["sci-fi", "dark", "hard-edged"],
+    palette: ["#05070a", "#00e5ff", "#ff2d95", "#c6ff00", "#c9f6ff"],
+    bg: "#05070a",
+    fg: "#00e5ff",
+    ui: "#00e5ff",
+    fontClass: "f-rajdhani",
+    sample: "OPERATOR//T.MEENA",
+    good: "High drama with real structure underneath; the angular system is easy to extend.",
+    cost: "Sci-fi tropes date faster than most — and neon-on-black tires the eyes.",
+  },
+  {
+    key: "canvas",
+    num: "13",
+    round: 3,
+    name: "Infinite Canvas",
+    tagline: "your site as a Figma board",
+    pitch:
+      "Dotted canvas, tool palette, collaborator cursors, zoom control. Every section is a named frame with selection handles on hover, connected by dashed wires; writeups are sticky notes and cursed knowledge is unresolved comments.",
+    vibe: ["designerly", "light mode", "interactive"],
+    palette: ["#eff0f2", "#0d99ff", "#ff4d97", "#ffe27a", "#1b1c1f"],
+    bg: "#eff0f2",
+    fg: "#0d99ff",
+    ui: "#0d99ff",
+    fontClass: "f-inter",
+    sample: "Frame 01 — Hero",
+    good: "Reads as a systems thinker; the frame metaphor scales endlessly.",
+    cost: "Very of-the-moment; will look dated when the next design tool wins.",
+  },
+  {
+    key: "vinyl",
+    num: "14",
+    round: 3,
+    name: "Vinyl / Liner Notes",
+    tagline: "a record sleeve for your career",
+    pitch:
+      "Album art panel with a spinning record sliding out, a turntable 'now spinning' block with tonearm and EQ bars, projects as an A-side/B-side tracklist with run times, and a proper credits block.",
+    vibe: ["warm", "dark", "analogue"],
+    palette: ["#161210", "#efe6d5", "#d9622b", "#c9a227", "#322822"],
+    bg: "#161210",
+    fg: "#c9a227",
+    ui: "#d9622b",
+    fontClass: "f-bebas",
+    sample: "THE WORKSHOP SESSIONS",
+    good: "Warmest personality of all twenty; the tracklist is a beautiful project index.",
+    cost: "The music metaphor has to stretch to cover a trading curriculum.",
+  },
+  {
+    key: "transit",
+    num: "15",
+    round: 3,
+    name: "Departure Board",
+    tagline: "split-flap timetable, gates and boarding passes",
+    pitch:
+      "An airport terminal: split-flap station clock and headline, a departures table with flight numbers, gates and BOARDING/LANDED status, arrivals for new writing, platforms for the homelab, and a perforated boarding pass with a barcode for contact.",
+    vibe: ["kinetic", "dark", "systematic"],
+    palette: ["#0b0b0c", "#ffb100", "#f1e6c8", "#35d07f", "#ff5a4d"],
+    bg: "#0b0b0c",
+    fg: "#ffb100",
+    ui: "#ffb100",
+    fontClass: "f-barlow",
+    sample: "DEPARTURES 14:32",
+    good: "Status language (boarding / landed / delayed) maps perfectly to project state.",
+    cost: "Condensed board type is great for lists, weaker for long prose.",
+  },
+  {
+    key: "comic",
+    num: "16",
+    round: 4,
+    name: "Comic Panels",
+    tagline: "halftone, speech bubbles, KRAK!",
+    pitch:
+      "Sequential-art layout: thick black panel borders with offset shadows, a splash page with radiating rays and a speech bubble, sound effects breaking the gutters, projects as numbered issues and cursed knowledge as 'the villains'.",
+    vibe: ["loud", "light mode", "fun"],
+    palette: ["#f4efe3", "#141414", "#ffd83d", "#ff5c8a", "#4dc9ff"],
+    bg: "#f4efe3",
+    fg: "#141414",
+    ui: "#ff5c8a",
+    fontClass: "f-bangers",
+    sample: "THE WORKSHOP",
+    good: "Enormous charm, and the panel grid is a genuinely good layout system.",
+    cost: "Comic lettering fights long-form reading harder than any other option here.",
+  },
+  {
+    key: "timeline",
+    num: "17",
+    round: 4,
+    name: "Git Timeline",
+    tagline: "your career rendered as a commit graph",
+    pitch:
+      "A GitHub repo page for `tapanmeena/career`: repo header with stars and tabs, README.md as the hero, a contribution heatmap, then one continuous git graph — branches curving out for each project, merges for each section, and reverts for cursed knowledge.",
+    vibe: ["engineer-native", "dark", "familiar"],
+    palette: ["#0d1117", "#58a6ff", "#3fb950", "#a371f7", "#f85149"],
+    bg: "#0d1117",
+    fg: "#58a6ff",
+    ui: "#3fb950",
+    fontClass: "f-jet",
+    sample: "feat/stalkmarket",
+    good: "Zero explanation needed for a technical audience; the branch metaphor is exactly right.",
+    cost: "Looks like GitHub — which is comfortable, but not distinctive.",
+  },
+  {
+    key: "deck",
+    num: "18",
+    round: 4,
+    name: "Card Deck",
+    tagline: "gold on green felt, major and minor arcana",
+    pitch:
+      "A fanned spread over card-table felt. Projects become tarot-style cards with double gold frames, roman numerals, suit glyphs and a sigil; the homelab is 'the court'; cursed knowledge is drawn reversed.",
+    vibe: ["ornate", "dark", "theatrical"],
+    palette: ["#0b1f19", "#d4af37", "#f2e8d5", "#8b1a1a", "#14352a"],
+    bg: "#0b1f19",
+    fg: "#d4af37",
+    ui: "#d4af37",
+    fontClass: "f-cinzel",
+    sample: "Tapan Meena",
+    good: "The most luxurious of the twenty; cards are a naturally great project format.",
+    cost: "Mysticism sits oddly next to a rigorous trading curriculum.",
+  },
+  {
+    key: "packaging",
+    num: "19",
+    round: 4,
+    name: "Packaging",
+    tagline: "the back of the box, spec label and all",
+    pitch:
+      "Cardboard stock with a nutrition-facts-style SPECIFICATION panel, a box-contents table with SKUs and QC stamps, documentation inserts, included hardware, hazard-striped safety warnings, and a real barcode in the footer.",
+    vibe: ["industrial", "light mode", "witty"],
+    palette: ["#d8d0c0", "#1c1a16", "#c62828", "#2e7d4f", "#fdfbf5"],
+    bg: "#d8d0c0",
+    fg: "#1c1a16",
+    ui: "#c62828",
+    fontClass: "f-archivo-narrow",
+    sample: "SPECIFICATION",
+    good: "The spec-label device is a brilliant, genuinely useful way to show a skill breakdown.",
+    cost: "Cardboard beige is a hard palette to live with every day.",
+  },
+  {
+    key: "bauhaus",
+    num: "20",
+    round: 4,
+    name: "Bauhaus",
+    tagline: "circles, squares, triangles — three colours",
+    pitch:
+      "Geometric primitives in red, blue and yellow over warm paper. A composed shape cluster in the hero, a four-colour stat band, project cards capped with clipped geometric glyphs, and Jost (a Futura descendant) throughout.",
+    vibe: ["geometric", "light mode", "timeless"],
+    palette: ["#f0ece4", "#111111", "#e0362a", "#1c4fd8", "#f2c024"],
+    bg: "#f0ece4",
+    fg: "#e0362a",
+    ui: "#e0362a",
+    fontClass: "f-jost",
+    sample: "SOFTWARE",
+    good: "Confident and joyful without being loud; ages as well as Swiss but with more warmth.",
+    cost: "Primary colours can read as playful when you want authoritative.",
+  },
+];
+
+const rounds = [
+  { n: 1 as const, label: "Round 01", note: "the first five directions" },
+  { n: 2 as const, label: "Round 02", note: "five more, deliberately further out" },
+  { n: 3 as const, label: "Round 03", note: "stronger metaphors, more risk" },
+  { n: 4 as const, label: "Round 04", note: "the far end of the range" },
+];
+---
+
+<PreviewShell
+  title="Theme mockups — pick one"
+  active="index"
+  bg="#0b0b0f"
+  fg="#e8e8ef"
+  fontHref="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Archivo+Narrow:wght@600;700&family=Archivo:wght@400;500;600&family=Bangers&family=Barlow+Condensed:wght@600;700&family=Bebas+Neue&family=Caveat:wght@600;700&family=Cinzel:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&family=Jost:wght@500;600&family=Playfair+Display:ital,wght@0,400;1,400&family=Rajdhani:wght@600;700&family=Roboto+Mono:wght@400;500;700&display=swap"
+>
+  <div class="gal">
+    <header class="head">
+      <p class="eyebrow">Theme overhaul · 20 directions · 4 rounds</p>
+      <h1>Pick a direction.</h1>
+      <p class="lede">
+        Twenty complete homepage mockups, each rendered with your real projects, posts and homelab data — not lorem ipsum. Open one, scroll it, then
+        tell me the number. I'll roll the winner across every page (blog, projects, trading, about, contact, 404).
+      </p>
+      <p class="note">Nothing on the live site has changed. These live at <code>/preview/*</code> and are marked <code>noindex</code>.</p>
+    </header>
+
+    {
+      rounds.map((r) => (
+        <section class="round">
+          <header class="rhead">
+            <h2>{r.label}</h2>
+            <span class="rline" />
+            <span class="rnote">{r.note}</span>
+          </header>
+
+          <ul class="cards">
+            {mocks
+              .filter((m) => m.round === r.n)
+              .map((m) => (
+                <li class="card" style={`--accent:${m.ui}`}>
+                  <a class="hit" href={`/preview/${m.key}`}>
+                    <span class="swatchwrap" style={`background:${m.bg}`}>
+                      <span class:list={["swatch-type", m.fontClass]} style={`color:${m.fg}`}>
+                        {m.sample}
+                      </span>
+                      <span class="chips">
+                        {m.palette.map((c) => (
+                          <i style={`background:${c}`} />
+                        ))}
+                      </span>
+                    </span>
+
+                    <span class="body">
+                      <span class="titleline">
+                        <b class="num">{m.num}</b>
+                        <b class="name">{m.name}</b>
+                        <span class="open">
+                          open <span class="arr">→</span>
+                        </span>
+                      </span>
+                      <span class="tagline">{m.tagline}</span>
+                      <span class="pitch">{m.pitch}</span>
+                      <span class="vibes">
+                        {m.vibe.map((v) => (
+                          <i>{v}</i>
+                        ))}
+                      </span>
+                      <span class="pros">
+                        <span class="pro">
+                          <b>+</b> {m.good}
+                        </span>
+                        <span class="con">
+                          <b>−</b> {m.cost}
+                        </span>
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    <footer class="tail">
+      <p>Current theme for comparison: <a href="/">the workshop log ↗</a></p>
+      <p class="tiny">
+        Mixing is allowed — e.g. “10 grid with 05 typography”, or “06 for the trading section, 10 everywhere else”. Say the word and I'll build the
+        hybrid.
+      </p>
+    </footer>
+  </div>
+</PreviewShell>
+
+<style>
+  .gal {
+    --bg: #0b0b0f;
+    --fg: #e8e8ef;
+    --mut: #8b8b9c;
+    --line: rgba(255, 255, 255, 0.1);
+    font-family: "Inter Tight", system-ui, sans-serif;
+    background: radial-gradient(90% 60% at 50% -10%, #16161f 0%, #0b0b0f 60%), var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    padding: 0 20px;
+  }
+  .gal :global(a) {
+    text-decoration: none;
+  }
+
+  .head {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 62px 0 34px;
+    text-align: center;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--mut);
+  }
+  .head h1 {
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    margin: 16px 0 18px;
+  }
+  .lede {
+    font-size: 1.02rem;
+    line-height: 1.68;
+    color: #b6b6c6;
+  }
+  .note {
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--mut);
+  }
+  .note code {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+
+  .cards {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    gap: 16px;
+  }
+  .round {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .rhead {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 30px 2px 16px;
+  }
+  .rhead h2 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .rline {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .rnote {
+    font-size: 12px;
+    color: var(--mut);
+    white-space: nowrap;
+  }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.025);
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .card:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    transform: translateY(-2px);
+  }
+  .hit {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 820px) {
+    .hit {
+      grid-template-columns: 300px 1fr;
+    }
+  }
+
+  .swatchwrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 26px 22px 18px;
+    min-height: 168px;
+    border-bottom: 1px solid var(--line);
+  }
+  @media (min-width: 820px) {
+    .swatchwrap {
+      border-bottom: 0;
+      border-right: 1px solid var(--line);
+    }
+  }
+  .swatch-type {
+    font-size: 1.34rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .f-jet {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.1rem;
+  }
+  .f-archivo-black {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+  }
+  .f-plex {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+  }
+  .f-inter-tight {
+    font-family: "Inter Tight", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .f-playfair {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.5rem;
+    font-style: italic;
+  }
+  .f-roboto-mono {
+    font-family: "Roboto Mono", monospace;
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .f-anton {
+    font-family: "Anton", Impact, sans-serif;
+    font-size: 1.72rem;
+    line-height: 1;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 #2b4bd8;
+  }
+  .f-inter {
+    font-family: "Inter", sans-serif;
+    font-size: 1.24rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .f-caveat {
+    font-family: "Caveat", cursive;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .f-archivo {
+    font-family: "Archivo", sans-serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+  }
+  .f-tahoma {
+    font-family: Tahoma, Verdana, sans-serif;
+    font-size: 1.16rem;
+    font-weight: 700;
+  }
+  .f-rajdhani {
+    font-family: "Rajdhani", sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .f-bebas {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 1.7rem;
+    letter-spacing: 0.06em;
+  }
+  .f-barlow {
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+  .f-bangers {
+    font-family: "Bangers", cursive;
+    font-size: 2rem;
+    letter-spacing: 0.03em;
+    -webkit-text-stroke: 1.5px #141414;
+  }
+  .f-cinzel {
+    font-family: "Cinzel", serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .f-archivo-narrow {
+    font-family: "Archivo Narrow", sans-serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .f-jost {
+    font-family: "Jost", sans-serif;
+    font-size: 1.7rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .chips {
+    display: flex;
+    gap: 6px;
+  }
+  .chips i {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    display: block;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  }
+
+  .body {
+    display: block;
+    padding: 22px 24px 24px;
+  }
+  .titleline {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .name {
+    font-size: 1.32rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .open {
+    margin-left: auto;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mut);
+  }
+  .card:hover .open {
+    color: var(--accent);
+  }
+  .arr {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+  .card:hover .arr {
+    transform: translateX(4px);
+  }
+  .tagline {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+  .pitch {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.93rem;
+    line-height: 1.65;
+    color: #b6b6c6;
+    max-width: 62ch;
+  }
+  .vibes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .vibes i {
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--mut);
+  }
+  .pros {
+    display: grid;
+    gap: 6px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--mut);
+  }
+  .pro b {
+    color: #4ade80;
+    margin-right: 4px;
+  }
+  .con b {
+    color: #fb923c;
+    margin-right: 4px;
+  }
+
+  .tail {
+    max-width: 1080px;
+    margin: 40px auto 0;
+    padding: 22px 4px 40px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-size: 13px;
+    color: var(--mut);
+  }
+  .tail a {
+    color: var(--fg);
+    border-bottom: 1px solid var(--line);
+  }
+  .tail a:hover {
+    border-bottom-color: currentColor;
+  }
+  .tiny {
+    margin-top: 10px;
+    font-size: 12px;
+    max-width: 62ch;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+</style>

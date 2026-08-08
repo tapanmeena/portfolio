@@ -13,7 +13,7 @@ import rehypeKatex from "rehype-katex";
 export default defineConfig({
   site: "https://tapanmeena.com",
   output: "static",
-  integrations: [sitemap()],
+  integrations: [sitemap({ filter: (page) => !page.includes("/preview") })],
 
   markdown: {
     processor: unified({

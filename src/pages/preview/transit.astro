@@ -1,0 +1,945 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const departures = projects.slice(0, 9);
+const arrivals = posts.slice(0, 5);
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const flight = (s: string, i: number) =>
+  `${s
+    .replace(/[^a-zA-Z]/g, "")
+    .slice(0, 2)
+    .toUpperCase()} ${String(100 + i * 37).slice(0, 3)}`;
+const depTime = (d: Date) => `${pad2((new Date(d).getMonth() * 2 + 6) % 24)}:${pad2((new Date(d).getDate() * 3) % 60)}`;
+const now = new Date();
+const clock = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+const flaps = (s: string) => s.split("");
+---
+
+<PreviewShell
+  title="15 · departure board — theme mockup"
+  active="transit"
+  bg="#0b0b0c"
+  fg="#f1e6c8"
+  fontHref="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap"
+>
+  <div class="tr">
+    <!-- ── STATION HEADER ── -->
+    <header class="station">
+      <div class="st-l">
+        <span class="st-badge">T1</span>
+        <span class="st-name">
+          <b>TAPAN MEENA INTL</b>
+          <i>HYDERABAD · IST · TERMINAL 1</i>
+        </span>
+      </div>
+      <div class="st-clock">
+        {flaps(clock).map((c) => <span class:list={["flap", { colon: c === ":" }]}>{c}</span>)}
+      </div>
+      <nav class="st-nav">
+        <a href="#" class="on">DEPARTURES</a><a href="#">ARRIVALS</a><a href="#">PLATFORMS</a><a href="#">MARKET</a><a href="#">HELP DESK</a>
+      </nav>
+    </header>
+
+    <!-- ── NOW BOARDING ── -->
+    {
+      nowBuilding && (
+        <section class="nowboarding">
+          <div class="bd-l">
+            <span class="bd-k">
+              <i class="blip" /> NOW BOARDING · GATE A1
+            </span>
+            <h1 class="bd-t">
+              {flaps(nowBuilding.data.title.toUpperCase().slice(0, 14)).map((c) => (
+                <span class:list={["flap big", { sp: c === " " }]}>{c === " " ? "\u00a0" : c}</span>
+              ))}
+            </h1>
+            <p class="bd-d">{nowBuilding.data.description}</p>
+            <p class="bd-s">{nowBuilding.data.techStack.slice(0, 6).join(" · ").toUpperCase()}</p>
+            <a class="tbtn" href={`/projects/${nowBuilding.id}`}>
+              VIEW ITINERARY →
+            </a>
+          </div>
+          <ul class="bd-r">
+            <li>
+              <span>FLIGHT</span>
+              <b>{flight(nowBuilding.data.title, 1)}</b>
+            </li>
+            <li>
+              <span>DEPARTED</span>
+              <b>{yr(nowBuilding.data.startDate)}</b>
+            </li>
+            <li>
+              <span>STATUS</span>
+              <b class="ontime">EN ROUTE</b>
+            </li>
+            <li>
+              <span>PROGRESS</span>
+              <b>77%</b>
+            </li>
+          </ul>
+        </section>
+      )
+    }
+
+    <!-- ── DEPARTURES ── -->
+    <section class="board">
+      <header class="bh">
+        <h2>DEPARTURES <span class="bh-s">/ PROJECTS SHIPPED</span></h2>
+        <span class="bh-r">{departures.length} OF {projects.length} SHOWN</span>
+      </header>
+      <div class="tablewrap">
+        <table class="dep">
+          <thead>
+            <tr>
+              <th class="c-t">TIME</th>
+              <th class="c-f">FLIGHT</th>
+              <th>DESTINATION</th>
+              <th class="c-g hs">GATE</th>
+              <th class="c-y hs">YEAR</th>
+              <th class="c-s">STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              departures.map((p, i) => {
+                const live = p.data.status === "in-progress";
+                return (
+                  <tr class:list={{ live }}>
+                    <td class="c-t">{depTime(p.data.startDate)}</td>
+                    <td class="c-f">{flight(p.data.title, i + 1)}</td>
+                    <td class="c-dest">
+                      <a href={`/projects/${p.id}`}>{p.data.title.toUpperCase()}</a>
+                      <span>{(p.data.category ?? "MISC").toUpperCase()}</span>
+                    </td>
+                    <td class="c-g hs">
+                      {String.fromCharCode(65 + (i % 4))}
+                      {(i % 9) + 1}
+                    </td>
+                    <td class="c-y hs">{yr(p.data.startDate)}</td>
+                    <td class="c-s">
+                      <span class:list={["stat", live ? "boarding" : "landed"]}>{live ? "BOARDING" : "LANDED"}</span>
+                    </td>
+                  </tr>
+                );
+              })
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="bfoot">
+        <a href="/projects">▸ FULL DEPARTURE SCHEDULE — {projects.length} SERVICES</a>
+      </p>
+    </section>
+
+    <!-- ── ARRIVALS ── -->
+    <section class="board alt">
+      <header class="bh">
+        <h2>ARRIVALS <span class="bh-s">/ NEW WRITING</span></h2>
+        <span class="bh-r">UPDATED CONTINUOUSLY</span>
+      </header>
+      <ul class="arr">
+        {
+          arrivals.map((p, i) => (
+            <li>
+              <a href={`/blog/${p.id}`}>
+                <span class="ar-t">{depTime(p.data.publishedAt)}</span>
+                <span class="ar-f">{flight(p.data.category, i + 3)}</span>
+                <span class="ar-d">{p.data.title.toUpperCase()}</span>
+                <span class="ar-o">FROM {p.data.category.toUpperCase()}</span>
+                <span class="stat landed">ARRIVED</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── PLATFORMS ── -->
+    <section class="platforms">
+      <header class="bh">
+        <h2>PLATFORMS <span class="bh-s">/ THE MACHINE ROOM</span></h2>
+        <span class="bh-r ontime">ALL SERVICES RUNNING</span>
+      </header>
+      <ul class="plat">
+        {
+          labEntries.map((e, i) => (
+            <li>
+              <span class="pl-n">{pad2(i + 1)}</span>
+              <span class="pl-b">
+                <b>{e.title.toUpperCase()}</b>
+                <span>{e.description}</span>
+              </span>
+              <span class="pl-s">{e.stack.slice(0, 3).join(" · ").toUpperCase()}</span>
+              <span class:list={["stat", e.access === "restricted" ? "delayed" : "ontime"]}>{e.access === "restricted" ? "STAFF ONLY" : "OPEN"}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── DISRUPTIONS ── -->
+    <section class="disrupt">
+      <header class="bh">
+        <h2>SERVICE DISRUPTIONS <span class="bh-s">/ CURSED KNOWLEDGE</span></h2>
+        <span class="bh-r delayed">{curses.length} LOGGED</span>
+      </header>
+      <ul class="dis">
+        {
+          curses.slice(0, 4).map((c) => (
+            <li>
+              <span class:list={["dis-s", `s${c.severity}`]}>DELAY {c.severity}</span>
+              <span class="dis-b">
+                <b>{c.title}</b>
+                <span>
+                  {c.project.toUpperCase()} · {c.date}
+                </span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── BOARDING PASS ── -->
+    <footer class="pass">
+      <div class="pass-main">
+        <div class="pass-head">
+          <span class="pp-logo">TM<i>AIR</i></span>
+          <span class="pp-k">BOARDING PASS · CLASS: CONSULTING</span>
+        </div>
+        <div class="pass-body">
+          <div class="pp-route">
+            <span class="pp-code">YOU</span>
+            <span class="pp-arrow">✈</span>
+            <span class="pp-code">TPM</span>
+          </div>
+          <dl class="pp-fields">
+            <div><dt>PASSENGER</dt><dd>ANYONE BUILDING SOMETHING HARD</dd></div>
+            <div><dt>DESTINATION</dt><dd>tapanmeena1998@gmail.com</dd></div>
+            <div><dt>GATE</dt><dd>A1</dd></div>
+            <div><dt>BOARDING</dt><dd>ANY TIME</dd></div>
+            <div><dt>SEAT</dt><dd>1A</dd></div>
+            <div><dt>RESPONSE</dt><dd class="ontime">&lt; 24H</dd></div>
+          </dl>
+          <a class="tbtn wide" href="mailto:tapanmeena1998@gmail.com">CHECK IN — SEND A MESSAGE</a>
+        </div>
+      </div>
+      <div class="pass-stub">
+        <span class="stub-k">STUB</span>
+        <span class="stub-code">TM-001</span>
+        <span class="barcode" aria-hidden="true"></span>
+        <span class="stub-f">SEAT 1A · GATE A1</span>
+      </div>
+    </footer>
+
+    <p class="ticker">
+      THIS STATION OPERATES WITHOUT TRACKERS · ALL SERVICES SELF-OPERATED · HYDERABAD IST · © {now.getFullYear()} TAPAN MEENA
+    </p>
+  </div>
+</PreviewShell>
+
+<style>
+  .tr {
+    --bg: #0b0b0c;
+    --pan: #131314;
+    --amber: #ffb100;
+    --cream: #f1e6c8;
+    --green: #35d07f;
+    --red: #ff5a4d;
+    --mut: #877f6d;
+    --line: #26262a;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: "Barlow Condensed", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  .tr :global(a) {
+    text-decoration: none;
+  }
+  .hs {
+    display: none;
+  }
+  @media (min-width: 860px) {
+    .hs {
+      display: table-cell;
+    }
+  }
+  .ontime {
+    color: var(--green);
+  }
+  .delayed {
+    color: var(--red);
+  }
+
+  /* ── flap chars ── */
+  .flap {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.1em;
+    padding: 2px 3px;
+    background: linear-gradient(#26262a 0 49%, #1a1a1d 51% 100%);
+    color: var(--cream);
+    border-radius: 2px;
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  .flap::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.7);
+  }
+  .flap.colon {
+    background: none;
+    box-shadow: none;
+    min-width: 0.4em;
+    color: var(--amber);
+  }
+  .flap.colon::after {
+    display: none;
+  }
+  .flap.sp {
+    background: none;
+    box-shadow: none;
+  }
+  .flap.sp::after {
+    display: none;
+  }
+
+  /* ── station ── */
+  .station {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 14px 22px;
+    border-bottom: 2px solid var(--amber);
+    background: #0f0f10;
+  }
+  .st-l {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .st-badge {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    background: var(--amber);
+    color: #101010;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+  }
+  .st-name b {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .st-name i {
+    display: block;
+    font-style: normal;
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    color: var(--mut);
+    margin-top: 2px;
+  }
+  .st-clock {
+    display: flex;
+    gap: 2px;
+    font-size: 24px;
+  }
+  .st-nav {
+    margin-left: auto;
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  .st-nav a {
+    font-family: "Roboto Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    padding: 5px 11px;
+    color: var(--mut);
+    border: 1px solid transparent;
+  }
+  .st-nav a:hover {
+    color: var(--cream);
+    border-color: var(--line);
+  }
+  .st-nav a.on {
+    color: #101010;
+    background: var(--amber);
+  }
+
+  /* ── boarding ── */
+  .nowboarding {
+    display: grid;
+    gap: 28px;
+    padding: 38px 22px 36px;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+  @media (min-width: 960px) {
+    .nowboarding {
+      grid-template-columns: 1fr 250px;
+      gap: 44px;
+      align-items: start;
+    }
+  }
+  .bd-k {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: "Roboto Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    color: var(--amber);
+  }
+  .blip {
+    width: 8px;
+    height: 8px;
+    background: var(--amber);
+    border-radius: 50%;
+    animation: bl 1.3s ease-in-out infinite;
+  }
+  @keyframes bl {
+    50% {
+      opacity: 0.2;
+    }
+  }
+  .bd-t {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin: 14px 0 16px;
+  }
+  .flap.big {
+    font-size: clamp(1.7rem, 5.6vw, 3.6rem);
+    min-width: 0.78em;
+    padding: 4px 6px;
+  }
+  .bd-d {
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: #c3b8a0;
+    max-width: 66ch;
+  }
+  .bd-s {
+    font-family: "Roboto Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--mut);
+    margin: 14px 0 20px;
+  }
+  .tbtn {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    padding: 9px 22px;
+    background: var(--amber);
+    color: #101010;
+  }
+  .tbtn:hover {
+    background: var(--cream);
+  }
+  .tbtn.wide {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+  }
+  .bd-r li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .bd-r span {
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    color: var(--mut);
+  }
+  .bd-r b {
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── boards ── */
+  .board,
+  .platforms,
+  .disrupt {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 30px 22px 10px;
+  }
+  .bh {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--amber);
+    margin-bottom: 2px;
+  }
+  .bh h2 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+  .bh-s {
+    color: var(--mut);
+    font-weight: 400;
+    letter-spacing: 0.1em;
+  }
+  .bh-r {
+    font-family: "Roboto Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--mut);
+  }
+
+  .tablewrap {
+    overflow-x: auto;
+    background: var(--pan);
+  }
+  .dep {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 620px;
+  }
+  .dep th {
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    color: var(--mut);
+    text-align: left;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 400;
+  }
+  .dep td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  .dep tbody tr:hover {
+    background: rgba(255, 177, 0, 0.07);
+  }
+  .dep tr.live {
+    background: rgba(255, 177, 0, 0.05);
+  }
+  .c-t,
+  .c-f,
+  .c-g,
+  .c-y {
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .c-t {
+    color: var(--amber);
+  }
+  .c-f,
+  .c-g,
+  .c-y {
+    color: var(--mut);
+  }
+  .c-dest a {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .c-dest a:hover {
+    color: var(--amber);
+  }
+  .c-dest span {
+    display: block;
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    color: var(--mut);
+    margin-top: 3px;
+  }
+  .stat {
+    display: inline-block;
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    padding: 3px 8px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .stat.boarding {
+    color: var(--amber);
+    animation: bl 1.3s ease-in-out infinite;
+  }
+  .stat.landed {
+    color: var(--mut);
+  }
+  .stat.ontime {
+    color: var(--green);
+  }
+  .stat.delayed {
+    color: var(--red);
+  }
+  .bfoot {
+    padding: 12px 2px;
+    font-family: "Roboto Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--amber);
+  }
+  .bfoot a:hover {
+    color: var(--cream);
+  }
+
+  /* ── arrivals ── */
+  .arr li {
+    border-bottom: 1px solid var(--line);
+    background: var(--pan);
+  }
+  .arr a {
+    display: grid;
+    grid-template-columns: 56px 66px 1fr;
+    gap: 4px 14px;
+    padding: 12px 14px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .arr a {
+      grid-template-columns: 56px 66px 1fr 190px 92px;
+    }
+  }
+  .arr a:hover {
+    background: rgba(255, 177, 0, 0.07);
+  }
+  .ar-t {
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    color: var(--amber);
+  }
+  .ar-f {
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    color: var(--mut);
+  }
+  .ar-d {
+    grid-column: 3 / -1;
+    font-size: 1.08rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    line-height: 1.25;
+  }
+  .arr a:hover .ar-d {
+    color: var(--amber);
+  }
+  .ar-o {
+    grid-column: 3;
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    color: var(--mut);
+  }
+  @media (min-width: 900px) {
+    .ar-d {
+      grid-column: 3;
+    }
+    .ar-o {
+      grid-column: 4;
+    }
+    .arr .stat {
+      justify-self: end;
+    }
+  }
+
+  /* ── platforms ── */
+  .plat li {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 4px 14px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+  }
+  @media (min-width: 960px) {
+    .plat li {
+      grid-template-columns: 40px 1.7fr 1.5fr 110px;
+    }
+  }
+  .pl-n {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--amber);
+  }
+  .pl-b b {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .pl-b span {
+    display: block;
+    font-family: "Roboto Mono", monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--mut);
+    margin-top: 4px;
+    max-width: 60ch;
+  }
+  .pl-s {
+    grid-column: 2;
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    color: var(--mut);
+  }
+  @media (min-width: 960px) {
+    .pl-s {
+      grid-column: 3;
+    }
+    .plat .stat {
+      justify-self: end;
+    }
+  }
+
+  /* ── disruptions ── */
+  .dis {
+    display: grid;
+    gap: 0;
+  }
+  @media (min-width: 860px) {
+    .dis {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 30px;
+    }
+  }
+  .dis li {
+    display: grid;
+    grid-template-columns: 78px 1fr;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .dis-s {
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    padding: 3px 0;
+    text-align: center;
+    border: 1px solid currentColor;
+    align-self: start;
+  }
+  .s1 {
+    color: var(--amber);
+  }
+  .s2 {
+    color: #ff8a3d;
+  }
+  .s3 {
+    color: var(--red);
+  }
+  .dis-b b {
+    display: block;
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.86rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .dis-b span {
+    display: block;
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    color: var(--mut);
+    margin-top: 7px;
+  }
+
+  /* ── boarding pass ── */
+  .pass {
+    max-width: 1240px;
+    margin: 40px auto 0;
+    padding: 0 22px;
+    display: grid;
+    gap: 0;
+  }
+  @media (min-width: 820px) {
+    .pass {
+      grid-template-columns: 1fr 240px;
+    }
+  }
+  .pass-main,
+  .pass-stub {
+    background: var(--cream);
+    color: #17150f;
+  }
+  .pass-main {
+    padding: 0 0 24px;
+  }
+  .pass-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 14px 24px;
+    background: #17150f;
+    color: var(--cream);
+  }
+  .pp-logo {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--amber);
+  }
+  .pp-logo i {
+    font-style: normal;
+    color: var(--cream);
+    margin-left: 3px;
+  }
+  .pp-k {
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    color: var(--mut);
+  }
+  .pass-body {
+    padding: 22px 24px 0;
+  }
+  .pp-route {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 18px;
+    border-bottom: 2px dashed rgba(23, 21, 15, 0.25);
+  }
+  .pp-code {
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
+  }
+  .pp-arrow {
+    font-size: 1.5rem;
+    color: #a2591f;
+  }
+  .pp-fields {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    padding: 4px 0 0;
+  }
+  @media (min-width: 620px) {
+    .pp-fields {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .pp-fields > div {
+    padding: 12px 12px 12px 0;
+    border-bottom: 1px solid rgba(23, 21, 15, 0.14);
+  }
+  .pp-fields dt {
+    font-family: "Roboto Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #6f6754;
+  }
+  .pp-fields dd {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-top: 5px;
+    word-break: break-word;
+  }
+  .pp-fields .ontime {
+    color: #1d7a4c;
+  }
+  .pass-stub {
+    border-left: 2px dashed rgba(23, 21, 15, 0.35);
+    padding: 22px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+  }
+  .stub-k {
+    font-family: "Roboto Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    color: #6f6754;
+  }
+  .stub-code {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+  .barcode {
+    display: block;
+    width: 100%;
+    height: 62px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      #17150f 0 2px,
+      transparent 2px 4px,
+      #17150f 4px 5px,
+      transparent 5px 9px,
+      #17150f 9px 12px,
+      transparent 12px 14px
+    );
+  }
+  .stub-f {
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    color: #6f6754;
+  }
+
+  .ticker {
+    max-width: 1240px;
+    margin: 26px auto 0;
+    padding: 14px 22px 34px;
+    font-family: "Roboto Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    color: var(--mut);
+    text-align: center;
+    line-height: 2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blip,
+    .stat.boarding {
+      animation: none !important;
+    }
+  }
+</style>

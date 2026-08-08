@@ -1,0 +1,924 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const arcana = projects.filter((p) => p.id !== nowBuilding?.id).slice(0, 6);
+const minor = posts.slice(0, 5);
+
+const ROMAN = ["0", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+const yr = (d: Date) => new Date(d).getFullYear();
+const suits: Record<string, string> = {
+  Fintech: "♦",
+  "Web Apps": "♠",
+  "Mobile Apps": "♥",
+  "Desktop Apps": "♠",
+  "CLI Tools": "♣",
+  Libraries: "♣",
+  Games: "♥",
+  "ML/AI": "♦",
+  "IoT/Security": "♠",
+};
+const suitOf = (c?: string) => (c && suits[c]) || "✦";
+const fan = [
+  { d: -18, y: 20 },
+  { d: -9, y: 6 },
+  { d: 0, y: 0 },
+  { d: 9, y: 6 },
+  { d: 18, y: 20 },
+];
+const now = new Date();
+---
+
+<PreviewShell
+  title="18 · card deck — theme mockup"
+  active="deck"
+  bg="#0b1f19"
+  fg="#f2e8d5"
+  fontHref="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap"
+>
+  <div class="dk">
+    <div class="felt" aria-hidden="true"></div>
+
+    <!-- ── HEADER ── -->
+    <header class="hd">
+      <span class="hd-mark">✦ TM ✦</span>
+      <nav class="hd-nav">
+        <a href="#" class="on">The Spread</a><a href="#">Major Arcana</a><a href="#">Minor Arcana</a><a href="#">The Court</a><a href="#">Reversed</a
+        ><a href="#">Consult</a>
+      </nav>
+    </header>
+
+    <!-- ── HERO ── -->
+    <section class="hero">
+      <div class="fanwrap" aria-hidden="true">
+        {
+          fan.map((f, i) => (
+            <span class="fancard" style={`--deg:${f.d}deg;--y:${f.y}px;--z:${5 - Math.abs(i - 2)}`}>
+              <span class="fc-in" />
+            </span>
+          ))
+        }
+      </div>
+      <p class="hero-k">✦ Read the cards ✦</p>
+      <h1 class="hero-t">
+        Tapan <em>Meena</em>
+      </h1>
+      <p class="hero-s">Senior software engineer · Hyderabad · a full deck of things built and learned</p>
+      <p class="hero-b">
+        Backends, developer tooling, and one small machine that trades the Indian markets unsupervised. Every card below is a real build — drawn
+        upright when it worked, reversed when it did not.
+      </p>
+      <div class="hero-a">
+        <a class="dbtn" href="/projects">Draw a card</a>
+        <a class="dbtn ghost" href="/contact">Book a reading</a>
+      </div>
+      <ul class="hero-st">
+        <li><b>{ROMAN[Math.min(projects.length, 12)] ?? projects.length}</b><span>major arcana</span></li>
+        <li><b>{projects.length}</b><span>cards in deck</span></li>
+        <li><b>{posts.length}</b><span>readings written</span></li>
+        <li><b>VI</b><span>years at the table</span></li>
+      </ul>
+    </section>
+
+    <!-- ── THE DRAW ── -->
+    {
+      nowBuilding && (
+        <section class="draw">
+          <article class="card featured">
+            <span class="frame" />
+            <span class="corner tl">{suitOf(nowBuilding.data.category)}</span>
+            <span class="corner br">{suitOf(nowBuilding.data.category)}</span>
+            <span class="num">{ROMAN[1]}</span>
+            <span class="sigil">✦</span>
+            <h2 class="c-name">{nowBuilding.data.title}</h2>
+            <span class="c-rule" />
+            <p class="c-desc">{nowBuilding.data.description}</p>
+            <span class="c-foot">upright · in progress · {yr(nowBuilding.data.startDate)}</span>
+          </article>
+          <div class="draw-b">
+            <p class="draw-k">The card currently on the table</p>
+            <h2>{nowBuilding.data.title}</h2>
+            <p class="draw-d">{nowBuilding.data.description}</p>
+            <dl class="draw-s">
+              <div>
+                <dt>Suit</dt>
+                <dd>
+                  {suitOf(nowBuilding.data.category)} {nowBuilding.data.category ?? "Unclassified"}
+                </dd>
+              </div>
+              <div>
+                <dt>Drawn</dt>
+                <dd>{yr(nowBuilding.data.startDate)}</dd>
+              </div>
+              <div>
+                <dt>Materials</dt>
+                <dd>{nowBuilding.data.techStack.slice(0, 4).join(", ")}</dd>
+              </div>
+              <div>
+                <dt>Position</dt>
+                <dd class="gold">Upright — still unfolding</dd>
+              </div>
+            </dl>
+            <a class="dlink" href={`/projects/${nowBuilding.id}`}>
+              Read the full interpretation →
+            </a>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- ── MAJOR ARCANA ── -->
+    <section class="sect">
+      <h2 class="sh"><span class="sh-o">✦</span> The Major Arcana <span class="sh-r">selected works</span></h2>
+      <ul class="spread">
+        {
+          arcana.map((p, i) => (
+            <li>
+              <a class="card" href={`/projects/${p.id}`} style={`--tilt:${i % 2 ? 1.2 : -1.2}deg`}>
+                <span class="frame" />
+                <span class="corner tl">{suitOf(p.data.category)}</span>
+                <span class="corner br">{suitOf(p.data.category)}</span>
+                <span class="num">{ROMAN[i + 1]}</span>
+                <span class="sigil">{suitOf(p.data.category)}</span>
+                <h3 class="c-name">{p.data.title}</h3>
+                <span class="c-rule" />
+                <p class="c-desc">{p.data.description}</p>
+                <span class="c-foot">
+                  {(p.data.category ?? "unclassified").toLowerCase()} · {yr(p.data.startDate)}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="sect-more">
+        <a class="dlink" href="/projects">
+          The complete deck — {projects.length} cards →
+        </a>
+      </p>
+    </section>
+
+    <!-- ── MINOR ARCANA ── -->
+    <section class="sect">
+      <h2 class="sh"><span class="sh-o">✦</span> The Minor Arcana <span class="sh-r">the writing</span></h2>
+      <ul class="minor">
+        {
+          minor.map((p, i) => (
+            <li>
+              <a href={`/blog/${p.id}`}>
+                <span class="mn-n">{ROMAN[i + 1]}</span>
+                <span class="mn-b">
+                  <b>{p.data.title}</b>
+                  <span>{p.data.description}</span>
+                </span>
+                <span class="mn-m">
+                  {p.data.category}
+                  <i>{new Date(p.data.publishedAt).getFullYear()}</i>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── THE COURT ── -->
+    <section class="sect">
+      <h2 class="sh"><span class="sh-o">✦</span> The Court <span class="sh-r">machines kept running</span></h2>
+      <ul class="court">
+        {
+          labEntries.map((e, i) => (
+            <li>
+              <span class="ct-s">{["♠", "♥", "♦", "♣", "✦"][i % 5]}</span>
+              <span class="ct-b">
+                <b>{e.title}</b>
+                <span>{e.description}</span>
+                <i>{e.stack.join(" · ")}</i>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── REVERSED ── -->
+    <section class="sect">
+      <h2 class="sh"><span class="sh-o">✦</span> Reversed <span class="sh-r">lessons drawn upside down</span></h2>
+      <ul class="reversed">
+        {
+          curses.slice(0, 4).map((c) => (
+            <li>
+              <span class="rv-s">{"✦".repeat(c.severity)}</span>
+              <span class="rv-b">
+                <b>{c.title}</b>
+                <i>
+                  {c.project} · {c.date}
+                </i>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer class="foot">
+      <span class="back" aria-hidden="true"></span>
+      <p class="ft-k">✦ Consultations ✦</p>
+      <h2 class="ft-t">Bring me a difficult question.</h2>
+      <a class="ft-mail" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+      <nav class="ft-n">
+        <a href="#">GitHub</a><span>✦</span><a href="#">LinkedIn</a><span>✦</span><a href="#">Twitter</a><span>✦</span><a href="/rss.xml">RSS</a>
+      </nav>
+      <p class="ft-f">Dealt from Hyderabad · {now.getFullYear()} · No trackers, no upsells, no cold reading</p>
+    </footer>
+  </div>
+</PreviewShell>
+
+<style>
+  .dk {
+    --felt: #0b1f19;
+    --felt2: #0f2b22;
+    --gold: #d4af37;
+    --gold-d: #8a7124;
+    --cream: #f2e8d5;
+    --ink: #16110c;
+    --wine: #8b1a1a;
+    --mut: #9aa79b;
+    position: relative;
+    min-height: 100vh;
+    background: var(--felt);
+    color: var(--cream);
+    font-family: "EB Garamond", Georgia, serif;
+    overflow-x: hidden;
+  }
+  .dk :global(a) {
+    text-decoration: none;
+  }
+  .felt {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(212, 175, 55, 0.09), transparent 60%),
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.012) 0 2px, transparent 2px 5px);
+  }
+  .dk > * {
+    position: relative;
+    z-index: 2;
+  }
+  .gold {
+    color: var(--gold);
+  }
+
+  /* ── header ── */
+  .hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  }
+  .hd-mark {
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.24em;
+    color: var(--gold);
+  }
+  .hd-nav {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  .hd-nav a {
+    font-family: "Cinzel", serif;
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mut);
+    padding-bottom: 3px;
+    border-bottom: 1px solid transparent;
+  }
+  .hd-nav a:hover {
+    color: var(--cream);
+    border-bottom-color: var(--gold);
+  }
+  .hd-nav a.on {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* ── hero ── */
+  .hero {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 150px 24px 66px;
+    text-align: center;
+  }
+  .fanwrap {
+    position: absolute;
+    top: 34px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    pointer-events: none;
+  }
+  .fancard {
+    width: 92px;
+    height: 138px;
+    margin: 0 -12px;
+    transform: rotate(var(--deg)) translateY(var(--y));
+    transform-origin: bottom center;
+    z-index: var(--z);
+    border-radius: 7px;
+    background: linear-gradient(160deg, #14352a, #0a1d17);
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.4),
+      0 14px 26px -12px #000;
+    padding: 6px;
+  }
+  .fc-in {
+    display: block;
+    height: 100%;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 4px;
+    background-image: radial-gradient(circle, rgba(212, 175, 55, 0.22) 1px, transparent 1.4px);
+    background-size: 9px 9px;
+  }
+  .hero-k {
+    font-family: "Cinzel", serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .hero-t {
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 8vw, 5rem);
+    letter-spacing: 0.06em;
+    margin: 16px 0 10px;
+  }
+  .hero-t em {
+    font-style: normal;
+    color: var(--gold);
+  }
+  .hero-s {
+    font-family: "Cinzel", serif;
+    font-size: 11.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mut);
+  }
+  .hero-b {
+    font-size: 1.14rem;
+    line-height: 1.8;
+    color: #d6cdb8;
+    max-width: 60ch;
+    margin: 24px auto 0;
+  }
+  .hero-a {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+  }
+  .dbtn {
+    font-family: "Cinzel", serif;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 11px 26px;
+    background: var(--gold);
+    color: #1a1408;
+    border: 1px solid var(--gold);
+  }
+  .dbtn:hover {
+    background: #eac54f;
+  }
+  .dbtn.ghost {
+    background: transparent;
+    color: var(--gold);
+  }
+  .dbtn.ghost:hover {
+    background: rgba(212, 175, 55, 0.12);
+  }
+  .hero-st {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-top: 44px;
+    padding-top: 26px;
+    border-top: 1px solid rgba(212, 175, 55, 0.22);
+  }
+  @media (min-width: 700px) {
+    .hero-st {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .hero-st b {
+    display: block;
+    font-family: "Cinzel", serif;
+    font-size: 1.9rem;
+    color: var(--gold);
+  }
+  .hero-st span {
+    display: block;
+    font-family: "Cinzel", serif;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mut);
+    margin-top: 6px;
+  }
+
+  /* ── card ── */
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(168deg, #f7f0e0, #e6dbc2);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 26px 22px 22px;
+    box-shadow:
+      0 0 0 1px var(--gold-d),
+      0 18px 34px -16px #000;
+    transform: rotate(var(--tilt, 0deg));
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+    min-height: 320px;
+  }
+  a.card:hover {
+    transform: rotate(0deg) translateY(-6px);
+    box-shadow:
+      0 0 0 1px var(--gold),
+      0 26px 44px -18px #000;
+  }
+  .frame {
+    position: absolute;
+    inset: 9px;
+    border: 1px solid var(--gold-d);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  .frame::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(138, 113, 36, 0.35);
+    border-radius: 2px;
+  }
+  .corner {
+    position: absolute;
+    font-size: 14px;
+    color: var(--wine);
+    z-index: 2;
+  }
+  .corner.tl {
+    top: 16px;
+    left: 18px;
+  }
+  .corner.br {
+    bottom: 16px;
+    right: 18px;
+    transform: rotate(180deg);
+  }
+  .num {
+    position: relative;
+    z-index: 2;
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: var(--gold-d);
+    text-align: center;
+  }
+  .sigil {
+    position: relative;
+    z-index: 2;
+    display: block;
+    text-align: center;
+    font-size: 2.4rem;
+    color: var(--wine);
+    margin: 14px 0 12px;
+    opacity: 0.85;
+  }
+  .c-name {
+    position: relative;
+    z-index: 2;
+    font-family: "Cinzel", serif;
+    font-weight: 600;
+    font-size: 1.32rem;
+    line-height: 1.15;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .c-rule {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 54px;
+    height: 1px;
+    background: var(--gold-d);
+    margin: 12px auto;
+  }
+  .c-desc {
+    position: relative;
+    z-index: 2;
+    font-size: 0.95rem;
+    line-height: 1.62;
+    text-align: center;
+    color: #43392a;
+    flex: 1;
+  }
+  .c-foot {
+    position: relative;
+    z-index: 2;
+    display: block;
+    margin-top: 16px;
+    text-align: center;
+    font-family: "Cinzel", serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #7d7154;
+  }
+
+  /* ── draw ── */
+  .draw {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 24px 44px;
+    display: grid;
+    gap: 34px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .draw {
+      grid-template-columns: 300px 1fr;
+      gap: 56px;
+    }
+  }
+  .card.featured {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  .draw-k {
+    font-family: "Cinzel", serif;
+    font-size: 10.5px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .draw h2 {
+    font-family: "Cinzel", serif;
+    font-weight: 600;
+    font-size: clamp(1.8rem, 4.4vw, 2.8rem);
+    letter-spacing: 0.02em;
+    margin: 12px 0 12px;
+  }
+  .draw-d {
+    font-size: 1.08rem;
+    line-height: 1.78;
+    color: #d6cdb8;
+    max-width: 60ch;
+  }
+  .draw-s {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    margin: 26px 0 22px;
+  }
+  .draw-s > div {
+    border-top: 1px solid rgba(212, 175, 55, 0.22);
+    padding: 11px 14px 11px 0;
+  }
+  .draw-s dt {
+    font-family: "Cinzel", serif;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--mut);
+  }
+  .draw-s dd {
+    font-size: 1rem;
+    margin-top: 5px;
+  }
+  .dlink {
+    font-family: "Cinzel", serif;
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.4);
+    padding-bottom: 3px;
+  }
+  .dlink:hover {
+    color: var(--cream);
+    border-bottom-color: var(--cream);
+  }
+
+  /* ── sections ── */
+  .sect {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 44px 24px 10px;
+  }
+  .sh {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-family: "Cinzel", serif;
+    font-weight: 600;
+    font-size: clamp(1.3rem, 3.4vw, 1.9rem);
+    letter-spacing: 0.08em;
+    padding-bottom: 12px;
+    margin-bottom: 26px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  }
+  .sh-o {
+    color: var(--gold);
+  }
+  .sh-r {
+    margin-left: auto;
+    font-family: "EB Garamond", serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    letter-spacing: 0;
+    color: var(--mut);
+  }
+  .sect-more {
+    text-align: center;
+    margin-top: 32px;
+  }
+
+  .spread {
+    display: grid;
+    gap: 22px;
+  }
+  @media (min-width: 680px) {
+    .spread {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1020px) {
+    .spread {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* ── minor ── */
+  .minor li {
+    border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+  }
+  .minor a {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 6px 18px;
+    padding: 18px 4px;
+  }
+  @media (min-width: 860px) {
+    .minor a {
+      grid-template-columns: 46px 1fr 160px;
+      align-items: start;
+    }
+  }
+  .minor a:hover {
+    background: rgba(212, 175, 55, 0.05);
+  }
+  .mn-n {
+    font-family: "Cinzel", serif;
+    font-size: 1.05rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+  }
+  .mn-b b {
+    display: block;
+    font-family: "Cinzel", serif;
+    font-weight: 600;
+    font-size: 1.16rem;
+    line-height: 1.28;
+  }
+  .minor a:hover .mn-b b {
+    color: var(--gold);
+  }
+  .mn-b span {
+    display: block;
+    font-size: 0.98rem;
+    line-height: 1.68;
+    color: var(--mut);
+    margin-top: 7px;
+    max-width: 66ch;
+  }
+  .mn-m {
+    grid-column: 2;
+    font-family: "Cinzel", serif;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mut);
+  }
+  .mn-m i {
+    display: block;
+    font-style: normal;
+    color: var(--gold);
+    margin-top: 5px;
+  }
+  @media (min-width: 860px) {
+    .mn-m {
+      grid-column: 3;
+      text-align: right;
+    }
+  }
+
+  /* ── court ── */
+  .court {
+    display: grid;
+    gap: 0;
+  }
+  @media (min-width: 880px) {
+    .court {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 44px;
+    }
+  }
+  .court li {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+  }
+  .ct-s {
+    font-size: 1.4rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .ct-b b {
+    display: block;
+    font-family: "Cinzel", serif;
+    font-weight: 600;
+    font-size: 1.12rem;
+  }
+  .ct-b span {
+    display: block;
+    font-size: 0.96rem;
+    line-height: 1.68;
+    color: var(--mut);
+    margin: 6px 0 8px;
+  }
+  .ct-b i {
+    font-style: normal;
+    font-family: "Cinzel", serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #7f8f80;
+  }
+
+  /* ── reversed ── */
+  .reversed {
+    display: grid;
+    gap: 0;
+  }
+  @media (min-width: 880px) {
+    .reversed {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 44px;
+    }
+  }
+  .reversed li {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(139, 26, 26, 0.3);
+  }
+  .rv-s {
+    color: var(--wine);
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    transform: rotate(180deg);
+    align-self: start;
+  }
+  .rv-b b {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+  .rv-b i {
+    display: block;
+    font-style: normal;
+    font-family: "Cinzel", serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mut);
+    margin-top: 8px;
+  }
+
+  /* ── footer ── */
+  .foot {
+    position: relative;
+    max-width: 900px;
+    margin: 50px auto 0;
+    padding: 54px 24px 50px;
+    text-align: center;
+    border-top: 1px solid rgba(212, 175, 55, 0.25);
+  }
+  .back {
+    display: block;
+    width: 76px;
+    height: 112px;
+    margin: 0 auto 26px;
+    border-radius: 7px;
+    background: linear-gradient(160deg, #14352a, #0a1d17);
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.45),
+      0 14px 26px -12px #000;
+    padding: 6px;
+    position: relative;
+  }
+  .back::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 4px;
+    background-image: radial-gradient(circle, rgba(212, 175, 55, 0.22) 1px, transparent 1.4px);
+    background-size: 9px 9px;
+  }
+  .ft-k {
+    font-family: "Cinzel", serif;
+    font-size: 10.5px;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .ft-t {
+    font-family: "Cinzel", serif;
+    font-weight: 600;
+    font-size: clamp(1.5rem, 4.4vw, 2.4rem);
+    letter-spacing: 0.02em;
+    margin: 14px 0 20px;
+  }
+  .ft-mail {
+    display: inline-block;
+    font-size: clamp(1.05rem, 3vw, 1.6rem);
+    color: var(--gold);
+    word-break: break-word;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.4);
+    padding-bottom: 4px;
+  }
+  .ft-mail:hover {
+    color: var(--cream);
+    border-bottom-color: var(--cream);
+  }
+  .ft-n {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 26px;
+    font-family: "Cinzel", serif;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mut);
+  }
+  .ft-n a:hover {
+    color: var(--gold);
+  }
+  .ft-n span {
+    color: var(--gold);
+  }
+  .ft-f {
+    margin-top: 20px;
+    font-size: 0.92rem;
+    font-style: italic;
+    color: #7f8f80;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card {
+      transition: none !important;
+    }
+  }
+</style>

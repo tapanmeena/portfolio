@@ -1,0 +1,1040 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const modules = projects.slice(0, 6);
+const transmissions = posts.slice(0, 5);
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const pad3 = (n: number) => String(n).padStart(3, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const code = (s: string) =>
+  s
+    .replace(/[^a-zA-Z]/g, "")
+    .slice(0, 3)
+    .toUpperCase();
+const now = new Date();
+const stamp = `${now.getFullYear()}.${pad2(now.getMonth() + 1)}.${pad2(now.getDate())}//${pad2(now.getHours())}${pad2(now.getMinutes())}`;
+---
+
+<PreviewShell
+  title="12 · hud — theme mockup"
+  active="hud"
+  bg="#05070a"
+  fg="#c9f6ff"
+  fontHref="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap"
+>
+  <div class="hud">
+    <div class="hex" aria-hidden="true"></div>
+    <div class="sweep" aria-hidden="true"></div>
+    <div class="edge el" aria-hidden="true">
+      <span>SYS.ONLINE</span><span>NODE//HYD-01</span><span>UPLINK STABLE</span>
+    </div>
+    <div class="edge er" aria-hidden="true">
+      <span>{stamp}</span><span>SEC.LVL 3</span><span>NO TRACKERS</span>
+    </div>
+
+    <div class="frame">
+      <!-- ── HEADER ── -->
+      <header class="hd">
+        <div class="hd-l">
+          <span class="sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="hd-id">OPERATOR//T.MEENA</span>
+        </div>
+        <nav class="hd-nav">
+          {
+            ["index", "modules", "transmissions", "market", "nodes", "channel"].map((n, i) => (
+              <a href="#" class:list={{ on: i === 0 }}>{`0${i + 1}_${n}`}</a>
+            ))
+          }
+        </nav>
+      </header>
+
+      <!-- ── HERO ── -->
+      <section class="hero pan">
+        <span class="brk tl"></span><span class="brk tr"></span><span class="brk bl"></span><span class="brk br"></span>
+        <div class="hero-l">
+          <p class="tag">// IDENTITY CONFIRMED</p>
+          <h1 class="glitch" data-t="TAPAN MEENA">TAPAN MEENA</h1>
+          <p class="role">SENIOR SOFTWARE ENGINEER <span class="sl">/</span> PROJECT LEAD <span class="sl">/</span> HYDERABAD IN</p>
+          <p class="brief">
+            Designs and operates scalable backend systems, developer tooling, and one autonomous unit that trades the Indian markets without
+            supervision. Every deployment in this archive is logged with its failure modes.
+          </p>
+          <div class="acts">
+            <a class="hbtn" href="/projects">ACCESS ARCHIVE</a>
+            <a class="hbtn alt" href="/contact">OPEN CHANNEL</a>
+          </div>
+        </div>
+        <div class="hero-r">
+          <div class="reticle" aria-hidden="true">
+            <span class="ring r1"></span>
+            <span class="ring r2"></span>
+            <span class="cross h"></span>
+            <span class="cross v"></span>
+            <span class="core"></span>
+          </div>
+          <ul class="readout">
+            <li><span>DEPLOYMENTS</span><b>{pad3(projects.length)}</b></li>
+            <li><span>TRANSMISSIONS</span><b>{pad3(posts.length)}</b></li>
+            <li><span>SVC ONLINE</span><b>{pad3(labEntries.length)}</b></li>
+            <li><span>CYCLES</span><b>006</b></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ── ACTIVE ── -->
+      {
+        nowBuilding && (
+          <section class="pan active">
+            <span class="brk tl" />
+            <span class="brk br" />
+            <header class="ph">
+              <span class="ph-t">
+                <i class="pulse" />
+                ACTIVE DEPLOYMENT
+              </span>
+              <span class="ph-r">
+                REF//{code(nowBuilding.data.title)}-{yr(nowBuilding.data.startDate)}
+              </span>
+            </header>
+            <div class="act-b">
+              <h2>{nowBuilding.data.title}</h2>
+              <p>{nowBuilding.data.description}</p>
+              <div class="bar">
+                <span class="bar-t">
+                  {Array.from({ length: 32 }).map((_, i) => (
+                    <i class={i < 25 ? "on" : ""} />
+                  ))}
+                </span>
+                <b>77%</b>
+              </div>
+              <ul class="mods">
+                {nowBuilding.data.techStack.slice(0, 6).map((t) => (
+                  <li>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )
+      }
+
+      <!-- ── MODULES ── -->
+      <section class="sect">
+        <h2 class="sh"><span class="sh-n">01</span> DEPLOYED MODULES <span class="sh-r">{pad3(modules.length)}/{pad3(projects.length)}</span></h2>
+        <ul class="grid">
+          {
+            modules.map((p, i) => (
+              <li class="pan card">
+                <span class="brk tr" />
+                <a href={`/projects/${p.id}`}>
+                  <span class="c-id">
+                    {code(p.data.title)}-{pad3(i + 101)}
+                  </span>
+                  <h3>{p.data.title}</h3>
+                  <p>{p.data.description}</p>
+                  <span class="c-f">
+                    <span class="c-cat">{(p.data.category ?? "MISC").toUpperCase()}</span>
+                    <span class="c-yr">{yr(p.data.startDate)}</span>
+                    <span class:list={["c-st", p.data.status]}>{p.data.status === "in-progress" ? "ACTIVE" : "SEALED"}</span>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ── TRANSMISSIONS ── -->
+      <section class="sect">
+        <h2 class="sh"><span class="sh-n">02</span> INTERCEPTED TRANSMISSIONS</h2>
+        <ul class="tx">
+          {
+            transmissions.map((p, i) => (
+              <li>
+                <a href={`/blog/${p.id}`}>
+                  <span class="tx-n">{pad3(i + 1)}</span>
+                  <span class="tx-sig" aria-hidden="true">
+                    <i style="height:40%" />
+                    <i style="height:70%" />
+                    <i style="height:100%" />
+                    <i style="height:55%" />
+                  </span>
+                  <span class="tx-t">{p.data.title}</span>
+                  <span class="tx-c">{p.data.category.toUpperCase()}</span>
+                  <span class="tx-d">
+                    {new Date(p.data.publishedAt).getFullYear()}.{pad2(new Date(p.data.publishedAt).getMonth() + 1)}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ── NODES ── -->
+      <section class="sect">
+        <h2 class="sh"><span class="sh-n">03</span> NETWORK NODES <span class="sh-r ok">ALL RESPONDING</span></h2>
+        <ul class="nodes">
+          {
+            labEntries.map((e, i) => (
+              <li class="pan node">
+                <span class="nd-id">N-{pad2(i + 1)}</span>
+                <span class="nd-b">
+                  <b>{e.title}</b>
+                  <span>{e.description}</span>
+                </span>
+                <span class="nd-s">{e.stack.slice(0, 3).join(" / ").toUpperCase()}</span>
+                <span class:list={["nd-a", e.access]}>{e.access.replace("-", " ").toUpperCase()}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ── THREATS ── -->
+      <section class="sect">
+        <h2 class="sh"><span class="sh-n">04</span> THREAT LOG <span class="sh-r warn">{pad3(curses.length)} ENTRIES</span></h2>
+        <ul class="threats">
+          {
+            curses.slice(0, 4).map((c) => (
+              <li>
+                <span class:list={["th-s", `s${c.severity}`]}>LVL {c.severity}</span>
+                <span class="th-b">
+                  <b>{c.title}</b>
+                  <span>
+                    SRC: {c.project.toUpperCase()} // {c.date}
+                  </span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ── CHANNEL ── -->
+      <footer class="pan chan">
+        <span class="brk tl"></span><span class="brk tr"></span><span class="brk bl"></span><span class="brk br"></span>
+        <p class="ch-k">// OPEN CHANNEL</p>
+        <h2 class="ch-t">TRANSMIT A MESSAGE</h2>
+        <a class="ch-mail" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+        <nav class="ch-n">
+          <a href="#">GITHUB</a><span>//</span><a href="#">LINKEDIN</a><span>//</span><a href="#">TWITTER</a><span>//</span><a href="/rss.xml">FEED</a
+          >
+        </nav>
+        <p class="ch-f">RESPONSE WINDOW &lt; 24H // HYDERABAD IN // UTC+05:30 // {stamp}</p>
+      </footer>
+    </div>
+  </div>
+</PreviewShell>
+
+<style>
+  .hud {
+    --bg: #05070a;
+    --cy: #00e5ff;
+    --mg: #ff2d95;
+    --lm: #c6ff00;
+    --fg: #c9f6ff;
+    --mut: #5b7d8c;
+    --line: rgba(0, 229, 255, 0.24);
+    position: relative;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Rajdhani", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  .hud :global(a) {
+    text-decoration: none;
+  }
+  .hex {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.09) 1px, transparent 1.4px),
+      linear-gradient(rgba(0, 229, 255, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.045) 1px, transparent 1px);
+    background-size:
+      26px 26px,
+      104px 104px,
+      104px 104px;
+  }
+  .sweep {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 180px;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(0, 229, 255, 0.07), transparent);
+    animation: sw 7s linear infinite;
+  }
+  @keyframes sw {
+    from {
+      transform: translateY(-200px);
+    }
+    to {
+      transform: translateY(100vh);
+    }
+  }
+  .edge {
+    position: fixed;
+    top: 50%;
+    display: none;
+    flex-direction: column;
+    gap: 18px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--mut);
+    pointer-events: none;
+  }
+  @media (min-width: 1340px) {
+    .edge {
+      display: flex;
+    }
+  }
+  .el {
+    left: 14px;
+    transform: translateY(-50%) rotate(180deg);
+    writing-mode: vertical-rl;
+  }
+  .er {
+    right: 14px;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+  }
+
+  .frame {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 20px 20px 30px;
+  }
+
+  /* ── panels ── */
+  .pan {
+    position: relative;
+    background: linear-gradient(160deg, rgba(0, 229, 255, 0.05), rgba(5, 7, 10, 0.6));
+    border: 1px solid var(--line);
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  }
+  .brk {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 0 solid var(--cy);
+    z-index: 3;
+  }
+  .brk.tl {
+    top: 5px;
+    left: 5px;
+    border-top-width: 2px;
+    border-left-width: 2px;
+  }
+  .brk.tr {
+    top: 5px;
+    right: 5px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+  }
+  .brk.bl {
+    bottom: 5px;
+    left: 5px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+  }
+  .brk.br {
+    bottom: 5px;
+    right: 5px;
+    border-bottom-width: 2px;
+    border-right-width: 2px;
+  }
+
+  /* ── header ── */
+  .hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 10px 2px 12px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 20px;
+  }
+  .hd-l {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sig {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+  }
+  .sig i {
+    width: 3px;
+    background: var(--cy);
+    display: block;
+  }
+  .sig i:nth-child(1) {
+    height: 30%;
+  }
+  .sig i:nth-child(2) {
+    height: 55%;
+  }
+  .sig i:nth-child(3) {
+    height: 78%;
+  }
+  .sig i:nth-child(4) {
+    height: 100%;
+    background: var(--lm);
+  }
+  .hd-id {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    color: var(--cy);
+  }
+  .hd-nav {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  .hd-nav a {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 3px 11px;
+    color: var(--mut);
+    border: 1px solid transparent;
+    text-transform: uppercase;
+  }
+  .hd-nav a:hover {
+    color: var(--fg);
+    border-color: var(--line);
+  }
+  .hd-nav a.on {
+    color: var(--bg);
+    background: var(--cy);
+  }
+
+  /* ── hero ── */
+  .hero {
+    display: grid;
+    gap: 26px;
+    padding: 34px 28px 32px;
+    margin-bottom: 22px;
+  }
+  @media (min-width: 940px) {
+    .hero {
+      grid-template-columns: 1.55fr 1fr;
+      gap: 40px;
+    }
+  }
+  .tag {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--mg);
+  }
+  .glitch {
+    position: relative;
+    font-size: clamp(2.4rem, 7.6vw, 5.2rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    margin: 10px 0 10px;
+    color: var(--fg);
+    text-shadow: 0 0 26px rgba(0, 229, 255, 0.4);
+  }
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-t);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .glitch::before {
+    color: var(--mg);
+    transform: translate(-2px, 1px);
+    opacity: 0.55;
+    mix-blend-mode: screen;
+  }
+  .glitch::after {
+    color: var(--cy);
+    transform: translate(2px, -1px);
+    opacity: 0.5;
+    mix-blend-mode: screen;
+  }
+  .role {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+  .sl {
+    color: var(--mg);
+  }
+  .brief {
+    margin-top: 16px;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #9fc9d6;
+    max-width: 56ch;
+  }
+  .acts {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+  .hbtn {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    padding: 9px 20px;
+    background: var(--cy);
+    color: #04141a;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    transition: 0.16s ease;
+  }
+  .hbtn:hover {
+    box-shadow: 0 0 26px -3px var(--cy);
+  }
+  .hbtn.alt {
+    background: transparent;
+    color: var(--mg);
+    box-shadow: inset 0 0 0 1px var(--mg);
+  }
+  .hbtn.alt:hover {
+    background: var(--mg);
+    color: #17040c;
+    box-shadow: 0 0 26px -3px var(--mg);
+  }
+
+  .hero-r {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+  }
+  .reticle {
+    position: relative;
+    width: 150px;
+    height: 150px;
+  }
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+  }
+  .r1 {
+    inset: 0;
+    border-top-color: var(--cy);
+    border-right-color: var(--cy);
+    animation: spin 9s linear infinite;
+  }
+  .r2 {
+    inset: 22px;
+    border-bottom-color: var(--mg);
+    border-left-color: var(--mg);
+    animation: spin 6s linear infinite reverse;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .cross {
+    position: absolute;
+    background: var(--line);
+  }
+  .cross.h {
+    left: 8px;
+    right: 8px;
+    top: 50%;
+    height: 1px;
+  }
+  .cross.v {
+    top: 8px;
+    bottom: 8px;
+    left: 50%;
+    width: 1px;
+  }
+  .core {
+    position: absolute;
+    inset: 62px;
+    border-radius: 50%;
+    background: var(--cy);
+    box-shadow: 0 0 22px var(--cy);
+  }
+  .readout {
+    width: 100%;
+    max-width: 260px;
+  }
+  .readout li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+  .readout b {
+    font-family: "Rajdhani", sans-serif;
+    font-size: 1.3rem;
+    color: var(--lm);
+    letter-spacing: 0;
+  }
+
+  /* ── active ── */
+  .active {
+    margin-bottom: 34px;
+  }
+  .ph {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 9px 22px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0, 229, 255, 0.06);
+  }
+  .ph-t {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--lm);
+  }
+  .pulse {
+    width: 7px;
+    height: 7px;
+    background: var(--lm);
+    box-shadow: 0 0 10px var(--lm);
+    animation: pl 1.5s ease-in-out infinite;
+  }
+  @keyframes pl {
+    50% {
+      opacity: 0.2;
+    }
+  }
+  .ph-r {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+  .act-b {
+    padding: 22px 24px 24px;
+  }
+  .act-b h2 {
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .act-b p {
+    margin-top: 10px;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #9fc9d6;
+    max-width: 68ch;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 16px;
+  }
+  .bar-t {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+  }
+  .bar-t i {
+    flex: 1;
+    height: 12px;
+    background: rgba(0, 229, 255, 0.14);
+    display: block;
+  }
+  .bar-t i.on {
+    background: var(--cy);
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+  }
+  .bar b {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 13px;
+    color: var(--lm);
+  }
+  .mods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .mods li {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    padding: 2px 10px;
+    border: 1px solid var(--line);
+    color: var(--mut);
+  }
+
+  /* ── sections ── */
+  .sect {
+    margin-bottom: 34px;
+  }
+  .sh {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sh-n {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 12px;
+    color: var(--mg);
+    letter-spacing: 0.1em;
+  }
+  .sh-r {
+    margin-left: auto;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--mut);
+  }
+  .sh-r.ok {
+    color: var(--lm);
+  }
+  .sh-r.warn {
+    color: var(--mg);
+  }
+
+  /* ── modules ── */
+  .grid {
+    display: grid;
+    gap: 14px;
+  }
+  @media (min-width: 720px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1040px) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .card a {
+    display: block;
+    padding: 20px 18px 18px;
+    height: 100%;
+  }
+  .card {
+    transition: border-color 0.18s ease;
+  }
+  .card:hover {
+    border-color: var(--cy);
+  }
+  .c-id {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--mg);
+  }
+  .card h3 {
+    font-size: 1.28rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin: 8px 0 8px;
+  }
+  .card:hover h3 {
+    color: var(--cy);
+  }
+  .card p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--mut);
+  }
+  .c-f {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+  .c-st {
+    margin-left: auto;
+  }
+  .c-st.in-progress {
+    color: var(--lm);
+  }
+
+  /* ── transmissions ── */
+  .tx li {
+    border-bottom: 1px solid var(--line);
+  }
+  .tx a {
+    display: grid;
+    grid-template-columns: 42px 30px 1fr;
+    gap: 4px 14px;
+    padding: 12px 8px;
+    align-items: center;
+  }
+  .tx a:hover {
+    background: rgba(0, 229, 255, 0.06);
+  }
+  @media (min-width: 900px) {
+    .tx a {
+      grid-template-columns: 42px 30px 1fr 150px 80px;
+    }
+  }
+  .tx-n {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    color: var(--mg);
+  }
+  .tx-sig {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 16px;
+  }
+  .tx-sig i {
+    width: 3px;
+    background: var(--cy);
+    opacity: 0.6;
+  }
+  .tx a:hover .tx-sig i {
+    opacity: 1;
+  }
+  .tx-t {
+    font-size: 1.02rem;
+    font-weight: 500;
+    grid-column: 3 / -1;
+  }
+  .tx a:hover .tx-t {
+    color: var(--cy);
+  }
+  .tx-c,
+  .tx-d {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+    grid-column: 3;
+  }
+  @media (min-width: 900px) {
+    .tx-t {
+      grid-column: 3;
+    }
+    .tx-c {
+      grid-column: 4;
+    }
+    .tx-d {
+      grid-column: 5;
+      text-align: right;
+    }
+  }
+
+  /* ── nodes ── */
+  .nodes {
+    display: grid;
+    gap: 10px;
+  }
+  .node {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 4px 14px;
+    padding: 14px 16px;
+    align-items: baseline;
+  }
+  @media (min-width: 940px) {
+    .node {
+      grid-template-columns: 46px 1.6fr 2fr 1.1fr;
+    }
+  }
+  .nd-id {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    color: var(--cy);
+  }
+  .nd-b b {
+    display: block;
+    font-size: 1.08rem;
+    font-weight: 600;
+  }
+  .nd-b span {
+    display: block;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--mut);
+    margin-top: 4px;
+  }
+  .nd-s,
+  .nd-a {
+    grid-column: 2;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+  @media (min-width: 940px) {
+    .nd-s {
+      grid-column: 3;
+    }
+    .nd-a {
+      grid-column: 4;
+      text-align: right;
+    }
+  }
+  .nd-a.public {
+    color: var(--lm);
+  }
+  .nd-a.restricted {
+    color: var(--mg);
+  }
+
+  /* ── threats ── */
+  .threats {
+    display: grid;
+    gap: 12px;
+  }
+  @media (min-width: 860px) {
+    .threats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .threats li {
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .th-s {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 2px 0;
+    text-align: center;
+    border: 1px solid currentColor;
+    align-self: start;
+  }
+  .s1 {
+    color: var(--lm);
+  }
+  .s2 {
+    color: #ffab00;
+  }
+  .s3 {
+    color: var(--mg);
+  }
+  .th-b b {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+  .th-b span {
+    display: block;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+    margin-top: 7px;
+  }
+
+  /* ── channel ── */
+  .chan {
+    text-align: center;
+    padding: 40px 24px 36px;
+  }
+  .ch-k {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--mg);
+  }
+  .ch-t {
+    font-size: clamp(1.6rem, 4.6vw, 2.7rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin: 10px 0 16px;
+  }
+  .ch-mail {
+    display: inline-block;
+    font-family: "Share Tech Mono", monospace;
+    font-size: clamp(1rem, 2.8vw, 1.5rem);
+    color: var(--cy);
+    letter-spacing: 0.04em;
+    word-break: break-word;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 5px;
+  }
+  .ch-mail:hover {
+    color: var(--lm);
+    border-bottom-color: var(--lm);
+  }
+  .ch-n {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 22px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--mut);
+  }
+  .ch-n a:hover {
+    color: var(--cy);
+  }
+  .ch-n span {
+    color: var(--mg);
+  }
+  .ch-f {
+    margin-top: 20px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--mut);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sweep,
+    .r1,
+    .r2,
+    .pulse {
+      animation: none !important;
+    }
+  }
+</style>

@@ -1,0 +1,977 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+import { Folder, FileText, Wifi, BatteryMedium, Search, Terminal, Mail, Github, Rss, LineChart, Cpu, Command } from "@lucide/astro";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const files = projects.slice(0, 8);
+const logs = posts.slice(0, 5);
+
+const kb = (s: string) => `${(s.length * 3.4).toFixed(0)} KB`;
+const finderDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+const now = new Date();
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const menuClock = `${now.toLocaleDateString("en-US", { weekday: "short" })} ${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })}  ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+
+const sidebar = [
+  { label: "Projects", count: projects.length, on: true },
+  { label: "Writing", count: posts.length },
+  { label: "Trading", count: 33 },
+  { label: "Machine Room", count: labEntries.length },
+  { label: "Cursed", count: curses.length },
+];
+const dock = [
+  { icon: Folder, label: "Projects" },
+  { icon: FileText, label: "Writing" },
+  { icon: LineChart, label: "Trading Desk" },
+  { icon: Cpu, label: "Machine Room" },
+  { icon: Terminal, label: "Cursed" },
+  { icon: Github, label: "GitHub" },
+  { icon: Rss, label: "RSS" },
+  { icon: Mail, label: "Mail", active: true },
+];
+---
+
+<PreviewShell
+  title="08 · desktop — theme mockup"
+  active="desktop"
+  bg="#1e2a63"
+  fg="#f2f2f4"
+  fontHref="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+>
+  <div class="os">
+    <!-- ── MENU BAR ── -->
+    <header class="menubar">
+      <span class="mb-logo"><Command size={13} /></span>
+      <span class="mb-app">Workshop</span>
+      <nav class="mb-menus">
+        <a href="#">File</a><a href="#">Edit</a><a href="#">View</a><a href="#">Go</a><a href="#">Window</a><a href="#">Help</a>
+      </nav>
+      <span class="mb-right">
+        <Search size={13} />
+        <Wifi size={13} />
+        <BatteryMedium size={14} />
+        <span class="mb-clock">{menuClock}</span>
+      </span>
+    </header>
+
+    <!-- ── DESKTOP ── -->
+    <div class="desktop">
+      <!-- desktop icons -->
+      <ul class="deskicons">
+        <li><span class="di"><Folder size={26} /></span><b>Projects</b></li>
+        <li><span class="di"><FileText size={26} /></span><b>writing.md</b></li>
+        <li><span class="di"><LineChart size={26} /></span><b>Trading</b></li>
+        <li><span class="di"><Cpu size={26} /></span><b>machine-room</b></li>
+      </ul>
+
+      <div class="windows">
+        <!-- README window -->
+        <section class="win w-readme">
+          <header class="wt">
+            <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+            <span class="wt-t">README.rtf</span>
+          </header>
+          <div class="wb rtf">
+            <h1>Hi — I'm Tapan.</h1>
+            <p class="rtf-sub">Senior software engineer &amp; project lead · Hyderabad, India</p>
+            <hr />
+            <p>
+              I build scalable backends, developer tooling, and one Raspberry&nbsp;Pi that trades the NSE while I sleep. This machine is where all of
+              it is filed — every project, every writeup, every mistake worth remembering.
+            </p>
+            <ul class="rtf-l">
+              <li><b>Currently</b> Project Lead at MAQ Software</li>
+              <li><b>Stack</b> .NET · TypeScript · Azure · SQL · Node</li>
+              <li><b>Open to</b> consulting, integrations, dev-tooling work</li>
+            </ul>
+            <p class="rtf-cta"><a href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a></p>
+          </div>
+        </section>
+
+        <!-- Finder window -->
+        <section class="win w-finder">
+          <header class="wt">
+            <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+            <span class="wt-t">Projects — {projects.length} items</span>
+            <span class="wt-tools"><Search size={12} /></span>
+          </header>
+          <div class="wb finder">
+            <aside class="fside">
+              <span class="fs-h">Favourites</span>
+              {
+                sidebar.map((s) => (
+                  <a href="#" class:list={["fs-i", { on: s.on }]}>
+                    <Folder size={13} />
+                    <span>{s.label}</span>
+                    <i>{s.count}</i>
+                  </a>
+                ))
+              }
+            </aside>
+            <div class="flist">
+              <div class="fl-head">
+                <span>Name</span>
+                <span class="c-kind">Kind</span>
+                <span class="c-date">Date Modified</span>
+                <span class="c-size">Size</span>
+              </div>
+              <ul>
+                {
+                  files.map((p) => (
+                    <li>
+                      <a href={`/projects/${p.id}`}>
+                        <span class="fl-n">
+                          <Folder size={13} class="fl-ico" />
+                          <b>{p.data.title}</b>
+                          {p.data.status === "in-progress" && <i class="dot" title="in progress" />}
+                        </span>
+                        <span class="c-kind">{p.data.category ?? "Folder"}</span>
+                        <span class="c-date">{finderDate(new Date(p.data.startDate))}</span>
+                        <span class="c-size">{kb(p.data.description)}</span>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+              <div class="fl-foot">{files.length} of {projects.length} shown · 1.2 GB available</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Console / writing -->
+        <section class="win w-log">
+          <header class="wt">
+            <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+            <span class="wt-t">Console — writing.log</span>
+          </header>
+          <div class="wb log">
+            <ul>
+              {
+                logs.map((p) => (
+                  <li>
+                    <a href={`/blog/${p.id}`}>
+                      <span class="lg-d">{finderDate(new Date(p.data.publishedAt))}</span>
+                      <span class="lg-c">{p.data.category.toLowerCase()}</span>
+                      <span class="lg-t">{p.data.title}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </section>
+
+        <!-- Activity monitor -->
+        <section class="win w-act">
+          <header class="wt">
+            <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+            <span class="wt-t">Activity Monitor</span>
+          </header>
+          <div class="wb act">
+            <div class="ac-head">
+              <span>Process</span>
+              <span class="c-cpu">% CPU</span>
+              <span class="c-state">State</span>
+            </div>
+            <ul>
+              {
+                labEntries.map((e, i) => {
+                  const cpu = 3 + ((i * 17 + e.title.length * 5) % 42);
+                  return (
+                    <li>
+                      <span class="ac-n">{e.id}</span>
+                      <span class="c-cpu">
+                        {cpu}.{(i * 3) % 10}
+                      </span>
+                      <span class="c-state">
+                        <i class="dot" /> running
+                      </span>
+                      <span class="ac-bar">
+                        <i style={`width:${cpu * 2}%`} />
+                      </span>
+                    </li>
+                  );
+                })
+              }
+            </ul>
+            <div class="ac-foot">System load: comfortable · Uptime: a suspiciously long time</div>
+          </div>
+        </section>
+
+        <!-- Now building -->
+        {
+          nowBuilding && (
+            <section class="win w-now">
+              <header class="wt">
+                <span class="lights">
+                  <i class="r" />
+                  <i class="y" />
+                  <i class="g" />
+                </span>
+                <span class="wt-t">now-building.app</span>
+              </header>
+              <div class="wb now">
+                <span class="now-k">
+                  <i class="dot" /> In progress
+                </span>
+                <h2>{nowBuilding.data.title}</h2>
+                <p>{nowBuilding.data.description}</p>
+                <div class="now-bar">
+                  <span>
+                    <i style="width:77%" />
+                  </span>
+                  <b>77%</b>
+                </div>
+                <a class="osbtn" href={`/projects/${nowBuilding.id}`}>
+                  Open project
+                </a>
+              </div>
+            </section>
+          )
+        }
+
+        <!-- Sticky note -->
+        <section class="sticky">
+          <span class="st-h">cursed.txt</span>
+          <p>{curses[0].title}.</p>
+          <p class="st-m">— {curses[0].project}, sev {curses[0].severity}</p>
+          <a href="/cursed-knowledge">{curses.length} more →</a>
+        </section>
+
+        <!-- Terminal -->
+        <section class="win w-term">
+          <header class="wt">
+            <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+            <span class="wt-t">tapan — zsh — 60×12</span>
+          </header>
+          <div class="wb term">
+            <p><span class="tp">~</span> uptime</p>
+            <p class="to">up 6 years, load average: 0.7, 0.9, 1.1</p>
+            <p><span class="tp">~</span> git log --oneline -1</p>
+            <p class="to">a41f9c2 fix: stop trusting broker timestamps</p>
+            <p><span class="tp">~</span> <span class="cur"></span></p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ── DOCK ── -->
+    <nav class="dock" aria-label="Dock">
+      {
+        dock.map((d) => (
+          <a href="#" class="dk" title={d.label}>
+            <span class="dk-i">
+              <d.icon size={20} />
+            </span>
+            <span class="dk-l">{d.label}</span>
+            {d.active && <i class="dk-run" />}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</PreviewShell>
+
+<style>
+  .os {
+    --chrome: #edecef;
+    --chrome-2: #f8f8fa;
+    --winbg: #ffffff;
+    --wline: #d9d8de;
+    --txt: #1c1c1e;
+    --mut: #78787f;
+    --blue: #0a6cff;
+    min-height: 100vh;
+    font-family:
+      "Inter",
+      -apple-system,
+      system-ui,
+      sans-serif;
+    background:
+      radial-gradient(120% 90% at 20% 0%, #4c3f9e 0%, transparent 55%), radial-gradient(100% 80% at 90% 20%, #b0468a 0%, transparent 60%),
+      linear-gradient(165deg, #1a2364 0%, #2a1f52 45%, #57265c 100%);
+    background-attachment: fixed;
+    color: #f2f2f4;
+    overflow-x: hidden;
+  }
+  .os :global(a) {
+    text-decoration: none;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #30d158;
+    display: inline-block;
+    flex: none;
+  }
+
+  /* ── menu bar ── */
+  .menubar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 4px 14px;
+    background: rgba(20, 20, 26, 0.55);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .mb-logo {
+    display: inline-flex;
+    opacity: 0.9;
+  }
+  .mb-app {
+    font-weight: 700;
+  }
+  .mb-menus {
+    display: none;
+    gap: 16px;
+    color: rgba(255, 255, 255, 0.82);
+  }
+  @media (min-width: 700px) {
+    .mb-menus {
+      display: flex;
+    }
+  }
+  .mb-menus a:hover {
+    color: #fff;
+  }
+  .mb-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    color: rgba(255, 255, 255, 0.88);
+  }
+  .mb-clock {
+    font-variant-numeric: tabular-nums;
+    font-size: 12.5px;
+  }
+
+  /* ── desktop ── */
+  .desktop {
+    position: relative;
+    padding: 20px 16px 30px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  @media (min-width: 1400px) {
+    .desktop {
+      padding-right: 132px;
+    }
+  }
+  .deskicons {
+    display: none;
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    width: 100px;
+    gap: 18px;
+    flex-direction: column;
+  }
+  @media (min-width: 1400px) {
+    .deskicons {
+      display: flex;
+    }
+  }
+  .deskicons li {
+    text-align: center;
+  }
+  .di {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 46px;
+    margin: 0 auto 5px;
+    color: #ffd479;
+  }
+  .deskicons b {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .windows {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  @media (min-width: 1000px) {
+    .windows {
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .w-readme {
+      grid-column: span 5;
+    }
+    .w-finder {
+      grid-column: span 7;
+    }
+    .w-log {
+      grid-column: span 7;
+    }
+    .w-act {
+      grid-column: span 5;
+    }
+    .w-now {
+      grid-column: span 5;
+    }
+    .sticky {
+      grid-column: span 3;
+    }
+    .w-term {
+      grid-column: span 4;
+    }
+  }
+
+  /* ── window chrome ── */
+  .win {
+    background: var(--winbg);
+    color: var(--txt);
+    border-radius: 11px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.28);
+    box-shadow:
+      0 28px 60px -18px rgba(0, 0, 0, 0.65),
+      0 2px 6px rgba(0, 0, 0, 0.28);
+  }
+  .wt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: linear-gradient(var(--chrome-2), var(--chrome));
+    border-bottom: 1px solid var(--wline);
+  }
+  .lights {
+    display: flex;
+    gap: 6px;
+  }
+  .lights i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: block;
+  }
+  .lights .r {
+    background: #ff5f57;
+  }
+  .lights .y {
+    background: #febc2e;
+  }
+  .lights .g {
+    background: #28c840;
+  }
+  .wt-t {
+    flex: 1;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #43434a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .wt-tools {
+    color: var(--mut);
+    display: inline-flex;
+  }
+  .wb {
+    padding: 16px 18px 18px;
+  }
+
+  /* ── README ── */
+  .rtf h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .rtf-sub {
+    font-size: 12.5px;
+    color: var(--mut);
+    margin-top: 3px;
+  }
+  .rtf hr {
+    border: 0;
+    border-top: 1px solid var(--wline);
+    margin: 14px 0;
+  }
+  .rtf p {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: #35353c;
+  }
+  .rtf-l {
+    margin: 14px 0;
+  }
+  .rtf-l li {
+    font-size: 0.88rem;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0eff2;
+    color: #35353c;
+  }
+  .rtf-l b {
+    display: inline-block;
+    width: 88px;
+    color: var(--mut);
+    font-weight: 500;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+  }
+  .rtf-cta a {
+    color: var(--blue);
+    font-weight: 500;
+    border-bottom: 1px solid rgba(10, 108, 255, 0.35);
+  }
+
+  /* ── Finder ── */
+  .finder {
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 620px) {
+    .finder {
+      grid-template-columns: 172px 1fr;
+    }
+  }
+  .fside {
+    background: #f3f2f5;
+    border-right: 1px solid var(--wline);
+    padding: 12px 8px;
+  }
+  .fs-h {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--mut);
+    padding: 0 8px 6px;
+  }
+  .fs-i {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: #35353c;
+  }
+  .fs-i i {
+    margin-left: auto;
+    font-style: normal;
+    font-size: 11px;
+    color: var(--mut);
+  }
+  .fs-i:hover {
+    background: #e7e6ea;
+  }
+  .fs-i.on {
+    background: var(--blue);
+    color: #fff;
+  }
+  .fs-i.on i {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .fl-head,
+  .flist li a {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 6px 14px;
+    align-items: center;
+  }
+  @media (min-width: 860px) {
+    .fl-head,
+    .flist li a {
+      grid-template-columns: minmax(0, 1fr) 118px 128px 66px;
+    }
+  }
+  .fl-head {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--mut);
+    background: #fafafb;
+    border-bottom: 1px solid var(--wline);
+  }
+  .c-kind,
+  .c-date,
+  .c-size {
+    display: none;
+  }
+  @media (min-width: 860px) {
+    .c-kind,
+    .c-date,
+    .c-size {
+      display: block;
+    }
+    .c-size {
+      text-align: right;
+    }
+  }
+  .flist li:nth-child(even) a {
+    background: #fafafb;
+  }
+  .flist li a:hover {
+    background: var(--blue);
+    color: #fff;
+  }
+  .flist li a:hover .c-kind,
+  .flist li a:hover .c-date,
+  .flist li a:hover .c-size,
+  .flist li a:hover .fl-ico {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .fl-n {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .fl-n b {
+    font-weight: 500;
+    font-size: 12.8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fl-ico {
+    color: #5aa9ff;
+    flex: none;
+  }
+  .c-kind,
+  .c-date,
+  .c-size {
+    font-size: 11.5px;
+    color: var(--mut);
+  }
+  .fl-foot {
+    padding: 7px 14px;
+    border-top: 1px solid var(--wline);
+    background: #fafafb;
+    font-size: 11px;
+    color: var(--mut);
+    text-align: center;
+  }
+
+  /* ── log ── */
+  .log {
+    padding: 0;
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .log li {
+    border-bottom: 1px solid #f0eff2;
+  }
+  .log a {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3px 12px;
+    padding: 9px 16px;
+    color: var(--txt);
+  }
+  @media (min-width: 780px) {
+    .log a {
+      grid-template-columns: 128px 118px 1fr;
+      align-items: baseline;
+    }
+  }
+  .log a:hover {
+    background: #f2f7ff;
+  }
+  .lg-d,
+  .lg-c {
+    font-size: 11px;
+    color: var(--mut);
+  }
+  .lg-t {
+    font-size: 12.8px;
+  }
+  .log a:hover .lg-t {
+    color: var(--blue);
+  }
+
+  /* ── activity ── */
+  .act {
+    padding: 0;
+  }
+  .ac-head,
+  .act li {
+    display: grid;
+    grid-template-columns: 1fr 54px 78px;
+    gap: 10px;
+    padding: 7px 16px;
+    align-items: center;
+    font-size: 12px;
+  }
+  .ac-head {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--mut);
+    background: #fafafb;
+    border-bottom: 1px solid var(--wline);
+  }
+  .act li {
+    border-bottom: 1px solid #f4f3f6;
+    position: relative;
+  }
+  .ac-n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .c-cpu {
+    display: block;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: #35353c;
+  }
+  .c-state {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--mut);
+  }
+  .ac-bar {
+    grid-column: 1 / -1;
+    height: 3px;
+    background: #eeedf1;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .ac-bar i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #34c759, #0a6cff);
+  }
+  .ac-foot {
+    padding: 8px 16px;
+    font-size: 11px;
+    color: var(--mut);
+    background: #fafafb;
+    border-top: 1px solid var(--wline);
+  }
+
+  /* ── now ── */
+  .now-k {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1f9c46;
+  }
+  .now h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 10px 0 8px;
+  }
+  .now p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #35353c;
+  }
+  .now-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0 16px;
+  }
+  .now-bar > span {
+    flex: 1;
+    height: 6px;
+    border-radius: 6px;
+    background: #eeedf1;
+    overflow: hidden;
+  }
+  .now-bar i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #0a6cff, #5ac8fa);
+  }
+  .now-bar b {
+    font-size: 12px;
+    color: var(--mut);
+    font-variant-numeric: tabular-nums;
+  }
+  .osbtn {
+    display: inline-block;
+    padding: 7px 16px;
+    border-radius: 7px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  .osbtn:hover {
+    background: #0059d6;
+  }
+
+  /* ── sticky ── */
+  .sticky {
+    background: linear-gradient(#fff5a8, #ffec6b);
+    color: #35301a;
+    padding: 16px 18px 18px;
+    border-radius: 3px;
+    transform: rotate(-1.4deg);
+    box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.55);
+    align-self: start;
+  }
+  .st-h {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: #8a7a2a;
+  }
+  .sticky p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    font-weight: 500;
+    margin-top: 10px;
+  }
+  .st-m {
+    font-size: 11.5px !important;
+    font-weight: 400 !important;
+    color: #7d7134;
+    margin-top: 8px !important;
+  }
+  .sticky a {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b5f18;
+    border-bottom: 1px solid rgba(107, 95, 24, 0.4);
+  }
+
+  /* ── dock ── */
+  .term {
+    background: #16161c;
+    color: #d6d6de;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    line-height: 1.85;
+    padding: 12px 14px 16px;
+  }
+  .tp {
+    color: #4ade80;
+    margin-right: 6px;
+  }
+  .to {
+    color: #8b8b98;
+  }
+  .cur {
+    display: inline-block;
+    width: 7px;
+    height: 13px;
+    background: #4ade80;
+    vertical-align: -2px;
+    animation: blink 1.05s step-end infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .dock {
+    position: fixed;
+    left: 50%;
+    bottom: 74px;
+    transform: translateX(-50%);
+    z-index: 45;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 7px 9px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.6);
+    max-width: calc(100vw - 24px);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .dock::-webkit-scrollbar {
+    display: none;
+  }
+  .dk {
+    position: relative;
+    display: block;
+    transition: transform 0.16s ease;
+  }
+  .dk:hover {
+    transform: translateY(-7px) scale(1.1);
+  }
+  .dk-i {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(226, 226, 238, 0.9));
+    color: #2b2b33;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+  .dk-l {
+    position: absolute;
+    bottom: 54px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: rgba(20, 20, 26, 0.9);
+    color: #fff;
+    font-size: 11.5px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.14s ease;
+  }
+  .dk:hover .dk-l {
+    opacity: 1;
+  }
+  .dk-run {
+    position: absolute;
+    left: 50%;
+    bottom: -5px;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dk,
+    .cur {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>

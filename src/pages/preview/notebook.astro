@@ -1,0 +1,803 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const entries = projects.slice(0, 6);
+const todos = posts.slice(0, 5);
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const shortDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+const tilt = [-0.8, 0.6, -0.5, 0.9, -0.7, 0.4];
+const today = new Date();
+const dateline = today.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+---
+
+<PreviewShell
+  title="09 · notebook — theme mockup"
+  active="notebook"
+  bg="#fdfbf3"
+  fg="#22262e"
+  fontHref="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600&family=Kalam:wght@400;700&display=swap"
+>
+  <div class="nb">
+    <div class="paper" aria-hidden="true"></div>
+    <div class="margin" aria-hidden="true"></div>
+    <div class="spiral" aria-hidden="true">
+      {Array.from({ length: 26 }).map(() => <span />)}
+    </div>
+
+    <div class="page">
+      <!-- ── HEADER ── -->
+      <header class="head">
+        <p class="hdate">{dateline}</p>
+        <h1 class="htitle">
+          Tapan's <span class="hl">working notebook</span>
+        </h1>
+        <p class="hsub">
+          backend engineer · hyderabad · <span class="pen">everything I've built and what it taught me</span>
+        </p>
+        <nav class="tabs">
+          {
+            ["projects", "writing", "trading", "machines", "cursed", "hire me"].map((t, i) => (
+              <a href="#" class={`tab c${i % 5}`}>
+                {t}
+              </a>
+            ))
+          }
+        </nav>
+      </header>
+
+      <!-- ── INTRO ── -->
+      <section class="sec">
+        <h2 class="sh">
+          <span class="sh-n">1.</span> who's writing this
+          <span class="squiggle" aria-hidden="true"></span>
+        </h2>
+        <div class="intro">
+          <div class="intro-t">
+            <p>
+              I'm a senior software engineer &amp; project lead at MAQ Software. I write <span class="hl">scalable backends</span> for a living and build
+              developer tools, a Raspberry&nbsp;Pi trading bot, and a cupboard of self-hosted machines for fun.
+            </p>
+            <p>
+              This notebook is the honest version — <span class="pen">not the polished portfolio one</span>. Every entry has the reasoning, the wrong
+              turns, and the thing I'd do differently.
+            </p>
+          </div>
+          <aside class="postit">
+            <span class="clip" aria-hidden="true"></span>
+            <h3>quick facts</h3>
+            <ul>
+              <li>6+ yrs professional</li>
+              <li>.NET · TS · Azure · SQL</li>
+              <li>{projects.length} projects filed</li>
+              <li>{posts.length} writeups</li>
+              <li class="pen">open to good work ✓</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ── NOW ── -->
+      {
+        nowBuilding && (
+          <section class="sec">
+            <h2 class="sh">
+              <span class="sh-n">2.</span> what's on the desk right now
+            </h2>
+            <div class="nowbox">
+              <span class="arrow" aria-hidden="true">
+                ↘
+              </span>
+              <span class="nownote">still messy!</span>
+              <h3>{nowBuilding.data.title}</h3>
+              <p>{nowBuilding.data.description}</p>
+              <ul class="chips">
+                {nowBuilding.data.techStack.slice(0, 6).map((t) => (
+                  <li>{t}</li>
+                ))}
+              </ul>
+              <p class="nowmeta">
+                started {yr(nowBuilding.data.startDate)} · roughly 77% there · <a href={`/projects/${nowBuilding.id}`}>read the full notes →</a>
+              </p>
+            </div>
+          </section>
+        )
+      }
+
+      <!-- ── ENTRIES ── -->
+      <section class="sec">
+        <h2 class="sh">
+          <span class="sh-n">3.</span> the build log
+          <span class="squiggle" aria-hidden="true"></span>
+        </h2>
+        <ul class="entries">
+          {
+            entries.map((p, i) => (
+              <li class="entry" style={`--tilt:${tilt[i % tilt.length]}deg`}>
+                <a href={`/projects/${p.id}`}>
+                  <span class="e-num">{pad2(i + 1)}</span>
+                  <h3 class="e-t">{p.data.title}</h3>
+                  <p class="e-d">{p.data.description}</p>
+                  <span class="e-m">
+                    <span class="e-cat">{(p.data.category ?? "misc").toLowerCase()}</span>
+                    <span class="e-yr">{yr(p.data.startDate)}</span>
+                    {p.data.status === "in-progress" && <span class="e-live">still going</span>}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="more"><a href="/projects">…{projects.length - entries.length} more pages in the folder →</a></p>
+      </section>
+
+      <!-- ── WRITING ── -->
+      <section class="sec">
+        <h2 class="sh">
+          <span class="sh-n">4.</span> things I wrote down
+        </h2>
+        <ul class="todos">
+          {
+            todos.map((p) => (
+              <li>
+                <a href={`/blog/${p.id}`}>
+                  <span class="box" aria-hidden="true">
+                    ✓
+                  </span>
+                  <span class="td-b">
+                    <b>{p.data.title}</b>
+                    <i>
+                      {p.data.category.toLowerCase()} — {shortDate(new Date(p.data.publishedAt))}
+                    </i>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+          <li class="open">
+            <a href="/blog">
+              <span class="box empty" aria-hidden="true"></span>
+              <span class="td-b">
+                <b>write the next one</b>
+                <i>in progress, always</i>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ── MACHINES ── -->
+      <section class="sec">
+        <h2 class="sh">
+          <span class="sh-n">5.</span> the cupboard <span class="pen small">(sketch, not to scale)</span>
+        </h2>
+        <div class="rack">
+          <span class="rack-l" aria-hidden="true">rack</span>
+          <ul>
+            {
+              labEntries.map((e, i) => (
+                <li class="unit">
+                  <span class="u-led" style={`--c:${e.accent}`} />
+                  <span class="u-b">
+                    <b>{e.title}</b>
+                    <span>{e.description}</span>
+                  </span>
+                  <span class="u-s">{e.stack.slice(0, 3).join(" · ").toLowerCase()}</span>
+                  <span class="u-n">{pad2(i + 1)}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <!-- ── CURSED ── -->
+      <section class="sec">
+        <h2 class="sh">
+          <span class="sh-n">6.</span> corrections in red pen
+        </h2>
+        <ul class="reds">
+          {
+            curses.slice(0, 4).map((c) => (
+              <li>
+                <span class="red-x" aria-hidden="true">
+                  ✗
+                </span>
+                <span class="red-b">
+                  <b>{c.title}</b>
+                  <i>
+                    {c.project.toLowerCase()} · sev {c.severity} · {c.date}
+                  </i>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ── SIGN OFF ── -->
+      <footer class="signoff">
+        <p class="so-k">if you're building something hard —</p>
+        <a class="so-mail" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+        <p class="so-sig">Tapan</p>
+        <nav class="so-n">
+          <a href="#">github</a><span>·</span><a href="#">linkedin</a><span>·</span><a href="#">twitter</a><span>·</span><a href="/rss.xml">rss</a>
+        </nav>
+      </footer>
+    </div>
+  </div>
+</PreviewShell>
+
+<style>
+  .nb {
+    --paper: #fdfbf3;
+    --grid: rgba(84, 128, 178, 0.17);
+    --ink: #22262e;
+    --pencil: #5c6470;
+    --pen: #2f5bd0;
+    --red: #d3382f;
+    --hl: rgba(255, 226, 76, 0.62);
+    position: relative;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  .nb :global(a) {
+    text-decoration: none;
+  }
+  .paper {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .margin {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 62px;
+    width: 2px;
+    background: rgba(211, 56, 47, 0.32);
+    pointer-events: none;
+  }
+  @media (max-width: 760px) {
+    .margin {
+      left: 30px;
+    }
+  }
+  .spiral {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 16px;
+    width: 22px;
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    pointer-events: none;
+  }
+  @media (min-width: 760px) {
+    .spiral {
+      display: flex;
+    }
+  }
+  .spiral span {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #eae5d8;
+    box-shadow:
+      inset 0 2px 3px rgba(0, 0, 0, 0.28),
+      0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid #d6cfbe;
+  }
+
+  .page {
+    position: relative;
+    z-index: 2;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 22px 40px 22px;
+  }
+  @media (min-width: 760px) {
+    .page {
+      padding-left: 96px;
+      padding-right: 34px;
+    }
+  }
+
+  .pen {
+    color: var(--pen);
+    font-family: "Caveat", cursive;
+    font-size: 1.14em;
+  }
+  .pen.small {
+    font-size: 0.92em;
+  }
+  .hl {
+    background: linear-gradient(transparent 58%, var(--hl) 58%, var(--hl) 94%, transparent 94%);
+    padding: 0 2px;
+  }
+
+  /* ── header ── */
+  .head {
+    margin-bottom: 46px;
+  }
+  .hdate {
+    font-family: "Caveat", cursive;
+    font-size: 1.15rem;
+    color: var(--pencil);
+    transform: rotate(-0.6deg);
+  }
+  .htitle {
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 8.4vw, 5.4rem);
+    line-height: 1;
+    margin: 6px 0 8px;
+    letter-spacing: 0.005em;
+  }
+  .hsub {
+    font-size: 0.98rem;
+    color: var(--pencil);
+  }
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+  }
+  .tab {
+    font-family: "Caveat", cursive;
+    font-size: 1.16rem;
+    padding: 2px 14px 4px;
+    border: 2px solid var(--tc);
+    border-radius: 225px 12px 220px 14px / 14px 220px 12px 225px;
+    color: var(--tc);
+    transform: rotate(-0.7deg);
+    transition: 0.14s ease;
+  }
+  .tab:nth-child(even) {
+    transform: rotate(0.8deg);
+  }
+  .tab.c0 {
+    --tc: var(--pen);
+  }
+  .tab.c1 {
+    --tc: #1f8a5b;
+  }
+  .tab.c2 {
+    --tc: #b3560f;
+  }
+  .tab.c3 {
+    --tc: #8241c9;
+  }
+  .tab.c4 {
+    --tc: var(--red);
+  }
+  .tab:hover {
+    background: var(--tc);
+    color: var(--paper);
+  }
+
+  /* ── sections ── */
+  .sec {
+    margin-bottom: 52px;
+  }
+  .sh {
+    position: relative;
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: clamp(1.7rem, 4.2vw, 2.5rem);
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+  .sh-n {
+    color: var(--red);
+    margin-right: 6px;
+  }
+  .squiggle {
+    display: block;
+    width: 210px;
+    max-width: 60%;
+    height: 8px;
+    margin-top: 4px;
+    background-image: radial-gradient(circle at 6px 8px, transparent 5px, var(--pen) 5px, var(--pen) 6.2px, transparent 6.3px);
+    background-size: 12px 10px;
+    opacity: 0.55;
+  }
+
+  /* ── intro ── */
+  .intro {
+    display: grid;
+    gap: 26px;
+  }
+  @media (min-width: 820px) {
+    .intro {
+      grid-template-columns: 1.6fr 1fr;
+      gap: 40px;
+    }
+  }
+  .intro-t p {
+    font-size: 1rem;
+    line-height: 1.85;
+    margin-bottom: 14px;
+  }
+  .postit {
+    position: relative;
+    background: linear-gradient(#fff6a9, #ffee74);
+    padding: 22px 20px 20px;
+    transform: rotate(1.4deg);
+    box-shadow: 0 12px 22px -12px rgba(0, 0, 0, 0.45);
+    align-self: start;
+    color: #3a3417;
+  }
+  .clip {
+    position: absolute;
+    top: -14px;
+    left: 22px;
+    width: 20px;
+    height: 44px;
+    border: 3px solid #9aa3ae;
+    border-radius: 12px;
+    border-bottom-color: transparent;
+    transform: rotate(-8deg);
+  }
+  .postit h3 {
+    font-family: "Caveat", cursive;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+  .postit li {
+    font-family: "Kalam", cursive;
+    font-size: 0.98rem;
+    padding: 3px 0;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.16);
+  }
+  .postit li.pen {
+    color: #1f6b3f;
+  }
+
+  /* ── now ── */
+  .nowbox {
+    position: relative;
+    border: 2px solid var(--ink);
+    border-radius: 255px 14px 225px 16px / 16px 225px 14px 255px;
+    padding: 24px 24px 22px;
+    background: rgba(255, 255, 255, 0.55);
+  }
+  .arrow {
+    position: absolute;
+    top: -26px;
+    right: 62px;
+    font-size: 1.7rem;
+    color: var(--red);
+    transform: rotate(18deg);
+  }
+  .nownote {
+    position: absolute;
+    top: -34px;
+    right: 92px;
+    font-family: "Caveat", cursive;
+    font-size: 1.2rem;
+    color: var(--red);
+    transform: rotate(-5deg);
+  }
+  .nowbox h3 {
+    font-family: "Caveat", cursive;
+    font-size: clamp(1.9rem, 5vw, 2.8rem);
+    line-height: 1.05;
+  }
+  .nowbox p {
+    font-size: 0.98rem;
+    line-height: 1.75;
+    margin-top: 8px;
+    max-width: 64ch;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 16px 0 12px;
+  }
+  .chips li {
+    font-family: "Kalam", cursive;
+    font-size: 0.85rem;
+    padding: 1px 11px;
+    border: 1.5px solid var(--pencil);
+    border-radius: 200px 10px 180px 12px / 12px 180px 10px 200px;
+    color: var(--pencil);
+  }
+  .nowmeta {
+    font-size: 0.86rem !important;
+    color: var(--pencil);
+  }
+  .nowmeta a {
+    color: var(--pen);
+    border-bottom: 1.5px solid rgba(47, 91, 208, 0.4);
+  }
+
+  /* ── entries ── */
+  .entries {
+    display: grid;
+    gap: 18px;
+  }
+  @media (min-width: 780px) {
+    .entries {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .entry {
+    border: 2px solid var(--pencil);
+    border-radius: 250px 15px 230px 14px / 14px 230px 15px 250px;
+    background: rgba(255, 255, 255, 0.5);
+    transform: rotate(var(--tilt));
+    transition:
+      transform 0.16s ease,
+      border-color 0.16s ease;
+  }
+  .entry:hover {
+    transform: rotate(0deg) translateY(-2px);
+    border-color: var(--pen);
+  }
+  .entry a {
+    display: block;
+    padding: 20px 22px 18px;
+    position: relative;
+  }
+  .e-num {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    font-family: "Caveat", cursive;
+    font-size: 1.5rem;
+    color: var(--red);
+    opacity: 0.6;
+  }
+  .e-t {
+    font-family: "Caveat", cursive;
+    font-size: 1.75rem;
+    line-height: 1.05;
+    padding-right: 34px;
+  }
+  .entry:hover .e-t {
+    color: var(--pen);
+  }
+  .e-d {
+    font-size: 0.88rem;
+    line-height: 1.68;
+    color: #3d434d;
+    margin: 8px 0 12px;
+  }
+  .e-m {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-family: "Kalam", cursive;
+    font-size: 0.82rem;
+    color: var(--pencil);
+  }
+  .e-cat {
+    color: var(--pen);
+  }
+  .e-live {
+    color: #1f8a5b;
+  }
+  .more {
+    margin-top: 18px;
+    font-family: "Caveat", cursive;
+    font-size: 1.25rem;
+  }
+  .more a {
+    color: var(--pen);
+  }
+
+  /* ── todos ── */
+  .todos li {
+    border-bottom: 1px dashed rgba(84, 128, 178, 0.32);
+  }
+  .todos a {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 12px;
+    padding: 12px 4px;
+    align-items: start;
+  }
+  .todos a:hover .td-b b {
+    color: var(--pen);
+  }
+  .box {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--pencil);
+    border-radius: 90px 6px 90px 8px / 8px 90px 6px 90px;
+    display: grid;
+    place-items: center;
+    font-family: "Caveat", cursive;
+    font-size: 1.3rem;
+    color: #1f8a5b;
+    line-height: 1;
+  }
+  .box.empty {
+    color: transparent;
+  }
+  .td-b b {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .td-b i {
+    display: block;
+    font-family: "Kalam", cursive;
+    font-style: normal;
+    font-size: 0.84rem;
+    color: var(--pencil);
+    margin-top: 4px;
+  }
+  .todos .open .td-b b {
+    color: var(--pencil);
+    font-style: italic;
+  }
+
+  /* ── rack ── */
+  .rack {
+    position: relative;
+    border: 2px solid var(--pencil);
+    border-radius: 240px 16px 226px 14px / 14px 226px 16px 240px;
+    padding: 22px 20px 16px;
+    background: rgba(255, 255, 255, 0.45);
+  }
+  .rack-l {
+    position: absolute;
+    top: -13px;
+    left: 26px;
+    background: var(--paper);
+    padding: 0 8px;
+    font-family: "Caveat", cursive;
+    font-size: 1.15rem;
+    color: var(--pencil);
+  }
+  .unit {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    gap: 4px 12px;
+    padding: 12px 0;
+    border-bottom: 1.5px dashed rgba(92, 100, 112, 0.3);
+    align-items: baseline;
+  }
+  .unit:last-child {
+    border-bottom: 0;
+  }
+  .u-led {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+  }
+  .u-b b {
+    font-family: "Caveat", cursive;
+    font-size: 1.4rem;
+    display: block;
+    line-height: 1.1;
+  }
+  .u-b span {
+    display: block;
+    font-size: 0.87rem;
+    line-height: 1.6;
+    color: #3d434d;
+    margin-top: 4px;
+    max-width: 62ch;
+  }
+  .u-s {
+    grid-column: 2;
+    font-family: "Kalam", cursive;
+    font-size: 0.8rem;
+    color: var(--pencil);
+  }
+  .u-n {
+    font-family: "Caveat", cursive;
+    color: var(--red);
+    opacity: 0.7;
+    grid-row: 1;
+    grid-column: 3;
+  }
+
+  /* ── reds ── */
+  .reds li {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px dashed rgba(211, 56, 47, 0.3);
+  }
+  .red-x {
+    font-family: "Caveat", cursive;
+    font-size: 1.5rem;
+    color: var(--red);
+    line-height: 1;
+  }
+  .red-b b {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--red);
+    text-decoration: underline wavy rgba(211, 56, 47, 0.4);
+    text-underline-offset: 4px;
+  }
+  .red-b i {
+    display: block;
+    font-family: "Kalam", cursive;
+    font-style: normal;
+    font-size: 0.82rem;
+    color: var(--pencil);
+    margin-top: 6px;
+  }
+
+  /* ── signoff ── */
+  .signoff {
+    margin-top: 60px;
+    padding-top: 30px;
+    border-top: 2px dashed rgba(84, 128, 178, 0.35);
+    text-align: center;
+  }
+  .so-k {
+    font-family: "Caveat", cursive;
+    font-size: 1.4rem;
+    color: var(--pencil);
+  }
+  .so-mail {
+    display: inline-block;
+    font-family: "Caveat", cursive;
+    font-size: clamp(1.7rem, 5.4vw, 2.9rem);
+    color: var(--pen);
+    margin: 8px 0 18px;
+    word-break: break-word;
+    border-bottom: 2px solid rgba(47, 91, 208, 0.35);
+  }
+  .so-mail:hover {
+    color: var(--red);
+    border-bottom-color: rgba(211, 56, 47, 0.4);
+  }
+  .so-sig {
+    font-family: "Caveat", cursive;
+    font-weight: 700;
+    font-size: 2.2rem;
+    transform: rotate(-2.5deg);
+    color: var(--ink);
+  }
+  .so-n {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+    font-family: "Kalam", cursive;
+    font-size: 0.88rem;
+    color: var(--pencil);
+  }
+  .so-n a:hover {
+    color: var(--pen);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .entry {
+      transition: none !important;
+    }
+  }
+</style>

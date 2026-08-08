@@ -1,0 +1,884 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const listed = projects.slice(0, 8);
+const news = posts.slice(0, 5);
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const oldDate = (d: Date) => `${pad2(d.getMonth() + 1)}/${pad2(d.getDate())}/${d.getFullYear()}`;
+const now = new Date();
+const hits = String(120347 + projects.length * 37 + posts.length * 11).padStart(8, "0");
+---
+
+<PreviewShell
+  title="11 · y2k — theme mockup"
+  active="y2k"
+  bg="#008080"
+  fg="#000000"
+  fontHref="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+>
+  <div class="y2k">
+    <!-- ── WINDOW ── -->
+    <div class="win main">
+      <div class="tbar">
+        <span class="tb-ico" aria-hidden="true">🖥</span>
+        <span class="tb-t">Tapan Meena's Home Page — Microsoft Internet Explorer</span>
+        <span class="tb-btns"><i>_</i><i>□</i><i class="x">✕</i></span>
+      </div>
+
+      <div class="menub">
+        <span>File</span><span>Edit</span><span>View</span><span>Favorites</span><span>Tools</span><span>Help</span>
+      </div>
+
+      <div class="addr">
+        <label>Address</label>
+        <span class="addrbox">http://www.tapanmeena.com/index.html</span>
+        <span class="gobtn">Go</span>
+      </div>
+
+      <div class="content">
+        <!-- banner -->
+        <div class="banner">
+          <p class="welcome">✨ Welcome to my Home Page!! ✨</p>
+          <h1 class="wordart">TAPAN MEENA</h1>
+          <p class="subttl">~*~ software engineer &amp; professional bug creator ~*~</p>
+          <div class="marq">
+            <div class="marq-t">
+              <span
+                >★ THIS SITE IS BEST VIEWED AT 1024×768 ★ {projects.length} PROJECTS ONLINE ★ NEW WRITEUPS EVERY MONTH ★ SIGN MY GUESTBOOK ★ NO POP-UPS,
+                PROMISE ★&nbsp;</span
+              >
+              <span
+                >★ THIS SITE IS BEST VIEWED AT 1024×768 ★ {projects.length} PROJECTS ONLINE ★ NEW WRITEUPS EVERY MONTH ★ SIGN MY GUESTBOOK ★ NO POP-UPS,
+                PROMISE ★&nbsp;</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="cols">
+          <!-- sidebar -->
+          <aside class="side">
+            <div class="panel">
+              <div class="ptitle">📁 Navigation</div>
+              <ul class="navlist">
+                {
+                  ["Home", "My Projects", "Writing Log", "Trading Desk", "Cursed Knowledge", "About Me", "Contact", "Guestbook"].map((n, i) => (
+                    <li>
+                      <a href="#" class:list={{ cur: i === 0 }}>
+                        {i === 0 ? "▶" : "•"} {n}
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+
+            <div class="panel">
+              <div class="ptitle">⚙ System Info</div>
+              <table class="sysinfo">
+                <tr><td>OS</td><td>macOS / Linux</td></tr>
+                <tr><td>Lang</td><td>C#, TS, Py</td></tr>
+                <tr><td>Cloud</td><td>Azure</td></tr>
+                <tr><td>Loc</td><td>Hyderabad</td></tr>
+                <tr><td>Since</td><td>2019</td></tr>
+              </table>
+            </div>
+
+            <div class="panel">
+              <div class="ptitle">🔥 Visitors</div>
+              <div class="counter">
+                {hits.split("").map((d) => <b>{d}</b>)}
+              </div>
+              <p class="ctr-note">You are visitor #{hits}!</p>
+            </div>
+
+            <div class="panel badges">
+              <div class="ptitle">🏆 Awards</div>
+              <span class="badge b1">BEST VIEWED IN<br />ANY BROWSER</span>
+              <span class="badge b2">MADE WITH<br />NOTEPAD</span>
+              <span class="badge b3">100% HAND<br />CODED</span>
+            </div>
+          </aside>
+
+          <!-- main column -->
+          <main class="mainc">
+            <div class="panel">
+              <div class="ptitle">👋 About This Page</div>
+              <div class="pbody">
+                <p>
+                  <b>Hello and welcome!!!</b> My name is Tapan and I am a Senior Software Engineer / Project Lead at MAQ Software in Hyderabad, India. I
+                  have been building software professionally since 2019.
+                </p>
+                <p>
+                  This page is where I keep <span class="blink">EVERYTHING</span> I've built — scalable backends, developer tools, and a Raspberry Pi that
+                  trades the stock market while I sleep. Please look around and email me if you like something!
+                </p>
+                <p class="upd">🚧 Last updated: {oldDate(now)} 🚧</p>
+              </div>
+            </div>
+
+            {
+              nowBuilding && (
+                <div class="panel hot">
+                  <div class="ptitle">🆕 What I'm working on RIGHT NOW</div>
+                  <div class="pbody">
+                    <h2 class="hot-t">
+                      {nowBuilding.data.title} <span class="new">NEW!</span>
+                    </h2>
+                    <p>{nowBuilding.data.description}</p>
+                    <p class="hot-s">
+                      <b>Made with:</b> {nowBuilding.data.techStack.slice(0, 6).join(", ")}
+                    </p>
+                    <div class="progwrap">
+                      <span class="prog-l">Progress:</span>
+                      <span class="prog">
+                        {Array.from({ length: 20 }).map((_, i) => (
+                          <i class={i < 15 ? "on" : ""} />
+                        ))}
+                      </span>
+                      <span class="prog-n">77%</span>
+                    </div>
+                    <a class="btn" href={`/projects/${nowBuilding.id}`}>
+                      Click Here For More Info!
+                    </a>
+                  </div>
+                </div>
+              )
+            }
+
+            <div class="panel">
+              <div class="ptitle">💾 My Projects ({projects.length} total)</div>
+              <div class="pbody flush">
+                <table class="ptable">
+                  <thead>
+                    <tr><th>#</th><th>Project Name</th><th class="hs">Category</th><th class="hs">Year</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    {
+                      listed.map((p, i) => (
+                        <tr>
+                          <td>{pad2(i + 1)}</td>
+                          <td>
+                            <a href={`/projects/${p.id}`}>{p.data.title}</a>
+                          </td>
+                          <td class="hs">{p.data.category ?? "Misc"}</td>
+                          <td class="hs">{yr(p.data.startDate)}</td>
+                          <td>{p.data.status === "in-progress" ? <span class="st-wip">⚙ WIP</span> : <span class="st-ok">✔ Done</span>}</td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+                <p class="tfoot">
+                  <a href="/projects">» See all {projects.length} projects «</a>
+                </p>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="ptitle">📰 Latest Writings</div>
+              <div class="pbody">
+                <ul class="news">
+                  {
+                    news.map((p) => (
+                      <li>
+                        <span class="nw-d">[{oldDate(new Date(p.data.publishedAt))}]</span>
+                        <a href={`/blog/${p.id}`}>{p.data.title}</a>
+                        <span class="nw-c">({p.data.category})</span>
+                      </li>
+                    ))
+                  }
+                </ul>
+              </div>
+            </div>
+
+            <div class="cols2">
+              <div class="panel">
+                <div class="ptitle">🖧 My Home Server</div>
+                <div class="pbody">
+                  <ul class="lab">
+                    {
+                      labEntries.map((e) => (
+                        <li>
+                          <span class="led" />
+                          <b>{e.title}</b>
+                          <span>{e.stack.slice(0, 2).join(", ")}</span>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+              </div>
+
+              <div class="panel warn">
+                <div class="ptitle">⚠ Warning: Cursed Knowledge</div>
+                <div class="pbody">
+                  <ul class="curse">
+                    {
+                      curses.slice(0, 3).map((c) => (
+                        <li>
+                          <b>Sev {c.severity}:</b> {c.title}
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel gb">
+              <div class="ptitle">✉ Contact Me / Sign My Guestbook</div>
+              <div class="pbody center">
+                <p>Got a question? Want to hire me? Just want to say hi?</p>
+                <p class="mailto"><a href="mailto:tapanmeena1998@gmail.com">📧 tapanmeena1998@gmail.com</a></p>
+                <div class="gbrow">
+                  <a class="btn" href="mailto:tapanmeena1998@gmail.com">Send E-Mail</a>
+                  <a class="btn" href="#">Sign Guestbook</a>
+                  <a class="btn" href="/rss.xml">Add to Favorites</a>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+
+        <footer class="pfoot">
+          <hr />
+          <p>© {now.getFullYear()} Tapan Meena. This page is under eternal construction. 🚧</p>
+          <p class="tiny">Best viewed with a keyboard and a working brain · No cookies, no trackers, no newsletter</p>
+        </footer>
+      </div>
+
+      <div class="statb">
+        <span class="sb1">Done</span>
+        <span class="sb2">🌐 Internet</span>
+      </div>
+    </div>
+
+    <!-- ── TASKBAR ── -->
+    <div class="taskbar">
+      <span class="start"><b>⊞</b> Start</span>
+      <span class="tsep"></span>
+      <span class="task on">🖥 Tapan Meena's Home…</span>
+      <span class="task">📁 projects</span>
+      <span class="tspacer"></span>
+      <span class="tray">🔊 🖧 <b>{pad2(now.getHours())}:{pad2(now.getMinutes())}</b></span>
+    </div>
+  </div>
+</PreviewShell>
+
+<style>
+  .y2k {
+    --face: #c0c0c0;
+    --lite: #ffffff;
+    --shade: #808080;
+    --dark: #000000;
+    --navy: #000080;
+    --navy2: #1084d0;
+    --teal: #008080;
+    min-height: 100vh;
+    background: var(--teal);
+    font-family: Tahoma, Verdana, "MS Sans Serif", sans-serif;
+    font-size: 12px;
+    color: #000;
+    padding: 10px 10px 44px;
+  }
+  .y2k :global(a) {
+    color: #0000ee;
+    text-decoration: underline;
+  }
+  .y2k :global(a:visited) {
+    color: #551a8b;
+  }
+
+  /* ── window chrome ── */
+  .win {
+    max-width: 1080px;
+    margin: 0 auto;
+    background: var(--face);
+    border: 2px solid;
+    border-color: var(--lite) var(--dark) var(--dark) var(--lite);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+    padding: 3px;
+  }
+  .tbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 3px 3px 5px;
+    background: linear-gradient(90deg, var(--navy), var(--navy2));
+    color: #fff;
+  }
+  .tb-ico {
+    font-size: 12px;
+  }
+  .tb-t {
+    flex: 1;
+    font-weight: 700;
+    font-size: 11.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tb-btns {
+    display: flex;
+    gap: 2px;
+  }
+  .tb-btns i {
+    width: 18px;
+    height: 16px;
+    display: grid;
+    place-items: center;
+    font-style: normal;
+    font-size: 10px;
+    font-weight: 700;
+    color: #000;
+    background: var(--face);
+    border: 1px solid;
+    border-color: var(--lite) var(--dark) var(--dark) var(--lite);
+  }
+  .menub {
+    display: flex;
+    gap: 2px;
+    padding: 3px 4px;
+    border-bottom: 1px solid var(--shade);
+  }
+  .menub span {
+    padding: 1px 7px;
+  }
+  .menub span:hover {
+    background: var(--navy);
+    color: #fff;
+  }
+  .addr {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px;
+    border-bottom: 1px solid var(--shade);
+  }
+  .addr label {
+    color: #444;
+  }
+  .addrbox {
+    flex: 1;
+    background: #fff;
+    border: 2px solid;
+    border-color: var(--shade) var(--lite) var(--lite) var(--shade);
+    padding: 2px 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gobtn {
+    padding: 2px 10px;
+    background: var(--face);
+    border: 2px solid;
+    border-color: var(--lite) var(--dark) var(--dark) var(--lite);
+  }
+
+  .content {
+    background: #fff;
+    border: 2px solid;
+    border-color: var(--shade) var(--lite) var(--lite) var(--shade);
+    padding: 12px;
+  }
+
+  /* ── banner ── */
+  .banner {
+    text-align: center;
+    padding: 10px 0 14px;
+    background: linear-gradient(#dfe9ff, #ffffff);
+    border-bottom: 2px ridge #b9c6e8;
+  }
+  .welcome {
+    font-size: 13px;
+    color: #cc0066;
+    font-weight: 700;
+  }
+  .wordart {
+    font-size: clamp(2rem, 7vw, 4.4rem);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    margin: 4px 0;
+    background: linear-gradient(#ffef5e 0%, #ff9d00 40%, #e2231a 70%, #7a0f9c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 1.5px #202020;
+    text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);
+    font-family: "Impact", Haettenschweiler, Tahoma, sans-serif;
+  }
+  .subttl {
+    font-size: 12.5px;
+    color: #006600;
+    font-style: italic;
+  }
+  .marq {
+    margin-top: 12px;
+    overflow: hidden;
+    background: #000080;
+    color: #ffff00;
+    padding: 3px 0;
+    font-weight: 700;
+    font-size: 11.5px;
+  }
+  .marq-t {
+    display: flex;
+    width: max-content;
+    animation: mv 30s linear infinite;
+  }
+  @keyframes mv {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ── layout ── */
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-top: 14px;
+  }
+  @media (min-width: 900px) {
+    .cols {
+      grid-template-columns: 210px 1fr;
+    }
+  }
+  .cols2 {
+    display: grid;
+    gap: 12px;
+  }
+  @media (min-width: 720px) {
+    .cols2 {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* ── panels ── */
+  .panel {
+    background: var(--face);
+    border: 2px solid;
+    border-color: var(--lite) var(--shade) var(--shade) var(--lite);
+    margin-bottom: 12px;
+  }
+  .ptitle {
+    background: linear-gradient(90deg, var(--navy), var(--navy2));
+    color: #fff;
+    font-weight: 700;
+    font-size: 11.5px;
+    padding: 3px 7px;
+  }
+  .panel.hot .ptitle {
+    background: linear-gradient(90deg, #7a0f9c, #cc0066);
+  }
+  .panel.warn .ptitle {
+    background: linear-gradient(90deg, #9c3a0f, #cc6600);
+  }
+  .panel.gb .ptitle {
+    background: linear-gradient(90deg, #0f6a2f, #2fa85c);
+  }
+  .pbody {
+    background: #fff;
+    margin: 3px;
+    padding: 10px 12px;
+    border: 2px solid;
+    border-color: var(--shade) var(--lite) var(--lite) var(--shade);
+  }
+  .pbody.flush {
+    padding: 0;
+  }
+  .pbody.center {
+    text-align: center;
+  }
+  .pbody p {
+    font-size: 12.5px;
+    line-height: 1.65;
+    margin-bottom: 9px;
+  }
+  .pbody p:last-child {
+    margin-bottom: 0;
+  }
+  .blink {
+    color: #cc0000;
+    font-weight: 700;
+    animation: bk 1.1s steps(2, end) infinite;
+  }
+  @keyframes bk {
+    50% {
+      opacity: 0.15;
+    }
+  }
+  .upd {
+    color: #cc6600;
+    font-weight: 700;
+    font-size: 11.5px !important;
+  }
+
+  /* ── sidebar ── */
+  .navlist {
+    background: #fff;
+    margin: 3px;
+    padding: 6px 8px;
+    border: 2px solid;
+    border-color: var(--shade) var(--lite) var(--lite) var(--shade);
+  }
+  .navlist li {
+    padding: 2px 0;
+  }
+  .navlist a.cur {
+    font-weight: 700;
+    color: #cc0000;
+  }
+  .sysinfo {
+    background: #fff;
+    margin: 3px;
+    width: calc(100% - 6px);
+    border: 2px solid;
+    border-color: var(--shade) var(--lite) var(--lite) var(--shade);
+    border-collapse: separate;
+    font-size: 11.5px;
+  }
+  .sysinfo td {
+    padding: 2px 7px;
+    border-bottom: 1px dotted #bbb;
+  }
+  .sysinfo td:first-child {
+    font-weight: 700;
+    color: #000080;
+    width: 42px;
+  }
+  .counter {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px;
+  }
+  .counter b {
+    font-family: "VT323", monospace;
+    font-size: 22px;
+    line-height: 1;
+    background: #000;
+    color: #00ff41;
+    padding: 1px 4px;
+    border: 1px solid #444;
+  }
+  .ctr-note {
+    text-align: center;
+    font-size: 11px;
+    padding-bottom: 8px;
+    color: #333;
+  }
+  .badges {
+    text-align: center;
+    padding-bottom: 8px;
+  }
+  .badge {
+    display: inline-block;
+    margin: 6px 4px 0;
+    padding: 5px 8px;
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #fff;
+    border: 2px outset #999;
+  }
+  .b1 {
+    background: linear-gradient(#3355cc, #001a66);
+  }
+  .b2 {
+    background: linear-gradient(#cc3355, #66001a);
+  }
+  .b3 {
+    background: linear-gradient(#118844, #003311);
+  }
+
+  /* ── hot ── */
+  .hot-t {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #7a0f9c;
+    margin-bottom: 8px;
+  }
+  .new {
+    display: inline-block;
+    font-size: 10px;
+    background: #cc0000;
+    color: #fff;
+    padding: 1px 6px;
+    vertical-align: middle;
+    animation: bk 1.1s steps(2, end) infinite;
+  }
+  .hot-s {
+    font-size: 12px !important;
+    color: #333;
+  }
+  .progwrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 12px;
+    flex-wrap: wrap;
+  }
+  .prog-l {
+    font-weight: 700;
+    font-size: 11.5px;
+  }
+  .prog {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: #fff;
+    border: 2px solid;
+    border-color: var(--shade) var(--lite) var(--lite) var(--shade);
+  }
+  .prog i {
+    width: 8px;
+    height: 14px;
+    background: #dedede;
+    display: block;
+  }
+  .prog i.on {
+    background: #000080;
+  }
+  .prog-n {
+    font-weight: 700;
+  }
+  .btn {
+    display: inline-block;
+    padding: 4px 14px;
+    background: var(--face);
+    border: 2px solid;
+    border-color: var(--lite) var(--dark) var(--dark) var(--lite);
+    color: #000 !important;
+    text-decoration: none !important;
+    font-size: 12px;
+  }
+  .btn:active {
+    border-color: var(--dark) var(--lite) var(--lite) var(--dark);
+  }
+
+  /* ── table ── */
+  .ptable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .ptable th {
+    background: var(--face);
+    text-align: left;
+    padding: 4px 8px;
+    border: 1px solid;
+    border-color: var(--lite) var(--shade) var(--shade) var(--lite);
+    font-size: 11.5px;
+  }
+  .ptable td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #ddd;
+  }
+  .ptable tbody tr:nth-child(even) {
+    background: #eef3ff;
+  }
+  .ptable tbody tr:hover {
+    background: #ffffcc;
+  }
+  .hs {
+    display: none;
+  }
+  @media (min-width: 700px) {
+    .hs {
+      display: table-cell;
+    }
+  }
+  .st-wip {
+    color: #cc6600;
+    font-weight: 700;
+  }
+  .st-ok {
+    color: #007700;
+    font-weight: 700;
+  }
+  .tfoot {
+    text-align: center;
+    padding: 8px;
+    background: #f2f2f2;
+    border-top: 1px solid #ccc;
+    font-weight: 700;
+  }
+
+  /* ── news ── */
+  .news li {
+    padding: 4px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .nw-d {
+    color: #006600;
+    font-weight: 700;
+    margin-right: 5px;
+  }
+  .nw-c {
+    color: #666;
+    font-size: 11px;
+  }
+
+  /* ── lab / curse ── */
+  .lab li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 12px;
+  }
+  .lab b {
+    flex: 1;
+  }
+  .lab span:last-child {
+    color: #666;
+    font-size: 11px;
+  }
+  .led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00cc44;
+    border: 1px solid #006622;
+    flex: none;
+  }
+  .curse li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .curse b {
+    color: #cc0000;
+  }
+
+  /* ── guestbook ── */
+  .mailto {
+    font-size: 15px !important;
+    font-weight: 700;
+  }
+  .gbrow {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  /* ── page footer ── */
+  .pfoot {
+    text-align: center;
+    padding-top: 6px;
+  }
+  .pfoot hr {
+    border: 0;
+    border-top: 2px groove #ccc;
+    margin-bottom: 10px;
+  }
+  .pfoot p {
+    font-size: 11.5px;
+    color: #444;
+    line-height: 1.7;
+  }
+  .pfoot .tiny {
+    font-size: 10.5px;
+    color: #777;
+  }
+
+  .statb {
+    display: flex;
+    gap: 3px;
+    margin-top: 3px;
+    font-size: 11px;
+  }
+  .sb1 {
+    flex: 1;
+  }
+  .sb1,
+  .sb2 {
+    padding: 2px 6px;
+    border: 1px solid;
+    border-color: var(--shade) var(--lite) var(--lite) var(--shade);
+  }
+
+  /* ── taskbar ── */
+  .taskbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 5px;
+    background: var(--face);
+    border-top: 2px solid var(--lite);
+    font-size: 11.5px;
+  }
+  .start {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border: 2px solid;
+    border-color: var(--lite) var(--dark) var(--dark) var(--lite);
+  }
+  .start b {
+    color: #cc0000;
+  }
+  .tsep {
+    width: 2px;
+    height: 20px;
+    border-left: 1px solid var(--shade);
+    border-right: 1px solid var(--lite);
+  }
+  .task {
+    padding: 3px 10px;
+    border: 2px solid;
+    border-color: var(--lite) var(--dark) var(--dark) var(--lite);
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .task.on {
+    border-color: var(--dark) var(--lite) var(--lite) var(--dark);
+    background: #d4d0c8;
+    font-weight: 700;
+  }
+  .tspacer {
+    flex: 1;
+  }
+  .tray {
+    padding: 3px 8px;
+    border: 2px solid;
+    border-color: var(--shade) var(--lite) var(--lite) var(--shade);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marq-t,
+    .blink,
+    .new {
+      animation: none !important;
+    }
+  }
+</style>

@@ -1,0 +1,804 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const panels = projects.filter((p) => p.id !== nowBuilding?.id).slice(0, 6);
+const strips = posts.slice(0, 4);
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const sfx = ["KRAK!", "BOOM!", "ZAP!", "WHAM!", "POW!", "THWIP!"];
+const hues = ["#ffd83d", "#4dc9ff", "#ff5c8a", "#7be08c", "#c79bff", "#ffa14d"];
+const now = new Date();
+---
+
+<PreviewShell
+  title="16 · comic — theme mockup"
+  active="comic"
+  bg="#f4efe3"
+  fg="#141414"
+  fontHref="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap"
+>
+  <div class="cm">
+    <div class="tone" aria-hidden="true"></div>
+
+    <!-- ── COVER STRIP ── -->
+    <header class="cover">
+      <div class="cv-l">
+        <span class="issue">ISSUE #{projects.length} · {now.getFullYear()} · ₹0.00</span>
+        <h1 class="logo">
+          THE <span class="logo-big">WORKSHOP</span>
+          <span class="logo-sm">CHRONICLES</span>
+        </h1>
+        <p class="tagline">"He said it would take a weekend."</p>
+      </div>
+      <nav class="cv-n">
+        {
+          ["ORIGIN", "ISSUES", "FIELD NOTES", "MARKET", "LAB", "FAN MAIL"].map((n, i) => (
+            <a href="#" class={`nv n${i % 6}`}>
+              {n}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    <!-- ── PAGE 1 ── -->
+    <section class="page">
+      <span class="pageno">— PAGE 1 —</span>
+
+      <div class="grid g1">
+        <!-- splash -->
+        <article class="panel splash" style="--h:#ffd83d">
+          <span class="cap">MEANWHILE, IN HYDERABAD…</span>
+          <div class="rays" aria-hidden="true"></div>
+          <h2 class="splash-t">OUR HERO<br />WRITES <em>BACKENDS.</em></h2>
+          <div class="bubble b-main">
+            <p>
+              I'm Tapan — senior software engineer by day, builder of developer tools and one very stubborn trading bot by night. Every issue here is
+              a real build, including the ones that fought back.
+            </p>
+            <span class="tail" aria-hidden="true"></span>
+          </div>
+          <div class="acts">
+            <a class="cbtn" href="/projects">READ THE ISSUES →</a>
+            <a class="cbtn alt" href="/contact">SEND FAN MAIL</a>
+          </div>
+          <span class="sfx sfx-1">THWIP!</span>
+        </article>
+
+        <!-- stats panel -->
+        <article class="panel stats" style="--h:#4dc9ff">
+          <span class="cap">THE STATS</span>
+          <ul>
+            <li><b>{projects.length}</b><span>ISSUES SHIPPED</span></li>
+            <li><b>{posts.length}</b><span>FIELD NOTES</span></li>
+            <li><b>6+</b><span>YEARS ON DUTY</span></li>
+            <li><b>{labEntries.length}</b><span>SIDEKICKS</span></li>
+          </ul>
+        </article>
+
+        <!-- now building -->
+        {
+          nowBuilding && (
+            <article class="panel now" style="--h:#ff5c8a">
+              <span class="cap">THIS ISSUE!</span>
+              <h3 class="now-t">{nowBuilding.data.title}</h3>
+              <p class="now-d">{nowBuilding.data.description}</p>
+              <div class="meter">
+                <span>
+                  <i style="width:77%" />
+                </span>
+                <b>77%</b>
+              </div>
+              <a class="clink" href={`/projects/${nowBuilding.id}`}>
+                CONTINUED INSIDE →
+              </a>
+              <span class="sfx sfx-2">BOOM!</span>
+            </article>
+          )
+        }
+      </div>
+    </section>
+
+    <!-- ── PAGE 2 ── -->
+    <section class="page">
+      <span class="pageno">— PAGE 2: THE CASE FILES —</span>
+      <div class="grid g2">
+        {
+          panels.map((p, i) => (
+            <article class="panel case" style={`--h:${hues[i % hues.length]}`}>
+              <span class="cap">
+                ISSUE #{pad2(i + 1)} · {yr(p.data.startDate)}
+              </span>
+              <a href={`/projects/${p.id}`}>
+                <h3>{p.data.title}</h3>
+                <p>{p.data.description}</p>
+                <span class="case-f">
+                  <span>{(p.data.category ?? "MISC").toUpperCase()}</span>
+                  <span class="case-go">MORE →</span>
+                </span>
+              </a>
+              {i % 3 === 1 && <span class="sfx sfx-c">{sfx[i % sfx.length]}</span>}
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ── PAGE 3 ── -->
+    <section class="page">
+      <span class="pageno">— PAGE 3: FIELD NOTES —</span>
+      <div class="grid g3">
+        {
+          strips.map((p, i) => (
+            <article class="panel strip" style={`--h:${hues[(i + 2) % hues.length]}`}>
+              <span class="cap">{p.data.category.toUpperCase()}</span>
+              <a href={`/blog/${p.id}`}>
+                <div class="bubble">
+                  <p>{p.data.title}</p>
+                  <span class="tail" aria-hidden="true" />
+                </div>
+                <p class="strip-d">{p.data.description}</p>
+                <span class="strip-m">
+                  {new Date(p.data.publishedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase()}
+                </span>
+              </a>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ── PAGE 4 ── -->
+    <section class="page">
+      <span class="pageno">— PAGE 4: THE SIDEKICKS &amp; THE VILLAINS —</span>
+      <div class="grid g4">
+        <article class="panel lab" style="--h:#7be08c">
+          <span class="cap">THE SIDEKICKS</span>
+          <ul>
+            {
+              labEntries.map((e, i) => (
+                <li>
+                  <span class="lb-n">{pad2(i + 1)}</span>
+                  <span class="lb-b">
+                    <b>{e.title}</b>
+                    <span>{e.description}</span>
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </article>
+
+        <article class="panel villains" style="--h:#ff5c8a">
+          <span class="cap">THE VILLAINS</span>
+          <ul>
+            {
+              curses.slice(0, 4).map((c) => (
+                <li>
+                  <span class="vl-s">LVL {c.severity}</span>
+                  <span class="vl-b">
+                    <b>{c.title}</b>
+                    <i>
+                      {c.project.toUpperCase()} · {c.date}
+                    </i>
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+          <span class="sfx sfx-3">KRAK!</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── BACK COVER ── -->
+    <footer class="back">
+      <div class="back-in">
+        <span class="cap">NEXT ISSUE…</span>
+        <h2>GOT A PROBLEM<br />ONLY A BACKEND CAN FIX?</h2>
+        <a class="mail" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+        <nav class="back-n">
+          <a href="#">GITHUB</a><a href="#">LINKEDIN</a><a href="#">TWITTER</a><a href="/rss.xml">RSS</a>
+        </nav>
+        <p class="back-f">THE WORKSHOP CHRONICLES · PUBLISHED IRREGULARLY FROM HYDERABAD · NO ADS, NO TRACKERS, NO CROSSOVER EVENTS</p>
+      </div>
+    </footer>
+  </div>
+</PreviewShell>
+
+<style>
+  .cm {
+    --paper: #f4efe3;
+    --ink: #141414;
+    --mut: #6f6a5e;
+    position: relative;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Comic Neue", "Inter", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  .cm :global(a) {
+    text-decoration: none;
+  }
+  .tone {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgba(20, 20, 20, 0.1) 1px, transparent 1.2px);
+    background-size: 5px 5px;
+  }
+  .cm > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── cover ── */
+  .cover {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 26px 20px 18px;
+    border-bottom: 5px solid var(--ink);
+  }
+  .issue {
+    font-family: "Inter", sans-serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--mut);
+  }
+  .logo {
+    font-family: "Bangers", cursive;
+    line-height: 0.9;
+    letter-spacing: 0.03em;
+    margin-top: 6px;
+  }
+  .logo-big {
+    display: block;
+    font-size: clamp(2.8rem, 11vw, 7rem);
+    color: #ffd83d;
+    -webkit-text-stroke: 3px var(--ink);
+    text-shadow: 5px 5px 0 var(--ink);
+    letter-spacing: 0.01em;
+  }
+  .logo-sm {
+    display: block;
+    font-size: clamp(1.2rem, 3.8vw, 2.4rem);
+    letter-spacing: 0.22em;
+    color: #ff5c8a;
+    -webkit-text-stroke: 1.5px var(--ink);
+  }
+  .tagline {
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--mut);
+    margin-top: 8px;
+  }
+  .cv-n {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .nv {
+    font-family: "Bangers", cursive;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    padding: 4px 13px;
+    border: 3px solid var(--ink);
+    background: #fff;
+    box-shadow: 3px 3px 0 var(--ink);
+    transform: rotate(-1deg);
+    transition: 0.12s ease;
+  }
+  .nv:nth-child(even) {
+    transform: rotate(1.2deg);
+  }
+  .n0 {
+    background: #ffd83d;
+  }
+  .n1 {
+    background: #4dc9ff;
+  }
+  .n2 {
+    background: #ff5c8a;
+  }
+  .n3 {
+    background: #7be08c;
+  }
+  .n4 {
+    background: #c79bff;
+  }
+  .n5 {
+    background: #ffa14d;
+  }
+  .nv:hover {
+    transform: rotate(0) translate(3px, 3px);
+    box-shadow: 0 0 0 var(--ink);
+  }
+
+  /* ── pages ── */
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px 8px;
+  }
+  .pageno {
+    display: block;
+    text-align: center;
+    font-family: "Bangers", cursive;
+    font-size: 15px;
+    letter-spacing: 0.2em;
+    color: var(--mut);
+    margin-bottom: 16px;
+  }
+  .grid {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 940px) {
+    .g1 {
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .splash {
+      grid-column: span 8;
+      grid-row: span 2;
+    }
+    .stats {
+      grid-column: span 4;
+    }
+    .now {
+      grid-column: span 4;
+    }
+    .g2 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .g3 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .g4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 640px) and (max-width: 939px) {
+    .g2,
+    .g3,
+    .g4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* ── panel ── */
+  .panel {
+    position: relative;
+    background: #fff;
+    border: 4px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 26px 20px 20px;
+    overflow: hidden;
+  }
+  .cap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-family: "Bangers", cursive;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    background: var(--h, #ffd83d);
+    color: var(--ink);
+    padding: 3px 12px 3px 10px;
+    border-right: 3px solid var(--ink);
+    border-bottom: 3px solid var(--ink);
+    z-index: 3;
+  }
+
+  /* ── splash ── */
+  .splash {
+    background: var(--h);
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .rays {
+    position: absolute;
+    inset: -40%;
+    background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.55) 0deg 7deg, transparent 7deg 14deg);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .splash > *:not(.rays):not(.sfx) {
+    position: relative;
+    z-index: 2;
+  }
+  .splash-t {
+    font-family: "Bangers", cursive;
+    font-size: clamp(2.2rem, 7vw, 4.4rem);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    -webkit-text-stroke: 2px var(--ink);
+    color: #fff;
+    text-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 18px;
+  }
+  .splash-t em {
+    font-style: normal;
+    color: #ff5c8a;
+  }
+  .bubble {
+    position: relative;
+    background: #fff;
+    border: 3px solid var(--ink);
+    border-radius: 22px;
+    padding: 14px 18px;
+    max-width: 54ch;
+  }
+  .bubble p {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    font-weight: 700;
+  }
+  .tail {
+    position: absolute;
+    bottom: -14px;
+    left: 34px;
+    width: 22px;
+    height: 16px;
+    background: #fff;
+    border-right: 3px solid var(--ink);
+    border-bottom: 3px solid var(--ink);
+    transform: skewX(-22deg);
+  }
+  .acts {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+  }
+  .cbtn {
+    font-family: "Bangers", cursive;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    padding: 8px 18px;
+    border: 3px solid var(--ink);
+    background: var(--ink);
+    color: #fff;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
+    transition: 0.12s ease;
+  }
+  .cbtn:hover {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 0;
+  }
+  .cbtn.alt {
+    background: #fff;
+    color: var(--ink);
+  }
+  .sfx {
+    position: absolute;
+    font-family: "Bangers", cursive;
+    letter-spacing: 0.04em;
+    color: #fff;
+    -webkit-text-stroke: 2px var(--ink);
+    text-shadow: 3px 3px 0 var(--ink);
+    pointer-events: none;
+    z-index: 4;
+  }
+  .sfx-1 {
+    right: 14px;
+    top: 26px;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    color: #ff5c8a;
+    transform: rotate(11deg);
+  }
+  .sfx-2 {
+    right: -6px;
+    bottom: 6px;
+    font-size: 2rem;
+    color: #ffd83d;
+    transform: rotate(-9deg);
+  }
+  .sfx-3 {
+    right: 10px;
+    top: 34px;
+    font-size: 1.8rem;
+    color: #4dc9ff;
+    transform: rotate(8deg);
+  }
+  .sfx-c {
+    right: 8px;
+    bottom: 8px;
+    font-size: 1.5rem;
+    color: #fff;
+    transform: rotate(-7deg);
+    opacity: 0.9;
+  }
+
+  /* ── stats ── */
+  .stats ul {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .stats b {
+    display: block;
+    font-family: "Bangers", cursive;
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--h);
+    -webkit-text-stroke: 2px var(--ink);
+  }
+  .stats span {
+    display: block;
+    font-family: "Inter", sans-serif;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+    margin-top: 5px;
+  }
+
+  /* ── now ── */
+  .now-t {
+    font-family: "Bangers", cursive;
+    font-size: clamp(1.6rem, 3.6vw, 2.2rem);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin-top: 6px;
+  }
+  .now-d {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    margin: 10px 0 14px;
+  }
+  .meter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .meter > span {
+    flex: 1;
+    height: 12px;
+    border: 3px solid var(--ink);
+    background: #fff;
+  }
+  .meter i {
+    display: block;
+    height: 100%;
+    background: var(--h);
+  }
+  .meter b {
+    font-family: "Bangers", cursive;
+    font-size: 1.05rem;
+  }
+  .clink {
+    font-family: "Bangers", cursive;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    border-bottom: 3px solid var(--h);
+  }
+
+  /* ── case panels ── */
+  .case a {
+    display: block;
+    color: var(--ink);
+  }
+  .case h3 {
+    font-family: "Bangers", cursive;
+    font-size: 1.5rem;
+    letter-spacing: 0.02em;
+    line-height: 1.02;
+    margin: 6px 0 8px;
+  }
+  .case:hover h3 {
+    color: #d0246a;
+  }
+  .case p {
+    font-size: 0.86rem;
+    line-height: 1.55;
+  }
+  .case-f {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 3px solid var(--ink);
+    font-family: "Inter", sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+  .case-go {
+    color: var(--ink);
+  }
+
+  /* ── strips ── */
+  .strip a {
+    display: block;
+    color: var(--ink);
+  }
+  .strip .bubble {
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin: 8px 0 18px;
+    background: var(--h);
+  }
+  .strip .bubble p {
+    font-size: 0.95rem;
+    line-height: 1.28;
+  }
+  .strip .tail {
+    background: var(--h);
+    left: 26px;
+  }
+  .strip-d {
+    font-size: 0.83rem;
+    line-height: 1.55;
+    color: #3c382f;
+  }
+  .strip-m {
+    display: block;
+    margin-top: 12px;
+    font-family: "Inter", sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+
+  /* ── lab / villains ── */
+  .lab li {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 2px dashed rgba(20, 20, 20, 0.25);
+  }
+  .lb-n {
+    font-family: "Bangers", cursive;
+    font-size: 1.3rem;
+    color: var(--h);
+    -webkit-text-stroke: 1.5px var(--ink);
+  }
+  .lb-b b {
+    display: block;
+    font-family: "Bangers", cursive;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+  }
+  .lb-b span {
+    display: block;
+    font-size: 0.83rem;
+    line-height: 1.55;
+    color: #3c382f;
+    margin-top: 3px;
+  }
+  .villains li {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 2px dashed rgba(20, 20, 20, 0.25);
+  }
+  .vl-s {
+    font-family: "Bangers", cursive;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    background: var(--ink);
+    color: var(--h);
+    text-align: center;
+    padding: 2px 0;
+    align-self: start;
+  }
+  .vl-b b {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .vl-b i {
+    display: block;
+    font-style: normal;
+    font-family: "Inter", sans-serif;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+    margin-top: 5px;
+  }
+
+  /* ── back cover ── */
+  .back {
+    max-width: 1200px;
+    margin: 34px auto 0;
+    padding: 0 20px 40px;
+  }
+  .back-in {
+    position: relative;
+    background: var(--ink);
+    color: #fff;
+    border: 4px solid var(--ink);
+    box-shadow: 6px 6px 0 #ff5c8a;
+    padding: 40px 26px 34px;
+    text-align: center;
+  }
+  .back-in .cap {
+    background: #ffd83d;
+  }
+  .back-in h2 {
+    font-family: "Bangers", cursive;
+    font-size: clamp(1.8rem, 5.4vw, 3.4rem);
+    line-height: 0.98;
+    letter-spacing: 0.02em;
+    color: #ffd83d;
+    -webkit-text-stroke: 1.5px #141414;
+    text-shadow: 3px 3px 0 #ff5c8a;
+    margin-bottom: 20px;
+  }
+  .mail {
+    display: inline-block;
+    font-family: "Bangers", cursive;
+    font-size: clamp(1.1rem, 3.4vw, 2rem);
+    letter-spacing: 0.04em;
+    color: #4dc9ff;
+    word-break: break-word;
+    border-bottom: 3px solid #4dc9ff;
+  }
+  .mail:hover {
+    color: #ffd83d;
+    border-bottom-color: #ffd83d;
+  }
+  .back-n {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+  .back-n a {
+    font-family: "Bangers", cursive;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    padding: 3px 12px;
+    border: 2px solid #fff;
+  }
+  .back-n a:hover {
+    background: #fff;
+    color: var(--ink);
+  }
+  .back-f {
+    margin-top: 22px;
+    font-family: "Inter", sans-serif;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: #8d887c;
+    line-height: 2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nv,
+    .cbtn {
+      transition: none !important;
+    }
+  }
+</style>

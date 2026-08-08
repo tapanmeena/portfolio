@@ -41,7 +41,7 @@ export const authors: Record<string, Author> = {
     title: "Senior Software Engineer",
     location: "Hyderabad, India",
     email: "tapanmeena1998@gmail.com",
-    bio: "Senior Software Engineer with 5+ years of experience in designing and developing scalable software solutions. Currently working at MAQ Software, where I lead cross-functional teams and drive technical excellence across projects. Passionate about mentoring junior developers and implementing best practices that enhance team productivity and code quality.",
+    bio: "Senior Software Engineer with 6+ years of experience in designing and developing scalable software solutions. Currently working at MAQ Software, where I lead cross-functional teams and drive technical excellence across projects. Passionate about mentoring junior developers and implementing best practices that enhance team productivity and code quality.",
     social: {
       twitter: "https://twitter.com/tapanmeena3",
       github: "https://github.com/tapanmeena",

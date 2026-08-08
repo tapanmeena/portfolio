@@ -1,0 +1,1048 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const schedule = projects.slice(0, 7);
+const revisions = posts.slice(0, 5);
+
+const pad = (n: number) => String(n).padStart(3, "0");
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const dsn = (d: Date) => `${d.getFullYear()}.${pad2(d.getMonth() + 1)}`;
+const today = new Date();
+const sheetDate = `${today.getFullYear()}.${pad2(today.getMonth() + 1)}.${pad2(today.getDate())}`;
+
+const specs = [
+  { k: "designation", v: "tapan meena" },
+  { k: "class", v: "senior software engineer / project lead" },
+  { k: "operator", v: "maq software" },
+  { k: "site", v: "hyderabad, in · 17.3850° n, 78.4867° e" },
+  { k: "disciplines", v: ".net · typescript · azure · sql · node" },
+  { k: "rated for", v: "scalable backends · developer tooling · cloud" },
+];
+---
+
+<PreviewShell
+  title="03 · blueprint — theme mockup"
+  active="blueprint"
+  bg="#08131f"
+  fg="#d6ecfa"
+  fontHref="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;600;700&display=swap"
+>
+  <div class="bp">
+    <div class="grid" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"></div>
+    <span class="reg tl" aria-hidden="true"></span>
+    <span class="reg tr" aria-hidden="true"></span>
+    <span class="reg bl" aria-hidden="true"></span>
+    <span class="reg br" aria-hidden="true"></span>
+
+    <div class="sheet">
+      <!-- ── SHEET HEADER / NAV ── -->
+      <header class="sheethead">
+        <div class="sh-l">
+          <span class="sh-logo">T·M</span>
+          <span class="sh-doc">DWG. TM-2026-01 — GENERAL ARRANGEMENT</span>
+        </div>
+        <nav class="sh-nav">
+          <a href="#" class="on">A1 index</a>
+          <a href="#">A2 works</a>
+          <a href="#">A3 notes</a>
+          <a href="#">A4 trading</a>
+          <a href="#">A5 defects</a>
+          <a href="#">A6 contact</a>
+        </nav>
+      </header>
+
+      <!-- ── FIG 01 · HERO ── -->
+      <section class="fig">
+        <span class="fig-label">FIG. 01 — ELEVATION</span>
+
+        <div class="dim dim-top">
+          <span class="dim-line"><span class="dim-cap">SPAN — 6 YRS PROFESSIONAL</span></span>
+        </div>
+
+        <h1 class="title">
+          <span class="t1">I design systems</span>
+          <span class="t2">that survive <em>production.</em></span>
+        </h1>
+
+        <div class="dim dim-bottom">
+          <span class="dim-line"><span class="dim-cap">TOLERANCE ±0 DOWNTIME</span></span>
+        </div>
+
+        <div class="hero-body">
+          <p class="abstract">
+            <span class="ab-drop">A</span>n engineering log of backends, developer tooling, and one Raspberry&nbsp;Pi that trades the NSE from a shelf
+            in Hyderabad. Everything here is documented the way it was actually built — including the parts that failed inspection.
+          </p>
+          <ul class="spec">
+            {
+              specs.map((s, i) => (
+                <li>
+                  <span class="sp-n">{pad2(i + 1)}</span>
+                  <span class="sp-k">{s.k}</span>
+                  <span class="sp-v">{s.v}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div class="hero-cta">
+          <a class="bbtn" href="/projects">◀ open drawing set</a>
+          <a class="bbtn ghost" href="/contact">request consultation</a>
+        </div>
+      </section>
+
+      <!-- ── FIG 02 · NOW (detail callout) ── -->
+      {
+        nowBuilding && (
+          <section class="fig detail">
+            <span class="fig-label">FIG. 02 — DETAIL A · SCALE 1:1</span>
+            <div class="callout">
+              <span class="balloon">A</span>
+              <span class="leader" aria-hidden="true" />
+              <div class="cal-body">
+                <div class="cal-head">
+                  <h2>{nowBuilding.data.title}</h2>
+                  <span class="cal-status">
+                    <i class="led" /> UNDER CONSTRUCTION
+                  </span>
+                </div>
+                <p class="cal-desc">{nowBuilding.data.description}</p>
+                <dl class="cal-specs">
+                  <div>
+                    <dt>part no.</dt>
+                    <dd>
+                      TM-{pad(1)}-{nowBuilding.id.slice(0, 4).toUpperCase()}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>commenced</dt>
+                    <dd>{dsn(new Date(nowBuilding.data.startDate))}</dd>
+                  </div>
+                  <div>
+                    <dt>materials</dt>
+                    <dd>{nowBuilding.data.techStack.slice(0, 5).join(", ").toLowerCase()}</dd>
+                  </div>
+                  <div>
+                    <dt>completion</dt>
+                    <dd class="amb">77% — rev C</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          </section>
+        )
+      }
+
+      <!-- ── FIG 03 · SCHEDULE ── -->
+      <section class="fig">
+        <span class="fig-label">FIG. 03 — SCHEDULE OF WORKS</span>
+        <div class="tablewrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th class="c-n">item</th>
+                <th class="c-p">part no.</th>
+                <th>description</th>
+                <th class="c-t">discipline</th>
+                <th class="c-d">issued</th>
+                <th class="c-s">status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                schedule.map((p, i) => (
+                  <tr>
+                    <td class="c-n">{pad2(i + 1)}</td>
+                    <td class="c-p mono">TM-{pad(i + 101)}</td>
+                    <td class="c-desc">
+                      <a href={`/projects/${p.id}`}>{p.data.title}</a>
+                      <span class="sub">{p.data.description}</span>
+                    </td>
+                    <td class="c-t">{(p.data.category ?? "misc").toLowerCase()}</td>
+                    <td class="c-d mono">{dsn(new Date(p.data.startDate))}</td>
+                    <td class="c-s">
+                      <span class:list={["pill", p.data.status]}>{p.data.status === "in-progress" ? "in works" : "issued"}</span>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="fignote">→ {projects.length} items total. <a href="/projects">See full schedule ↗</a></p>
+      </section>
+
+      <!-- ── FIG 04 · REVISIONS ── -->
+      <section class="fig">
+        <span class="fig-label">FIG. 04 — REVISION HISTORY / FIELD NOTES</span>
+        <ul class="revs">
+          {
+            revisions.map((p, i) => (
+              <li>
+                <a href={`/blog/${p.id}`}>
+                  <span class="rv-r">REV {String.fromCharCode(65 + revisions.length - 1 - i)}</span>
+                  <span class="rv-d mono">{dsn(new Date(p.data.publishedAt))}</span>
+                  <span class="rv-t">{p.data.title}</span>
+                  <span class="rv-c">{p.data.category.toLowerCase()}</span>
+                  <span class="rv-a">↗</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ── FIG 05 · MACHINE ROOM ── -->
+      <section class="fig">
+        <span class="fig-label">FIG. 05 — PLANT SCHEMATIC · MACHINE ROOM</span>
+        <div class="plant">
+          <div class="bus" aria-hidden="true"></div>
+          <ul class="nodes">
+            {
+              labEntries.map((e, i) => (
+                <li class="node">
+                  <span class="nd-tap" aria-hidden="true" />
+                  <span class="nd-box">
+                    <span class="nd-id">M{pad2(i + 1)}</span>
+                    <span class="nd-t">{e.title}</span>
+                    <span class="nd-s">{e.stack.slice(0, 3).join(" · ").toLowerCase()}</span>
+                    <span class:list={["nd-a", e.access]}>{e.access.replace("-", " ")}</span>
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <!-- ── NOTES ── -->
+      <section class="fig">
+        <span class="fig-label">GENERAL NOTES — DEFECT REGISTER</span>
+        <ul class="notes">
+          {
+            curses.slice(0, 3).map((c, i) => (
+              <li>
+                <span class="tri">
+                  <b>{i + 1}</b>
+                </span>
+                <span class="nt-body">
+                  <b class="nt-t">{c.title}</b>
+                  <span class="nt-m">
+                    {c.project.toLowerCase()} · severity {c.severity} · {c.date}
+                  </span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- ── TITLE BLOCK ── -->
+      <footer class="titleblock">
+        <div class="tb tb-main">
+          <span class="tb-k">project</span>
+          <span class="tb-v big">THE WORKSHOP LOG</span>
+          <span class="tb-sub">portfolio · writing · trading curriculum</span>
+        </div>
+        <div class="tb">
+          <span class="tb-k">drawn by</span>
+          <span class="tb-v">T. MEENA</span>
+        </div>
+        <div class="tb">
+          <span class="tb-k">checked</span>
+          <span class="tb-v">SELF</span>
+        </div>
+        <div class="tb">
+          <span class="tb-k">date</span>
+          <span class="tb-v mono">{sheetDate}</span>
+        </div>
+        <div class="tb">
+          <span class="tb-k">scale</span>
+          <span class="tb-v mono">1 : 1</span>
+        </div>
+        <div class="tb">
+          <span class="tb-k">sheet</span>
+          <span class="tb-v mono">01 / 07</span>
+        </div>
+        <div class="tb">
+          <span class="tb-k">rev</span>
+          <span class="tb-v amb">C</span>
+        </div>
+        <div class="tb tb-contact">
+          <span class="tb-k">correspondence</span>
+          <a class="tb-v link" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+        </div>
+      </footer>
+    </div>
+  </div>
+</PreviewShell>
+
+<style>
+  .bp {
+    --navy: #08131f;
+    --ink: #d6ecfa;
+    --cy: #5fc8f0;
+    --cy-dim: rgba(95, 200, 240, 0.32);
+    --amb: #ffb454;
+    --mut: #6f93ab;
+    position: relative;
+    min-height: 100vh;
+    background: var(--navy);
+    color: var(--ink);
+    font-family: "IBM Plex Sans Condensed", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  .mono {
+    font-family: "IBM Plex Mono", monospace;
+  }
+  .amb {
+    color: var(--amb);
+  }
+  .bp :global(a) {
+    text-decoration: none;
+  }
+
+  .grid {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(95, 200, 240, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(95, 200, 240, 0.05) 1px, transparent 1px),
+      linear-gradient(rgba(95, 200, 240, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(95, 200, 240, 0.1) 1px, transparent 1px);
+    background-size:
+      16px 16px,
+      16px 16px,
+      96px 96px,
+      96px 96px;
+  }
+  .glow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(70% 55% at 50% 0%, rgba(95, 200, 240, 0.12), transparent 70%);
+  }
+  .reg {
+    position: fixed;
+    width: 26px;
+    height: 26px;
+    pointer-events: none;
+    z-index: 30;
+    border: 0 solid var(--cy);
+    opacity: 0.6;
+  }
+  .reg.tl {
+    top: 12px;
+    left: 12px;
+    border-top-width: 1px;
+    border-left-width: 1px;
+  }
+  .reg.tr {
+    top: 12px;
+    right: 12px;
+    border-top-width: 1px;
+    border-right-width: 1px;
+  }
+  .reg.bl {
+    bottom: 12px;
+    left: 12px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+  }
+  .reg.br {
+    bottom: 12px;
+    right: 12px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+  }
+
+  .sheet {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 26px 24px 0;
+  }
+
+  /* ── header ── */
+  .sheethead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 10px 0 12px;
+    border-bottom: 1px solid var(--cy-dim);
+  }
+  .sh-l {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sh-logo {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.16em;
+    color: var(--navy);
+    background: var(--cy);
+    padding: 3px 8px;
+  }
+  .sh-doc {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+  .sh-nav {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  .sh-nav a {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    color: var(--mut);
+  }
+  .sh-nav a:hover {
+    color: var(--ink);
+    border-color: var(--cy-dim);
+  }
+  .sh-nav a.on {
+    color: var(--navy);
+    background: var(--cy);
+  }
+
+  /* ── figures ── */
+  .fig {
+    position: relative;
+    margin: 54px 0;
+    padding-top: 26px;
+    border-top: 1px dashed var(--cy-dim);
+  }
+  .fig-label {
+    position: absolute;
+    top: -8px;
+    left: 0;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    color: var(--cy);
+    background: var(--navy);
+    padding-right: 12px;
+  }
+
+  /* ── dimension lines ── */
+  .dim {
+    display: block;
+    padding: 12px 0;
+  }
+  .dim-line {
+    position: relative;
+    display: block;
+    height: 1px;
+    background: var(--cy-dim);
+  }
+  .dim-line::before,
+  .dim-line::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    width: 1px;
+    height: 11px;
+    background: var(--cy);
+  }
+  .dim-line::before {
+    left: 0;
+  }
+  .dim-line::after {
+    right: 0;
+  }
+  .dim-cap {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--navy);
+    padding: 0 12px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    color: var(--mut);
+    white-space: nowrap;
+  }
+
+  .title {
+    font-weight: 700;
+    font-size: clamp(2.5rem, 8.4vw, 6.4rem);
+    line-height: 0.95;
+    letter-spacing: -0.028em;
+    text-align: center;
+  }
+  .t1,
+  .t2 {
+    display: block;
+  }
+  .t2 em {
+    font-style: normal;
+    color: var(--cy);
+    text-shadow: 0 0 30px rgba(95, 200, 240, 0.4);
+  }
+
+  .hero-body {
+    display: grid;
+    gap: 30px;
+    margin-top: 34px;
+  }
+  @media (min-width: 900px) {
+    .hero-body {
+      grid-template-columns: 1fr 1fr;
+      gap: 44px;
+    }
+  }
+  .abstract {
+    font-size: 1.05rem;
+    line-height: 1.68;
+    color: #b7d6ea;
+    max-width: 52ch;
+  }
+  .ab-drop {
+    float: left;
+    font-family: "IBM Plex Sans Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 3.1rem;
+    line-height: 0.82;
+    padding: 4px 10px 0 0;
+    color: var(--cy);
+  }
+  .spec li {
+    display: grid;
+    grid-template-columns: 26px 116px 1fr;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px dotted rgba(95, 200, 240, 0.18);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+  }
+  .sp-n {
+    color: var(--cy);
+    opacity: 0.7;
+  }
+  .sp-k {
+    color: var(--mut);
+    letter-spacing: 0.06em;
+  }
+  .sp-v {
+    color: var(--ink);
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    justify-content: center;
+  }
+  .bbtn {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    padding: 10px 20px;
+    border: 1px solid var(--cy);
+    color: var(--navy);
+    background: var(--cy);
+    transition: 0.16s ease;
+  }
+  .bbtn:hover {
+    box-shadow: 0 0 26px -4px rgba(95, 200, 240, 0.7);
+  }
+  .bbtn.ghost {
+    background: transparent;
+    color: var(--cy);
+  }
+  .bbtn.ghost:hover {
+    background: rgba(95, 200, 240, 0.1);
+    box-shadow: none;
+  }
+
+  /* ── callout ── */
+  .callout {
+    position: relative;
+    padding-left: 46px;
+  }
+  .balloon {
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--amb);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    color: var(--amb);
+  }
+  .leader {
+    position: absolute;
+    left: 30px;
+    top: 21px;
+    width: 16px;
+    height: 1px;
+    background: var(--amb);
+  }
+  .cal-body {
+    border: 1px solid var(--cy-dim);
+    background: rgba(11, 30, 48, 0.6);
+    padding: 20px 22px 22px;
+  }
+  .cal-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--cy-dim);
+    padding-bottom: 12px;
+  }
+  .cal-head h2 {
+    font-size: clamp(1.5rem, 3.6vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .cal-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--amb);
+  }
+  .led {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--amb);
+    box-shadow: 0 0 10px var(--amb);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    50% {
+      opacity: 0.25;
+    }
+  }
+  .cal-desc {
+    margin: 14px 0 18px;
+    line-height: 1.62;
+    color: #b7d6ea;
+    max-width: 62ch;
+  }
+  .cal-specs {
+    display: grid;
+    gap: 0;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+  }
+  @media (min-width: 760px) {
+    .cal-specs {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 30px;
+    }
+  }
+  .cal-specs > div {
+    display: grid;
+    grid-template-columns: 108px 1fr;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px dotted rgba(95, 200, 240, 0.18);
+  }
+  .cal-specs dt {
+    color: var(--mut);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── table ── */
+  .tablewrap {
+    overflow-x: auto;
+    border: 1px solid var(--cy-dim);
+  }
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+  }
+  .tbl th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--cy);
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--cy-dim);
+    background: rgba(95, 200, 240, 0.06);
+    font-weight: 500;
+  }
+  .tbl td {
+    padding: 11px 12px;
+    border-bottom: 1px dotted rgba(95, 200, 240, 0.16);
+    vertical-align: top;
+    font-size: 13.5px;
+  }
+  .tbl tbody tr:hover {
+    background: rgba(95, 200, 240, 0.055);
+  }
+  .c-n,
+  .c-p,
+  .c-d {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px !important;
+    color: var(--mut);
+    white-space: nowrap;
+  }
+  .c-desc a {
+    font-weight: 600;
+    font-size: 1.02rem;
+    border-bottom: 1px solid transparent;
+  }
+  .c-desc a:hover {
+    color: var(--cy);
+    border-bottom-color: var(--cy);
+  }
+  .sub {
+    display: block;
+    font-size: 12px;
+    color: var(--mut);
+    margin-top: 3px;
+    max-width: 48ch;
+    line-height: 1.45;
+  }
+  .c-t {
+    color: #9fc3d9;
+    font-size: 12.5px !important;
+    white-space: nowrap;
+  }
+  .pill {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid var(--mut);
+    color: var(--mut);
+    white-space: nowrap;
+  }
+  .pill.in-progress {
+    border-color: var(--amb);
+    color: var(--amb);
+  }
+  .fignote {
+    margin-top: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--mut);
+  }
+  .fignote a {
+    color: var(--cy);
+    border-bottom: 1px dotted currentColor;
+  }
+
+  /* ── revisions ── */
+  .revs {
+    border: 1px solid var(--cy-dim);
+  }
+  .revs li + li {
+    border-top: 1px dotted rgba(95, 200, 240, 0.16);
+  }
+  .revs a {
+    display: grid;
+    grid-template-columns: 62px 1fr 20px;
+    gap: 4px 14px;
+    padding: 13px 14px;
+    align-items: baseline;
+    transition: background 0.14s ease;
+  }
+  .revs a:hover {
+    background: rgba(95, 200, 240, 0.06);
+  }
+  .rv-r {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--amb);
+    border: 1px solid rgba(255, 180, 84, 0.4);
+    padding: 2px 6px;
+    justify-self: start;
+  }
+  .rv-d {
+    font-size: 11px;
+    color: var(--mut);
+  }
+  .rv-t {
+    font-size: 1.02rem;
+    font-weight: 600;
+    grid-column: 2 / -1;
+  }
+  .rv-c {
+    grid-column: 2;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--mut);
+  }
+  .rv-a {
+    grid-row: 1;
+    grid-column: 3;
+    text-align: right;
+    color: var(--mut);
+  }
+  .revs a:hover .rv-a,
+  .revs a:hover .rv-t {
+    color: var(--cy);
+  }
+  @media (min-width: 900px) {
+    .revs a {
+      grid-template-columns: 62px 78px 1fr 150px 20px;
+    }
+    .rv-t {
+      grid-column: 3;
+    }
+    .rv-c {
+      grid-column: 4;
+      text-align: right;
+    }
+    .rv-a {
+      grid-column: 5;
+    }
+  }
+
+  /* ── plant ── */
+  .plant {
+    position: relative;
+    padding-left: 28px;
+  }
+  .bus {
+    position: absolute;
+    left: 8px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: linear-gradient(var(--cy), rgba(95, 200, 240, 0.15));
+  }
+  .node {
+    position: relative;
+    padding: 7px 0;
+  }
+  .nd-tap {
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    width: 20px;
+    height: 1px;
+    background: var(--cy-dim);
+  }
+  .nd-tap::before {
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: -3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 1px solid var(--cy);
+  }
+  .nd-box {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 3px 12px;
+    border: 1px solid var(--cy-dim);
+    padding: 11px 14px;
+    align-items: baseline;
+    background: rgba(11, 30, 48, 0.5);
+    transition: border-color 0.16s ease;
+  }
+  .node:hover .nd-box {
+    border-color: var(--cy);
+  }
+  .nd-id {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--cy);
+  }
+  .nd-t {
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+  .nd-s {
+    grid-column: 2;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--mut);
+  }
+  .nd-a {
+    grid-column: 2;
+    justify-self: start;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mut);
+    margin-top: 4px;
+  }
+  .nd-a.public {
+    color: #4ade80;
+  }
+  .nd-a.restricted {
+    color: var(--amb);
+  }
+  @media (min-width: 880px) {
+    .nd-box {
+      grid-template-columns: 46px 230px 1fr 130px;
+    }
+    .nd-s {
+      grid-column: 3;
+    }
+    .nd-a {
+      grid-column: 4;
+      justify-self: end;
+      margin-top: 0;
+    }
+  }
+
+  /* ── notes ── */
+  .notes {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 880px) {
+    .notes {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .notes li {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 12px;
+  }
+  .tri {
+    position: relative;
+    width: 30px;
+    height: 27px;
+    display: grid;
+    place-items: center;
+  }
+  .tri::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    background: var(--amb);
+    opacity: 0.16;
+  }
+  .tri b {
+    position: relative;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--amb);
+    padding-top: 7px;
+  }
+  .nt-t {
+    display: block;
+    font-size: 0.98rem;
+    line-height: 1.35;
+    font-weight: 600;
+  }
+  .nt-m {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    color: var(--mut);
+    margin-top: 7px;
+  }
+
+  /* ── title block ── */
+  .titleblock {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border: 1px solid var(--cy);
+    margin: 40px 0 30px;
+  }
+  @media (min-width: 900px) {
+    .titleblock {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+  .tb {
+    padding: 12px 14px;
+    border-right: 1px solid var(--cy-dim);
+    border-bottom: 1px solid var(--cy-dim);
+  }
+  .tb-main {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 900px) {
+    .tb-main {
+      grid-column: span 3;
+      grid-row: span 2;
+    }
+    .tb-contact {
+      grid-column: span 3;
+    }
+  }
+  .tb-contact {
+    grid-column: 1 / -1;
+  }
+  .tb-k {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--mut);
+    margin-bottom: 6px;
+  }
+  .tb-v {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+  }
+  .tb-v.big {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    letter-spacing: -0.01em;
+    color: var(--cy);
+  }
+  .tb-sub {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--mut);
+    margin-top: 6px;
+  }
+  .tb-v.link:hover {
+    color: var(--cy);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .led {
+      animation: none !important;
+    }
+  }
+</style>

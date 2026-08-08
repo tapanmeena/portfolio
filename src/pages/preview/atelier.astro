@@ -1,0 +1,859 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const plates = projects.slice(0, 5);
+const notebooks = posts.slice(0, 5);
+
+const roman = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii"];
+const pad = (n: number) => String(n).padStart(2, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const longDate = (d: Date) => d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+const today = new Date();
+---
+
+<PreviewShell
+  title="05 · atelier — theme mockup"
+  active="atelier"
+  bg="#f7f3ea"
+  fg="#1a1714"
+  fontHref="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,500&family=Jost:wght@300;400;500&display=swap"
+>
+  <div class="at">
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- ── BAR ── -->
+    <header class="bar">
+      <nav class="bnav left">
+        <a href="#">Works</a>
+        <a href="#">Notebooks</a>
+        <a href="#">Trading</a>
+      </nav>
+      <a class="wordmark" href="/">
+        <span class="wm-main">Tapan Meena</span>
+        <span class="wm-sub">Atelier &amp; Workshop</span>
+      </a>
+      <nav class="bnav right">
+        <a href="#">Apparatus</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </nav>
+    </header>
+
+    <!-- ── HERO ── -->
+    <section class="hero">
+      <p class="kicker">Hyderabad, India <span class="sep">·</span> Established MMXIX <span class="sep">·</span> Collection No. 1</p>
+      <h1 class="display">
+        <span class="d-l1">Software,</span>
+        <span class="d-l2"><em>made carefully</em></span>
+        <span class="d-l3">&amp; kept in the open.</span>
+      </h1>
+      <div class="hrule" aria-hidden="true"><span></span><i>✦</i><span></span></div>
+      <p class="standfirst">
+        A working collection of backends, developer tools, and one small machine that trades the Indian markets from a shelf. Each piece is catalogued
+        with the thinking behind it — including the parts that did not survive the first draft.
+      </p>
+      <div class="hero-meta">
+        <span><b>{projects.length}</b> works</span>
+        <span class="sep">·</span>
+        <span><b>{posts.length}</b> notebooks</span>
+        <span class="sep">·</span>
+        <span><b>6+</b> years in practice</span>
+        <span class="sep">·</span>
+        <span class="open">Open to commissions</span>
+      </div>
+    </section>
+
+    <!-- ── ON THE BENCH ── -->
+    {
+      nowBuilding && (
+        <section class="bench">
+          <div class="bench-inner">
+            <p class="label">On the bench</p>
+            <h2 class="bench-t">{nowBuilding.data.title}</h2>
+            <p class="bench-d">{nowBuilding.data.description}</p>
+            <dl class="museum">
+              <div>
+                <dt>Medium</dt>
+                <dd>{nowBuilding.data.techStack.slice(0, 4).join(", ")}</dd>
+              </div>
+              <div>
+                <dt>Commenced</dt>
+                <dd>{yr(nowBuilding.data.startDate)}</dd>
+              </div>
+              <div>
+                <dt>State</dt>
+                <dd class="terra">In progress</dd>
+              </div>
+            </dl>
+            <a class="quiet-link" href={`/projects/${nowBuilding.id}`}>
+              Read the working notes <span class="arr">→</span>
+            </a>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- ── PLATES ── -->
+    <section class="section">
+      <header class="sechead">
+        <span class="sh-rule" aria-hidden="true"></span>
+        <h2>Selected Works</h2>
+        <span class="sh-rule" aria-hidden="true"></span>
+      </header>
+
+      <ol class="plates">
+        {
+          plates.map((p, i) => (
+            <li class="plate">
+              <a href={`/projects/${p.id}`}>
+                <span class="pl-num">
+                  <b>{pad(i + 1)}</b>
+                  <i>Plate {roman[i]}</i>
+                </span>
+                <span class="pl-body">
+                  <h3 class="pl-t">{p.data.title}</h3>
+                  <p class="pl-d">{p.data.description}</p>
+                  <span class="pl-label">
+                    <span class="pl-cat">{p.data.category ?? "Miscellany"}</span>
+                    <span class="pl-dot">·</span>
+                    <span>{p.data.techStack.slice(0, 3).join(", ")}</span>
+                    <span class="pl-dot">·</span>
+                    <span>{yr(p.data.startDate)}</span>
+                  </span>
+                </span>
+                <span class="pl-arr" aria-hidden="true">
+                  →
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="sec-more">
+        <a class="quiet-link" href="/projects">View the complete catalogue <span class="arr">→</span></a>
+      </p>
+    </section>
+
+    <!-- ── NOTEBOOKS ── -->
+    <section class="section tinted">
+      <header class="sechead">
+        <span class="sh-rule" aria-hidden="true"></span>
+        <h2>From the Notebooks</h2>
+        <span class="sh-rule" aria-hidden="true"></span>
+      </header>
+      <ul class="notes">
+        {
+          notebooks.map((p) => (
+            <li>
+              <a href={`/blog/${p.id}`}>
+                <span class="nb-l">
+                  <h3 class="nb-t">{p.data.title}</h3>
+                  <p class="nb-d">{p.data.description}</p>
+                </span>
+                <span class="nb-r">
+                  <span class="nb-cat">{p.data.category}</span>
+                  <span class="nb-date">{longDate(new Date(p.data.publishedAt))}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="sec-more">
+        <a class="quiet-link" href="/blog">Every entry <span class="arr">→</span></a>
+      </p>
+    </section>
+
+    <!-- ── APPARATUS ── -->
+    <section class="section">
+      <header class="sechead">
+        <span class="sh-rule" aria-hidden="true"></span>
+        <h2>The Apparatus</h2>
+        <span class="sh-rule" aria-hidden="true"></span>
+      </header>
+      <p class="sec-lede">Machines kept running at home, mostly so the works above have somewhere honest to live.</p>
+      <ul class="app">
+        {
+          labEntries.map((e, i) => (
+            <li>
+              <span class="ap-n">{roman[i]}</span>
+              <span class="ap-b">
+                <h3>{e.title}</h3>
+                <p>{e.description}</p>
+                <span class="ap-m">{e.stack.join(" · ")}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── MARGINALIA ── -->
+    <section class="section marg">
+      <header class="sechead">
+        <span class="sh-rule" aria-hidden="true"></span>
+        <h2>Marginalia</h2>
+        <span class="sh-rule" aria-hidden="true"></span>
+      </header>
+      <blockquote class="pull">
+        <p>“{curses[0].title}.”</p>
+        <cite>
+          {curses[0].project}
+          <span class="pl-dot">·</span>
+          {curses[0].date}
+        </cite>
+      </blockquote>
+      <p class="sec-more">
+        <a class="quiet-link" href="/cursed-knowledge">
+          {curses.length} more hard-won corrections <span class="arr">→</span>
+        </a>
+      </p>
+    </section>
+
+    <!-- ── COLOPHON ── -->
+    <footer class="colophon">
+      <div class="hrule" aria-hidden="true"><span></span><i>✦</i><span></span></div>
+      <p class="co-invite">Should you have something difficult to build,</p>
+      <a class="co-mail" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+      <p class="co-sig">Tapan Meena</p>
+      <p class="co-meta">
+        Set in Playfair Display &amp; Jost <span class="sep">·</span> Printed digitally in Hyderabad <span class="sep">·</span>
+        {longDate(today)}
+      </p>
+      <nav class="co-nav">
+        <a href="#">GitHub</a><span class="sep">·</span><a href="#">LinkedIn</a><span class="sep">·</span><a href="#">Twitter</a><span class="sep"
+          >·</span
+        ><a href="/rss.xml">RSS</a>
+      </nav>
+    </footer>
+  </div>
+</PreviewShell>
+
+<style>
+  .at {
+    --paper: #f7f3ea;
+    --paper-2: #f1ece0;
+    --ink: #1a1714;
+    --ink-soft: #6a6157;
+    --terra: #b0522a;
+    --hair: #d8d0c1;
+    position: relative;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Jost", system-ui, sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+  .at :global(a) {
+    text-decoration: none;
+  }
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.32;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/></filter><rect width='160' height='160' filter='url(%23g)' opacity='0.4'/></svg>");
+    mix-blend-mode: multiply;
+  }
+  .sep {
+    color: var(--terra);
+    opacity: 0.6;
+    margin: 0 2px;
+  }
+  .terra {
+    color: var(--terra);
+  }
+
+  /* ── bar ── */
+  .bar {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 12px;
+    padding: 26px 22px 20px;
+    border-bottom: 1px solid var(--hair);
+    text-align: center;
+  }
+  @media (min-width: 860px) {
+    .bar {
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+    }
+    .bnav.left {
+      justify-self: start;
+    }
+    .bnav.right {
+      justify-self: end;
+    }
+  }
+  .bnav {
+    display: flex;
+    gap: 22px;
+  }
+  .bnav a {
+    font-size: 10.5px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding-bottom: 3px;
+    border-bottom: 1px solid transparent;
+    transition: 0.2s ease;
+  }
+  .bnav a:hover {
+    color: var(--terra);
+    border-bottom-color: var(--terra);
+  }
+  .wordmark {
+    display: block;
+  }
+  .wm-main {
+    display: block;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.42rem;
+    letter-spacing: 0.02em;
+  }
+  .wm-sub {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+
+  /* ── hero ── */
+  .hero {
+    position: relative;
+    z-index: 3;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 84px 22px 74px;
+    text-align: center;
+  }
+  .kicker {
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .display {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2.6rem, 7.6vw, 5.6rem);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    margin: 30px 0 0;
+  }
+  .d-l1,
+  .d-l2,
+  .d-l3 {
+    display: block;
+  }
+  .d-l2 em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--terra);
+  }
+  .d-l3 {
+    font-size: 0.62em;
+    color: var(--ink-soft);
+    margin-top: 0.14em;
+  }
+  .hrule {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 34px auto;
+    max-width: 340px;
+  }
+  .hrule span {
+    flex: 1;
+    height: 1px;
+    background: var(--hair);
+  }
+  .hrule i {
+    font-style: normal;
+    font-size: 10px;
+    color: var(--terra);
+  }
+  .standfirst {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1rem, 1.7vw, 1.22rem);
+    line-height: 1.78;
+    color: #453e35;
+    max-width: 62ch;
+    margin: 0 auto;
+  }
+  .hero-meta {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 32px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .hero-meta b {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .open {
+    color: var(--terra);
+  }
+
+  /* ── bench ── */
+  .bench {
+    position: relative;
+    z-index: 3;
+    background: var(--paper-2);
+    border-top: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+  }
+  .bench-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 60px 22px 62px;
+  }
+  .label {
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--terra);
+  }
+  .bench-t {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2rem, 5.4vw, 3.4rem);
+    letter-spacing: -0.015em;
+    margin: 14px 0 16px;
+  }
+  .bench-d {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.06rem;
+    line-height: 1.8;
+    color: #453e35;
+    max-width: 64ch;
+  }
+  .museum {
+    display: grid;
+    gap: 0;
+    margin: 34px 0 26px;
+    border-top: 1px solid var(--hair);
+    max-width: 720px;
+  }
+  @media (min-width: 720px) {
+    .museum {
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 0;
+    }
+  }
+  .museum > div {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  @media (min-width: 720px) {
+    .museum > div {
+      border-top: 1px solid var(--hair);
+      border-bottom: 0;
+      padding-right: 20px;
+    }
+  }
+  .museum dt {
+    font-size: 9.5px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .museum dd {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 0.98rem;
+  }
+  .quiet-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    border-bottom: 1px solid var(--hair);
+    padding-bottom: 5px;
+    transition: 0.2s ease;
+  }
+  .quiet-link:hover {
+    color: var(--terra);
+    border-bottom-color: var(--terra);
+  }
+  .arr {
+    transition: transform 0.2s ease;
+    display: inline-block;
+  }
+  .quiet-link:hover .arr {
+    transform: translateX(4px);
+  }
+
+  /* ── sections ── */
+  .section {
+    position: relative;
+    z-index: 3;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 76px 22px 10px;
+  }
+  .section.tinted {
+    max-width: none;
+    background: var(--paper-2);
+    border-top: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    margin-top: 60px;
+    padding-bottom: 66px;
+  }
+  .section.tinted > * {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .sechead {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 12px;
+  }
+  .sechead h2 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: clamp(1.35rem, 3vw, 1.95rem);
+    white-space: nowrap;
+  }
+  .sh-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--hair);
+  }
+  .sec-lede {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--ink-soft);
+    max-width: 58ch;
+    margin: 6px 0 26px;
+  }
+  .sec-more {
+    margin-top: 30px;
+    text-align: center;
+  }
+
+  /* ── plates ── */
+  .plates {
+    margin-top: 22px;
+  }
+  .plate {
+    border-bottom: 1px solid var(--hair);
+  }
+  .plate a {
+    display: grid;
+    grid-template-columns: 68px 1fr;
+    gap: 6px 24px;
+    padding: 30px 6px 30px;
+    transition: 0.24s ease;
+  }
+  @media (min-width: 780px) {
+    .plate a {
+      grid-template-columns: 108px 1fr 40px;
+      gap: 6px 34px;
+      padding: 36px 6px;
+    }
+  }
+  .plate a:hover {
+    padding-left: 16px;
+  }
+  .pl-num {
+    display: block;
+    padding-top: 4px;
+  }
+  .pl-num b {
+    display: block;
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2rem, 4.4vw, 3rem);
+    line-height: 1;
+    color: var(--hair);
+    transition: color 0.24s ease;
+  }
+  .plate a:hover .pl-num b {
+    color: var(--terra);
+  }
+  .pl-num i {
+    display: block;
+    font-style: normal;
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+  .pl-t {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.45rem, 3.4vw, 2.15rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    transition: color 0.24s ease;
+  }
+  .plate a:hover .pl-t {
+    color: var(--terra);
+  }
+  .pl-d {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #56503f;
+    max-width: 60ch;
+    margin: 12px 0 14px;
+  }
+  .pl-label {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .pl-cat {
+    color: var(--terra);
+  }
+  .pl-dot {
+    opacity: 0.45;
+  }
+  .pl-arr {
+    display: none;
+    align-self: center;
+    justify-self: end;
+    font-size: 20px;
+    color: var(--hair);
+    transition: 0.24s ease;
+  }
+  @media (min-width: 780px) {
+    .pl-arr {
+      display: block;
+    }
+  }
+  .plate a:hover .pl-arr {
+    color: var(--terra);
+    transform: translateX(6px);
+  }
+
+  /* ── notebooks ── */
+  .notes {
+    margin-top: 22px;
+    border-top: 1px solid var(--hair);
+  }
+  .notes li {
+    border-bottom: 1px solid var(--hair);
+  }
+  .notes a {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px 30px;
+    padding: 26px 6px;
+    transition: 0.24s ease;
+  }
+  @media (min-width: 820px) {
+    .notes a {
+      grid-template-columns: 1fr 220px;
+      align-items: start;
+    }
+  }
+  .notes a:hover {
+    padding-left: 16px;
+  }
+  .nb-t {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.2rem, 2.6vw, 1.62rem);
+    line-height: 1.24;
+    transition: color 0.24s ease;
+  }
+  .notes a:hover .nb-t {
+    color: var(--terra);
+  }
+  .nb-d {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 0.96rem;
+    line-height: 1.72;
+    color: #56503f;
+    max-width: 60ch;
+    margin-top: 10px;
+  }
+  .nb-r {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  @media (min-width: 820px) {
+    .nb-r {
+      text-align: right;
+      padding-top: 6px;
+    }
+  }
+  .nb-cat {
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--terra);
+  }
+  .nb-date {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+
+  /* ── apparatus ── */
+  .app {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--hair);
+  }
+  @media (min-width: 800px) {
+    .app {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 46px;
+    }
+  }
+  .app li {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 18px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  .ap-n {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 0.95rem;
+    color: var(--terra);
+    padding-top: 3px;
+    letter-spacing: 0.12em;
+  }
+  .ap-b h3 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 400;
+    font-size: 1.16rem;
+  }
+  .ap-b p {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 0.93rem;
+    line-height: 1.7;
+    color: #56503f;
+    margin: 8px 0 10px;
+  }
+  .ap-m {
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ── marginalia ── */
+  .marg {
+    padding-bottom: 20px;
+  }
+  .pull {
+    margin: 26px auto 0;
+    max-width: 720px;
+    text-align: center;
+  }
+  .pull p {
+    font-family: "Playfair Display", Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.35rem, 3.4vw, 2.05rem);
+    line-height: 1.42;
+    color: var(--ink);
+  }
+  .pull cite {
+    display: block;
+    margin-top: 18px;
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ── colophon ── */
+  .colophon {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    padding: 70px 22px 60px;
+    max-width: 900px;
+    margin: 40px auto 0;
+    border-top: 1px solid var(--hair);
+  }
+  .co-invite {
+    font-family: "Playfair Display", Georgia, serif;
+    font-style: italic;
+    font-size: 1.06rem;
+    color: var(--ink-soft);
+  }
+  .co-mail {
+    display: inline-block;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.35rem, 4.4vw, 2.5rem);
+    letter-spacing: -0.01em;
+    margin: 14px 0 30px;
+    border-bottom: 1px solid var(--hair);
+    padding-bottom: 6px;
+    transition: 0.22s ease;
+    word-break: break-word;
+  }
+  .co-mail:hover {
+    color: var(--terra);
+    border-bottom-color: var(--terra);
+  }
+  .co-sig {
+    font-family: "Playfair Display", Georgia, serif;
+    font-style: italic;
+    font-size: 1.5rem;
+  }
+  .co-meta {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 14px;
+    line-height: 1.9;
+  }
+  .co-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .co-nav a:hover {
+    color: var(--terra);
+  }
+</style>

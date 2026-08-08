@@ -1,0 +1,896 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const cutouts = projects.slice(0, 6);
+const column = posts.slice(0, 4);
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const inks = ["blue", "pink", "yellow", "black"];
+const tilt = [-1.6, 1.1, -0.7, 1.8, -1.2, 0.9];
+const today = new Date();
+const issueDate = today.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
+---
+
+<PreviewShell
+  title="07 · zine — theme mockup"
+  active="zine"
+  bg="#f2ecdd"
+  fg="#141414"
+  fontHref="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Permanent+Marker&display=swap"
+>
+  <div class="zine">
+    <div class="halftone" aria-hidden="true"></div>
+    <div class="fibers" aria-hidden="true"></div>
+
+    <!-- ── COVER ── -->
+    <header class="cover">
+      <div class="stampline">
+        <span class="stamp">ISSUE 01</span>
+        <span class="stamp pinkstamp">{issueDate}</span>
+        <span class="stamp bluestamp">PHOTOCOPIED IN HYDERABAD</span>
+        <span class="stamp free">FREE — TAKE ONE</span>
+      </div>
+
+      <h1 class="cover-t">
+        <span class="ct-l blue">THE</span>
+        <span class="ct-l big">WORKSHOP</span>
+        <span class="ct-l pink">ZINE</span>
+      </h1>
+
+      <p class="scrawl">…software, badly photocopied, honestly documented.</p>
+
+      <div class="cover-strip">
+        <span>{projects.length} BUILDS</span>
+        <span class="dotsep">•</span>
+        <span>{posts.length} WRITEUPS</span>
+        <span class="dotsep">•</span>
+        <span>{labEntries.length} MACHINES</span>
+        <span class="dotsep">•</span>
+        <span>0 SPONSORS</span>
+      </div>
+
+      <nav class="zn">
+        {
+          ["works", "writing", "trading", "machines", "cursed", "say hi"].map((n, i) => (
+            <a href="#" class={`znl ink-${inks[i % 4]}`}>
+              {n}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    <!-- ── CONTENTS ── -->
+    <section class="contents">
+      <h2 class="ch">CONTENTS</h2>
+      <ol class="toc">
+        <li><b>01</b> <span>who is this guy</span> <i class="lead"></i> <em>p.2</em></li>
+        <li><b>02</b> <span>on the bench right now</span> <i class="lead"></i> <em>p.3</em></li>
+        <li><b>03</b> <span>the cut-out gallery</span> <i class="lead"></i> <em>p.4</em></li>
+        <li><b>04</b> <span>typed-up notes</span> <i class="lead"></i> <em>p.7</em></li>
+        <li><b>05</b> <span>machines in the cupboard</span> <i class="lead"></i> <em>p.9</em></li>
+        <li><b>06</b> <span>things that ruined a weekend</span> <i class="lead"></i> <em>p.11</em></li>
+      </ol>
+    </section>
+
+    <!-- ── EDITORIAL ── -->
+    <section class="editorial">
+      <div class="ed-l">
+        <span class="dropcap">H</span>
+        <p>
+          i, I'm Tapan. I write backends for a living and build stranger things after hours — developer tools, a Raspberry&nbsp;Pi that trades the
+          Indian markets, and a cupboard full of machines that mostly stay up. This zine is where all of it gets written down before I forget how it
+          worked.
+        </p>
+        <p>Everything here is real, shipped, and slightly smudged. Nothing is sponsored. Photocopy it if you like.</p>
+        <p class="signoff">— T.</p>
+      </div>
+      <aside class="ed-r">
+        <span class="tape t1" aria-hidden="true"></span>
+        <h3>THE FACTS</h3>
+        <ul>
+          <li><b>NAME</b> Tapan Meena</li>
+          <li><b>JOB</b> Project Lead / Sr. SWE</li>
+          <li><b>PLACE</b> Hyderabad, IST</li>
+          <li><b>TOOLS</b> .NET · TS · Azure · SQL</li>
+          <li><b>YEARS</b> 6 and counting</li>
+          <li><b>OPEN</b> yes, for the good stuff</li>
+        </ul>
+      </aside>
+    </section>
+
+    <!-- ── ON THE BENCH ── -->
+    {
+      nowBuilding && (
+        <section class="bench">
+          <span class="badge">HOT OFF THE PRESS</span>
+          <h2 class="bench-t">{nowBuilding.data.title}</h2>
+          <p class="bench-d">{nowBuilding.data.description}</p>
+          <p class="bench-s">
+            {nowBuilding.data.techStack.slice(0, 6).map((t) => (
+              <span class="tag">{t}</span>
+            ))}
+          </p>
+          <a class="zbtn" href={`/projects/${nowBuilding.id}`}>
+            READ THE WHOLE MESS →
+          </a>
+        </section>
+      )
+    }
+
+    <!-- ── CUT-OUT GALLERY ── -->
+    <section class="gallery">
+      <h2 class="ch">THE CUT-OUT GALLERY</h2>
+      <p class="chsub">every build, scissors-and-glue edition</p>
+      <ul class="cuts">
+        {
+          cutouts.map((p, i) => (
+            <li class={`cut ink-${inks[i % 4]}`} style={`--tilt:${tilt[i % tilt.length]}deg`}>
+              <span class="tape" aria-hidden="true" />
+              <a href={`/projects/${p.id}`}>
+                <span class="cut-n">{pad2(i + 1)}</span>
+                <h3 class="cut-t">{p.data.title}</h3>
+                <p class="cut-d">{p.data.description}</p>
+                <span class="cut-f">
+                  <span>{(p.data.category ?? "misc").toUpperCase()}</span>
+                  <span>{yr(p.data.startDate)}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── TYPED NOTES ── -->
+    <section class="typed">
+      <h2 class="ch">TYPED-UP NOTES</h2>
+      <ul class="notes">
+        {
+          column.map((p, i) => (
+            <li>
+              <a href={`/blog/${p.id}`}>
+                <span class="tn-n">NO. {pad2(i + 1)}</span>
+                <h3 class="tn-t">{p.data.title}</h3>
+                <p class="tn-d">{p.data.description}</p>
+                <span class="tn-m">
+                  {p.data.category.toUpperCase()} —{" "}
+                  {new Date(p.data.publishedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase()}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── MACHINES ── -->
+    <section class="machines">
+      <h2 class="ch light">MACHINES IN THE CUPBOARD</h2>
+      <ul class="mlist">
+        {
+          labEntries.map((e, i) => (
+            <li>
+              <span class="mch-n">{pad2(i + 1)}</span>
+              <span class="mch-b">
+                <b>{e.title}</b>
+                <span>{e.description}</span>
+                <i>{e.stack.join(" / ")}</i>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── CURSED ── -->
+    <section class="cursed">
+      <h2 class="ch">THINGS THAT RUINED A WEEKEND</h2>
+      <ul class="warn">
+        {
+          curses.slice(0, 4).map((c, i) => (
+            <li style={`--tilt:${tilt[(i + 2) % tilt.length]}deg`}>
+              <span class="wsev">!!! SEV {c.severity}</span>
+              <p>{c.title}</p>
+              <span class="wsrc">
+                {c.project} · {c.date}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── COLOPHON ── -->
+    <footer class="colo">
+      <div class="colo-stamp">
+        <span>PRINTED<br />BY HAND</span>
+      </div>
+      <h2 class="colo-t">WRITE TO THE ZINE</h2>
+      <a class="colo-mail" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+      <p class="colo-m">
+        Set in Anton &amp; Courier Prime · Two-colour riso, badly registered · No trackers, no newsletter pop-up, no cookie banner · Hyderabad, {
+          issueDate
+        }
+      </p>
+      <nav class="colo-n">
+        <a href="#">GITHUB</a><span>·</span><a href="#">LINKEDIN</a><span>·</span><a href="#">TWITTER</a><span>·</span><a href="/rss.xml">RSS</a>
+      </nav>
+    </footer>
+  </div>
+</PreviewShell>
+
+<style>
+  .zine {
+    --paper: #f2ecdd;
+    --ink: #141414;
+    --blue: #2b4bd8;
+    --pink: #ff3d8b;
+    --yellow: #ffd400;
+    --grey: #7d7669;
+    position: relative;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Courier Prime", ui-monospace, monospace;
+    overflow-x: hidden;
+  }
+  .zine :global(a) {
+    text-decoration: none;
+  }
+  .halftone {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image: radial-gradient(circle, rgba(20, 20, 20, 0.14) 0.9px, transparent 1px);
+    background-size: 4px 4px;
+    opacity: 0.55;
+  }
+  .fibers {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/></filter><rect width='180' height='180' filter='url(%23f)' opacity='0.45'/></svg>");
+  }
+  .zine > * {
+    position: relative;
+    z-index: 2;
+  }
+  .ink-blue {
+    --c: var(--blue);
+  }
+  .ink-pink {
+    --c: var(--pink);
+  }
+  .ink-yellow {
+    --c: #d9a800;
+  }
+  .ink-black {
+    --c: var(--ink);
+  }
+  .blue {
+    color: var(--blue);
+  }
+  .pink {
+    color: var(--pink);
+  }
+
+  /* ── cover ── */
+  .cover {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 34px 20px 26px;
+    text-align: center;
+  }
+  .stampline {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .stamp {
+    font-family: "Courier Prime", monospace;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    padding: 3px 9px;
+    border: 2px solid var(--ink);
+    transform: rotate(-1.4deg);
+  }
+  .pinkstamp {
+    color: var(--pink);
+    border-color: var(--pink);
+    transform: rotate(1.2deg);
+  }
+  .bluestamp {
+    color: var(--blue);
+    border-color: var(--blue);
+    transform: rotate(-0.6deg);
+  }
+  .free {
+    background: var(--yellow);
+    border-style: dashed;
+    transform: rotate(2deg);
+  }
+
+  .cover-t {
+    font-family: "Anton", Impact, sans-serif;
+    line-height: 0.82;
+    letter-spacing: -0.01em;
+    margin: 26px 0 6px;
+    text-transform: uppercase;
+  }
+  .ct-l {
+    display: block;
+  }
+  .ct-l.blue {
+    font-size: clamp(1.5rem, 4.4vw, 3rem);
+    letter-spacing: 0.4em;
+    text-shadow: 2px 2px 0 var(--pink);
+  }
+  .ct-l.big {
+    font-size: clamp(3.2rem, 15.5vw, 12rem);
+    color: var(--ink);
+    text-shadow:
+      3px 3px 0 var(--pink),
+      -3px -2px 0 var(--blue);
+  }
+  .ct-l.pink {
+    font-size: clamp(2rem, 7vw, 5rem);
+    letter-spacing: 0.16em;
+    text-shadow: -2px 2px 0 var(--blue);
+  }
+  .scrawl {
+    font-family: "Permanent Marker", cursive;
+    font-size: clamp(1rem, 2.4vw, 1.5rem);
+    color: var(--blue);
+    transform: rotate(-1.4deg);
+    margin: 14px 0 20px;
+  }
+  .cover-strip {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 3px solid var(--ink);
+    border-bottom: 3px solid var(--ink);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+  }
+  .dotsep {
+    color: var(--pink);
+  }
+  .zn {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .znl {
+    font-family: "Anton", sans-serif;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    padding: 4px 13px;
+    border: 2px solid var(--c);
+    color: var(--c);
+    transform: rotate(-0.8deg);
+    transition: 0.14s ease;
+  }
+  .znl:nth-child(even) {
+    transform: rotate(1deg);
+  }
+  .znl:hover {
+    background: var(--c);
+    color: var(--paper);
+  }
+
+  /* ── shared heads ── */
+  .ch {
+    font-family: "Anton", sans-serif;
+    text-transform: uppercase;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    letter-spacing: 0.01em;
+    line-height: 1;
+    text-shadow: 2.5px 2.5px 0 var(--pink);
+  }
+  .ch.light {
+    color: var(--paper);
+    text-shadow: 2.5px 2.5px 0 var(--blue);
+  }
+  .chsub {
+    font-family: "Permanent Marker", cursive;
+    color: var(--blue);
+    font-size: 1.02rem;
+    margin-top: 6px;
+    transform: rotate(-0.8deg);
+  }
+
+  /* ── contents ── */
+  .contents {
+    max-width: 900px;
+    margin: 30px auto 0;
+    padding: 24px 20px;
+    border-top: 3px solid var(--ink);
+    border-bottom: 3px solid var(--ink);
+  }
+  .toc {
+    margin-top: 14px;
+  }
+  .toc li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 0.95rem;
+  }
+  .toc b {
+    color: var(--pink);
+    font-weight: 700;
+  }
+  .lead {
+    flex: 1;
+    border-bottom: 2px dotted var(--grey);
+    transform: translateY(-3px);
+  }
+  .toc em {
+    font-style: normal;
+    color: var(--grey);
+    font-size: 0.85rem;
+  }
+
+  /* ── editorial ── */
+  .editorial {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: grid;
+    gap: 30px;
+  }
+  @media (min-width: 860px) {
+    .editorial {
+      grid-template-columns: 1.7fr 1fr;
+      gap: 46px;
+    }
+  }
+  .ed-l p {
+    font-size: 1rem;
+    line-height: 1.85;
+    margin-bottom: 14px;
+  }
+  .dropcap {
+    float: left;
+    font-family: "Anton", sans-serif;
+    font-size: 4.2rem;
+    line-height: 0.78;
+    padding: 5px 10px 0 0;
+    color: var(--pink);
+    text-shadow: 2px 2px 0 var(--blue);
+  }
+  .signoff {
+    font-family: "Permanent Marker", cursive;
+    color: var(--blue);
+    font-size: 1.3rem;
+  }
+  .ed-r {
+    position: relative;
+    border: 3px solid var(--ink);
+    background: #fffaf0;
+    padding: 22px 20px 20px;
+    align-self: start;
+    transform: rotate(0.8deg);
+  }
+  .tape {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    width: 96px;
+    height: 24px;
+    background: rgba(255, 212, 0, 0.62);
+    border-left: 1px dashed rgba(0, 0, 0, 0.18);
+    border-right: 1px dashed rgba(0, 0, 0, 0.18);
+    z-index: 3;
+  }
+  .ed-r h3 {
+    font-family: "Anton", sans-serif;
+    font-size: 1.25rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    color: var(--blue);
+  }
+  .ed-r li {
+    display: grid;
+    grid-template-columns: 66px 1fr;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed var(--grey);
+    font-size: 0.88rem;
+  }
+  .ed-r b {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--pink);
+    padding-top: 3px;
+  }
+
+  /* ── bench ── */
+  .bench {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 34px 22px 36px;
+    background: var(--yellow);
+    border-top: 3px solid var(--ink);
+    border-bottom: 3px solid var(--ink);
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    font-family: "Anton", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    background: var(--ink);
+    color: var(--yellow);
+    padding: 4px 14px;
+    transform: rotate(-1.6deg);
+  }
+  .bench-t {
+    font-family: "Anton", sans-serif;
+    text-transform: uppercase;
+    font-size: clamp(2.2rem, 8vw, 5rem);
+    line-height: 0.92;
+    margin: 14px 0 12px;
+    text-shadow: 3px 3px 0 var(--pink);
+  }
+  .bench-d {
+    max-width: 62ch;
+    margin: 0 auto;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+  .bench-s {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 18px 0;
+  }
+  .tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 9px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+  }
+  .zbtn {
+    display: inline-block;
+    font-family: "Anton", sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    padding: 11px 22px;
+    background: var(--ink);
+    color: var(--yellow);
+    box-shadow: 5px 5px 0 var(--pink);
+    transition: 0.12s ease;
+  }
+  .zbtn:hover {
+    transform: translate(5px, 5px);
+    box-shadow: 0 0 0 var(--pink);
+  }
+
+  /* ── gallery ── */
+  .gallery {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 44px 20px 20px;
+  }
+  .cuts {
+    display: grid;
+    gap: 22px;
+    margin-top: 28px;
+  }
+  @media (min-width: 700px) {
+    .cuts {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1040px) {
+    .cuts {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .cut {
+    position: relative;
+    border: 3px solid var(--ink);
+    background: #fffaf0;
+    transform: rotate(var(--tilt));
+    transition:
+      transform 0.16s ease,
+      box-shadow 0.16s ease;
+    box-shadow: 6px 6px 0 rgba(20, 20, 20, 0.16);
+  }
+  .cut:hover {
+    transform: rotate(0deg) translateY(-3px);
+    box-shadow: 8px 10px 0 var(--c);
+  }
+  .cut a {
+    display: block;
+    padding: 26px 18px 18px;
+  }
+  .cut-n {
+    position: absolute;
+    top: -14px;
+    right: 12px;
+    font-family: "Anton", sans-serif;
+    font-size: 1.5rem;
+    background: var(--c);
+    color: var(--paper);
+    padding: 2px 10px;
+  }
+  .cut-t {
+    font-family: "Anton", sans-serif;
+    text-transform: uppercase;
+    font-size: 1.45rem;
+    line-height: 1.05;
+    color: var(--c);
+  }
+  .cut-d {
+    font-size: 0.87rem;
+    line-height: 1.65;
+    margin: 10px 0 14px;
+  }
+  .cut-f {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 2px dashed var(--grey);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--grey);
+  }
+
+  /* ── typed ── */
+  .typed {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 44px 20px 10px;
+  }
+  .notes {
+    margin-top: 24px;
+    columns: 1;
+  }
+  @media (min-width: 820px) {
+    .notes {
+      columns: 2;
+      column-gap: 40px;
+    }
+  }
+  .notes li {
+    break-inside: avoid;
+    margin-bottom: 26px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .tn-n {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    background: var(--blue);
+    color: var(--paper);
+    padding: 2px 8px;
+  }
+  .tn-t {
+    font-family: "Anton", sans-serif;
+    text-transform: uppercase;
+    font-size: 1.28rem;
+    line-height: 1.08;
+    margin: 10px 0 8px;
+  }
+  .notes a:hover .tn-t {
+    color: var(--pink);
+  }
+  .tn-d {
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+  .tn-m {
+    display: block;
+    margin-top: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--grey);
+  }
+
+  /* ── machines ── */
+  .machines {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 42px 20px 44px;
+    margin-top: 30px;
+  }
+  .machines .ch,
+  .mlist {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .mlist {
+    margin-top: 24px;
+  }
+  .mlist li {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 2px dashed #453f33;
+  }
+  .mch-n {
+    font-family: "Anton", sans-serif;
+    font-size: 1.6rem;
+    color: var(--yellow);
+  }
+  .mch-b b {
+    font-family: "Anton", sans-serif;
+    text-transform: uppercase;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+    display: block;
+  }
+  .mch-b span {
+    display: block;
+    font-size: 0.87rem;
+    line-height: 1.65;
+    margin: 6px 0 8px;
+    color: #cec7b8;
+  }
+  .mch-b i {
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--pink);
+  }
+
+  /* ── cursed ── */
+  .cursed {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 46px 20px 10px;
+  }
+  .warn {
+    display: grid;
+    gap: 20px;
+    margin-top: 26px;
+  }
+  @media (min-width: 780px) {
+    .warn {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .warn li {
+    border: 3px solid var(--pink);
+    background: #fffaf0;
+    padding: 16px 18px;
+    transform: rotate(var(--tilt));
+  }
+  .wsev {
+    font-family: "Anton", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    background: var(--pink);
+    color: var(--paper);
+    padding: 2px 9px;
+  }
+  .warn p {
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 700;
+    margin: 12px 0 8px;
+  }
+  .wsrc {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--grey);
+  }
+
+  /* ── colophon ── */
+  .colo {
+    position: relative;
+    max-width: 900px;
+    margin: 50px auto 0;
+    padding: 44px 20px 46px;
+    text-align: center;
+    border-top: 3px solid var(--ink);
+  }
+  .colo-stamp {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    width: 92px;
+    height: 92px;
+    border: 3px double var(--pink);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    transform: rotate(-14deg);
+    opacity: 0.75;
+  }
+  .colo-stamp span {
+    font-family: "Anton", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    color: var(--pink);
+    text-align: center;
+  }
+  .colo-t {
+    font-family: "Anton", sans-serif;
+    text-transform: uppercase;
+    font-size: clamp(1.5rem, 4.4vw, 2.4rem);
+    text-shadow: 2px 2px 0 var(--blue);
+  }
+  .colo-mail {
+    display: inline-block;
+    font-family: "Permanent Marker", cursive;
+    font-size: clamp(1.15rem, 3.6vw, 2rem);
+    color: var(--blue);
+    margin: 14px 0 22px;
+    transform: rotate(-1.2deg);
+    word-break: break-word;
+  }
+  .colo-mail:hover {
+    color: var(--pink);
+  }
+  .colo-m {
+    font-size: 11px;
+    line-height: 1.9;
+    letter-spacing: 0.08em;
+    color: var(--grey);
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+  .colo-n {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+  }
+  .colo-n a:hover {
+    color: var(--pink);
+  }
+  .colo-n span {
+    color: var(--pink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cut,
+    .zbtn {
+      transition: none !important;
+    }
+  }
+</style>

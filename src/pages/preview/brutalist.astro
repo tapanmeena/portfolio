@@ -1,0 +1,931 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const work = projects.slice(0, 8);
+const writing = posts.slice(0, 4);
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const shortDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", year: "numeric" }).toUpperCase();
+
+const ticker = [
+  "TAPAN MEENA",
+  "SENIOR SOFTWARE ENGINEER",
+  "HYDERABAD · IST",
+  `${projects.length} PROJECTS SHIPPED`,
+  "BACKENDS · DEV TOOLS · CLOUD",
+  "OPEN TO INTERESTING WORK",
+];
+
+const stats = [
+  { n: String(projects.length), l: "projects" },
+  { n: String(posts.length), l: "writeups" },
+  { n: "06+", l: "years pro" },
+  { n: String(curses.length), l: "cursed facts" },
+];
+---
+
+<PreviewShell
+  title="02 · brutalist — theme mockup"
+  active="brutalist"
+  bg="#f2efe6"
+  fg="#0d0d0d"
+  fontHref="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+>
+  <div class="raw">
+    <!-- ── BAR ── -->
+    <header class="bar">
+      <a class="mark" href="/">TM<span class="mark-x">✳</span>WORKSHOP</a>
+      <nav class="barnav">
+        <a href="#">WORK</a>
+        <a href="#">WRITING</a>
+        <a href="#">TRADING</a>
+        <a href="#">CURSED</a>
+        <a href="#">ABOUT</a>
+        <a href="#" class="hot">CONTACT</a>
+      </nav>
+    </header>
+
+    <!-- ── TICKER ── -->
+    <div class="ticker" aria-hidden="true">
+      <div class="tick-track">
+        {
+          [0, 1].map(() => (
+            <span class="tick-set">
+              {ticker.map((t) => (
+                <span class="tick-item">
+                  {t} <b>✳</b>
+                </span>
+              ))}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- ── HERO ── -->
+    <section class="hero">
+      <p class="kick">EST. 2019 — HYDERABAD, INDIA — PORTFOLIO NO. 01</p>
+      <h1 class="mega">
+        <span class="ln">BUILDS</span>
+        <span class="ln out">BACKENDS.</span>
+        <span class="ln">BREAKS</span>
+        <span class="ln red">THINGS.</span>
+        <span class="ln sm">WRITES IT ALL DOWN.</span>
+      </h1>
+      <div class="herofoot">
+        <p class="lede">
+          Scalable backends, developer tooling, and a Raspberry&nbsp;Pi that trades the NSE. Lately with help from artificial friends — they
+          autocomplete, I take the blame.
+        </p>
+        <div class="heroact">
+          <a class="big-btn" href="/projects">SEE THE WORK →</a>
+          <a class="big-btn ghost" href="/contact">HIRE ME</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STATS ── -->
+    <ul class="stats">
+      {
+        stats.map((s) => (
+          <li>
+            <span class="st-n">{s.n}</span>
+            <span class="st-l">{s.l}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- ── NOW ── -->
+    {
+      nowBuilding && (
+        <section class="now">
+          <div class="now-l">
+            <span class="now-tag">
+              <i class="pulse" />
+              CURRENTLY
+            </span>
+            <h2 class="now-t">{nowBuilding.data.title}</h2>
+            <p class="now-d">{nowBuilding.data.description}</p>
+            <ul class="now-stack">
+              {nowBuilding.data.techStack.slice(0, 7).map((t) => (
+                <li>{t}</li>
+              ))}
+            </ul>
+            <a class="now-go" href={`/projects/${nowBuilding.id}`}>
+              READ THE BUILD LOG →
+            </a>
+          </div>
+          <div class="now-r" aria-hidden="true">
+            <span class="now-year">{yr(nowBuilding.data.startDate)}</span>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- ── WORK INDEX ── -->
+    <section class="sec">
+      <header class="sechead">
+        <h2>WORK<span class="slash">/</span>INDEX</h2>
+        <span class="seccount">[{pad(work.length)} OF {projects.length}]</span>
+      </header>
+      <ul class="index">
+        {
+          work.map((p, i) => (
+            <li>
+              <a class="ix" href={`/projects/${p.id}`}>
+                <span class="ix-n">{pad(i + 1)}</span>
+                <span class="ix-t">{p.data.title}</span>
+                <span class="ix-c">{(p.data.category ?? "MISC").toUpperCase()}</span>
+                <span class="ix-y">{yr(p.data.startDate)}</span>
+                <span class="ix-a">↗</span>
+                <span class="ix-d">{p.data.description}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── WRITING ── -->
+    <section class="sec">
+      <header class="sechead">
+        <h2>WRIT<span class="slash">/</span>ING</h2>
+        <a class="seclink" href="/blog">ALL POSTS →</a>
+      </header>
+      <ul class="cards">
+        {
+          writing.map((p, i) => (
+            <li>
+              <a class="card" href={`/blog/${p.id}`}>
+                <span class="cd-n">{pad(i + 1)}</span>
+                <span class="cd-cat">{p.data.category.toUpperCase()}</span>
+                <h3 class="cd-t">{p.data.title}</h3>
+                <p class="cd-d">{p.data.description}</p>
+                <span class="cd-f">
+                  <span>{shortDate(new Date(p.data.publishedAt))}</span>
+                  <span class="cd-go">READ →</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── MACHINE ROOM ── -->
+    <section class="machine">
+      <header class="mhead">
+        <h2>THE MACHINE ROOM</h2>
+        <span>SELF-HOSTED · ALWAYS ON · MOSTLY UP</span>
+      </header>
+      <ul class="mlist">
+        {
+          labEntries.map((e, i) => (
+            <li>
+              <span class="m-n">{pad(i + 1)}</span>
+              <span class="m-t">{e.title}</span>
+              <span class="m-s">{e.stack.slice(0, 4).join(" / ")}</span>
+              <span class:list={["m-a", e.access]}>{e.access.replace("-", " ")}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── CURSED ── -->
+    <section class="sec cursedsec">
+      <header class="sechead">
+        <h2>CURSED<span class="slash">/</span>KNOWLEDGE</h2>
+        <span class="seccount">THINGS THAT COST ME A WEEKEND</span>
+      </header>
+      <ul class="curses">
+        {
+          curses.slice(0, 3).map((c) => (
+            <li>
+              <span class="cs-sev">SEV {c.severity}</span>
+              <p class="cs-t">{c.title}</p>
+              <span class="cs-p">— {c.project}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer class="foot">
+      <p class="foot-k">GOT SOMETHING TO BUILD?</p>
+      <a class="foot-mail" href="mailto:tapanmeena1998@gmail.com">TAPANMEENA1998<span class="at">@</span>GMAIL.COM</a>
+      <div class="foot-row">
+        <span>© 2026 TAPAN MEENA</span>
+        <span class="foot-links">
+          <a href="#">GITHUB</a><a href="#">LINKEDIN</a><a href="#">TWITTER</a><a href="#">RSS</a>
+        </span>
+        <span>BUILT WITH ASTRO · NO TRACKING</span>
+      </div>
+    </footer>
+  </div>
+</PreviewShell>
+
+<style>
+  .raw {
+    --paper: #f2efe6;
+    --ink: #0d0d0d;
+    --red: #ff2d16;
+    --grey: #8c887c;
+    font-family: "Archivo", system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+  .raw :global(a) {
+    text-decoration: none;
+  }
+
+  /* ── BAR ── */
+  .bar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    background: var(--ink);
+    color: var(--paper);
+    border-bottom: 3px solid var(--ink);
+    flex-wrap: wrap;
+  }
+  .mark {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mark-x {
+    color: var(--red);
+    font-size: 11px;
+  }
+  .barnav {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+  }
+  .barnav a {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 5px 10px;
+    border: 1px solid transparent;
+  }
+  .barnav a:hover {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .barnav a.hot {
+    background: var(--red);
+    color: #fff;
+  }
+  .barnav a.hot:hover {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  /* ── TICKER ── */
+  .ticker {
+    background: var(--red);
+    color: #fff;
+    border-bottom: 3px solid var(--ink);
+    overflow: hidden;
+    padding: 7px 0;
+  }
+  .tick-track {
+    display: flex;
+    width: max-content;
+    animation: slide 34s linear infinite;
+  }
+  .tick-set {
+    display: flex;
+  }
+  .tick-item {
+    font-family: "Space Mono", monospace;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    padding: 0 22px;
+    white-space: nowrap;
+  }
+  .tick-item b {
+    opacity: 0.6;
+  }
+  @keyframes slide {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 44px 18px 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .kick {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--grey);
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .mega {
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(3.1rem, 13.5vw, 11.5rem);
+    line-height: 0.82;
+    letter-spacing: -0.035em;
+    margin: 26px 0 30px;
+  }
+  .ln {
+    display: block;
+  }
+  .ln.out {
+    color: transparent;
+    -webkit-text-stroke: clamp(1px, 0.28vw, 3px) var(--ink);
+  }
+  .ln.red {
+    color: var(--red);
+  }
+  .ln.sm {
+    font-size: 0.42em;
+    letter-spacing: -0.02em;
+    padding-top: 0.18em;
+  }
+  .herofoot {
+    display: grid;
+    gap: 24px;
+    border-top: 3px solid var(--ink);
+    padding-top: 22px;
+  }
+  @media (min-width: 900px) {
+    .herofoot {
+      grid-template-columns: 1.6fr 1fr;
+      align-items: start;
+    }
+  }
+  .lede {
+    font-size: clamp(1rem, 1.6vw, 1.32rem);
+    line-height: 1.45;
+    max-width: 56ch;
+    font-weight: 500;
+  }
+  .heroact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .big-btn {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    padding: 14px 22px;
+    background: var(--ink);
+    color: var(--paper);
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--red);
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .big-btn:hover {
+    transform: translate(6px, 6px);
+    box-shadow: 0 0 0 var(--red);
+  }
+  .big-btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  /* ── STATS ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border-top: 3px solid var(--ink);
+    border-bottom: 3px solid var(--ink);
+  }
+  @media (min-width: 760px) {
+    .stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .stats li {
+    padding: 22px 18px;
+    border-right: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  @media (min-width: 760px) {
+    .stats li {
+      border-bottom: 0;
+    }
+  }
+  .stats li:last-child {
+    border-right: 0;
+  }
+  .st-n {
+    display: block;
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+  }
+  .st-l {
+    display: block;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--grey);
+    margin-top: 8px;
+  }
+
+  /* ── NOW ── */
+  .now {
+    background: var(--ink);
+    color: var(--paper);
+    display: grid;
+    gap: 0;
+  }
+  @media (min-width: 900px) {
+    .now {
+      grid-template-columns: 1fr 300px;
+    }
+  }
+  .now-l {
+    padding: 34px 18px 38px;
+    max-width: 900px;
+  }
+  .now-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--red);
+  }
+  .pulse {
+    width: 9px;
+    height: 9px;
+    background: var(--red);
+    display: block;
+    animation: pl 1.4s ease-in-out infinite;
+  }
+  @keyframes pl {
+    50% {
+      opacity: 0.15;
+    }
+  }
+  .now-t {
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(2.2rem, 6.6vw, 4.6rem);
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    margin: 12px 0 14px;
+  }
+  .now-d {
+    font-size: 1.02rem;
+    line-height: 1.55;
+    max-width: 58ch;
+    color: #cfcabb;
+  }
+  .now-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 20px 0 22px;
+  }
+  .now-stack li {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border: 1px solid #444038;
+    color: #cfcabb;
+  }
+  .now-go {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 13px;
+    border-bottom: 3px solid var(--red);
+    padding-bottom: 3px;
+  }
+  .now-go:hover {
+    color: var(--red);
+  }
+  .now-r {
+    display: none;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 18px 10px;
+    border-left: 1px solid #2a2721;
+    overflow: hidden;
+  }
+  @media (min-width: 900px) {
+    .now-r {
+      display: flex;
+    }
+  }
+  .now-year {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 11rem;
+    line-height: 0.72;
+    color: transparent;
+    -webkit-text-stroke: 2px #3a362e;
+    letter-spacing: -0.05em;
+  }
+
+  /* ── SEC ── */
+  .sec {
+    padding: 46px 18px 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .sechead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 12px;
+  }
+  .sechead h2 {
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(1.9rem, 5.4vw, 3.4rem);
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+  .slash {
+    color: var(--red);
+  }
+  .seccount,
+  .seclink {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--grey);
+  }
+  .seclink:hover {
+    color: var(--red);
+  }
+
+  /* ── INDEX ── */
+  .index li {
+    border-bottom: 1px solid var(--ink);
+  }
+  .ix {
+    display: grid;
+    grid-template-columns: 44px 1fr 22px;
+    align-items: baseline;
+    gap: 4px 14px;
+    padding: 16px 10px;
+    color: var(--ink);
+    transition:
+      background 0.14s ease,
+      color 0.14s ease,
+      padding 0.14s ease;
+  }
+  .ix:hover {
+    background: var(--ink);
+    color: var(--paper);
+    padding-left: 22px;
+  }
+  .ix-n {
+    font-family: "Space Mono", monospace;
+    font-size: 12px;
+    color: var(--grey);
+  }
+  .ix:hover .ix-n {
+    color: var(--red);
+  }
+  .ix-t {
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(1.15rem, 2.6vw, 1.8rem);
+    letter-spacing: -0.02em;
+  }
+  .ix-c,
+  .ix-y {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--grey);
+  }
+  .ix-a {
+    font-size: 18px;
+    text-align: right;
+    opacity: 0.35;
+  }
+  .ix:hover .ix-a {
+    opacity: 1;
+    color: var(--red);
+  }
+  .ix-d {
+    grid-column: 2 / -1;
+    font-size: 0.88rem;
+    color: var(--grey);
+    line-height: 1.45;
+    max-width: 70ch;
+  }
+  .ix:hover .ix-d {
+    color: #b9b3a5;
+  }
+  @media (min-width: 960px) {
+    .ix {
+      grid-template-columns: 52px minmax(0, 1fr) 150px 66px 24px;
+    }
+    .ix-c {
+      text-align: right;
+    }
+    .ix-d {
+      display: none;
+    }
+  }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    gap: 0;
+    border-left: 1px solid var(--ink);
+    border-top: 0;
+  }
+  @media (min-width: 780px) {
+    .cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .cards li {
+    border-right: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .card {
+    display: block;
+    height: 100%;
+    padding: 24px 20px 20px;
+    position: relative;
+    color: var(--ink);
+    transition: background 0.14s ease;
+  }
+  .card:hover {
+    background: var(--red);
+    color: #fff;
+  }
+  .cd-n {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 2.4rem;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--grey);
+    position: absolute;
+    top: 14px;
+    right: 16px;
+  }
+  .card:hover .cd-n {
+    -webkit-text-stroke-color: rgba(255, 255, 255, 0.6);
+  }
+  .cd-cat {
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+  }
+  .card:hover .cd-cat {
+    color: #fff;
+  }
+  .cd-t {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 1.32rem;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin: 10px 0 10px;
+    max-width: 22ch;
+  }
+  .cd-d {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--grey);
+    max-width: 46ch;
+  }
+  .card:hover .cd-d {
+    color: rgba(255, 255, 255, 0.88);
+  }
+  .cd-f {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid currentColor;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+
+  /* ── MACHINE ── */
+  .machine {
+    margin-top: 46px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 34px 18px 40px;
+  }
+  .mhead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    max-width: 1400px;
+    margin: 0 auto 18px;
+    border-bottom: 1px solid #363228;
+    padding-bottom: 14px;
+  }
+  .mhead h2 {
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(1.7rem, 4.6vw, 3rem);
+    letter-spacing: -0.03em;
+  }
+  .mhead span {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: #7d7767;
+  }
+  .mlist {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .mlist li {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 4px 14px;
+    padding: 13px 0;
+    border-bottom: 1px solid #26231c;
+    align-items: baseline;
+  }
+  @media (min-width: 900px) {
+    .mlist li {
+      grid-template-columns: 40px 240px 1fr 130px;
+    }
+  }
+  .m-n {
+    font-family: "Space Mono", monospace;
+    font-size: 12px;
+    color: var(--red);
+  }
+  .m-t {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 1.05rem;
+  }
+  .m-s {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    color: #7d7767;
+    letter-spacing: 0.06em;
+  }
+  .m-a {
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    justify-self: start;
+    padding: 2px 8px;
+    border: 1px solid currentColor;
+    color: #7d7767;
+  }
+  .m-a.public {
+    color: var(--red);
+  }
+
+  /* ── CURSED ── */
+  .cursedsec {
+    padding-bottom: 40px;
+  }
+  .curses {
+    display: grid;
+    gap: 0;
+  }
+  @media (min-width: 860px) {
+    .curses {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .curses li {
+    padding: 20px 18px 20px 0;
+    border-bottom: 1px solid var(--ink);
+    border-right: 1px solid var(--ink);
+  }
+  .curses li:last-child {
+    border-right: 0;
+  }
+  @media (min-width: 860px) {
+    .curses li {
+      padding-left: 18px;
+    }
+    .curses li:first-child {
+      padding-left: 0;
+    }
+  }
+  .cs-sev {
+    font-family: "Space Mono", monospace;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #fff;
+    background: var(--red);
+    padding: 2px 8px;
+  }
+  .cs-t {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    margin: 12px 0 8px;
+  }
+  .cs-p {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    color: var(--grey);
+  }
+
+  /* ── FOOT ── */
+  .foot {
+    border-top: 3px solid var(--ink);
+    padding: 44px 18px 34px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .foot-k {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--grey);
+    margin-bottom: 12px;
+  }
+  .foot-mail {
+    display: block;
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(1.5rem, 6.2vw, 4.6rem);
+    line-height: 1;
+    letter-spacing: -0.045em;
+    word-break: break-word;
+    transition: color 0.14s ease;
+  }
+  .foot-mail:hover {
+    color: var(--red);
+  }
+  .at {
+    color: var(--red);
+  }
+  .foot-mail:hover .at {
+    color: var(--ink);
+  }
+  .foot-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 34px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ink);
+    font-family: "Space Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--grey);
+  }
+  .foot-links {
+    display: flex;
+    gap: 14px;
+  }
+  .foot-links a:hover {
+    color: var(--red);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tick-track,
+    .pulse {
+      animation: none !important;
+    }
+  }
+</style>

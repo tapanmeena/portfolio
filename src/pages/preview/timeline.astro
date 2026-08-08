@@ -1,0 +1,974 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+import { Star, GitFork, Eye, Code2, CircleDot, GitPullRequest, Play, BookOpen } from "@lucide/astro";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const commits = projects.filter((p) => p.id !== nowBuilding?.id).slice(0, 7);
+const docs = posts.slice(0, 5);
+
+const hash = (s: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h).toString(16).padStart(7, "0").slice(0, 7);
+};
+const ago = (d: Date) => {
+  const days = Math.max(1, Math.round((Date.now() - new Date(d).getTime()) / 86400000));
+  if (days < 30) return `${days} days ago`;
+  if (days < 365) return `${Math.round(days / 30)} months ago`;
+  return `${Math.round(days / 365)} years ago`;
+};
+const yr = (d: Date) => new Date(d).getFullYear();
+const heat = Array.from({ length: 30 * 7 }, (_, i) => (i * 37 + (i % 11) * 13) % 5);
+const tabs = [
+  { icon: Code2, label: "Code", on: true },
+  { icon: CircleDot, label: "Issues", n: curses.length },
+  { icon: GitPullRequest, label: "Pull requests", n: 2 },
+  { icon: Play, label: "Actions" },
+  { icon: BookOpen, label: "Wiki" },
+];
+---
+
+<PreviewShell
+  title="17 · git timeline — theme mockup"
+  active="timeline"
+  bg="#0d1117"
+  fg="#e6edf3"
+  fontHref="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+>
+  <div class="gh">
+    <!-- ── REPO HEADER ── -->
+    <header class="repohead">
+      <div class="rh-top">
+        <p class="rh-path">
+          <a href="#" class="owner">tapanmeena</a>
+          <span class="sep">/</span>
+          <a href="#" class="repo">career</a>
+          <span class="vis">Public</span>
+        </p>
+        <div class="rh-actions">
+          <span class="ghbtn"><Eye size={13} /> Watch <b>{posts.length}</b></span>
+          <span class="ghbtn"><GitFork size={13} /> Fork <b>{labEntries.length}</b></span>
+          <span class="ghbtn"><Star size={13} /> Star <b>{projects.length * 14}</b></span>
+        </div>
+      </div>
+      <nav class="rh-tabs">
+        {
+          tabs.map((t) => (
+            <a href="#" class:list={["tab", { on: t.on }]}>
+              <t.icon size={14} />
+              <span>{t.label}</span>
+              {t.n && <i>{t.n}</i>}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    <div class="wrap">
+      <main class="main">
+        <!-- README -->
+        <section class="filecard">
+          <header class="fc-h">
+            <span class="fc-t"><BookOpen size={14} /> README.md</span>
+            <span class="fc-r">main · {commits.length + docs.length} commits</span>
+          </header>
+          <div class="fc-b readme">
+            <h1># Tapan Meena</h1>
+            <p class="rd-sub">Senior software engineer &amp; project lead · Hyderabad, India · <code>UTC+05:30</code></p>
+            <p>
+              I build scalable backends, developer tooling, and one Raspberry&nbsp;Pi that trades the NSE unattended. This repository is the honest
+              history: every branch, every merge, and every commit that had to be reverted.
+            </p>
+            <h2>## Currently</h2>
+            <ul class="rd-l">
+              <li><b>Role</b> Project Lead, MAQ Software</li>
+              <li><b>Stack</b> .NET · TypeScript · Azure · SQL · Node</li>
+              <li><b>Open to</b> consulting on backends, integrations, dev tooling</li>
+            </ul>
+            <div class="rd-badges">
+              <span class="bdg"><i>projects</i><b>{projects.length}</b></span>
+              <span class="bdg alt"><i>writeups</i><b>{posts.length}</b></span>
+              <span class="bdg grn"><i>uptime</i><b>a hobby</b></span>
+              <span class="bdg prp"><i>years</i><b>6+</b></span>
+            </div>
+            <div class="rd-acts">
+              <a class="ghbtn primary" href="/projects">Browse the work</a>
+              <a class="ghbtn" href="mailto:tapanmeena1998@gmail.com">Open an issue</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- contribution graph -->
+        <section class="filecard">
+          <header class="fc-h">
+            <span class="fc-t">Contribution activity</span>
+            <span class="fc-r">last 30 weeks</span>
+          </header>
+          <div class="fc-b heatwrap">
+            <div class="heat">
+              {heat.map((v) => <i class={`h${v}`} />)}
+            </div>
+            <div class="heat-legend">
+              <span>Less</span>
+              <i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i>
+              <span>More</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── GIT LOG ── -->
+        <section class="log">
+          <!-- HEAD -->
+          <div class="row">
+            <span class="rail">
+              <span class="dot head"></span>
+            </span>
+            <div class="body headrow">
+              <span class="ref head-ref">HEAD → main</span>
+              <span class="ref origin">origin/main</span>
+              <span class="rowmeta">{new Date().toISOString().slice(0, 10)}</span>
+            </div>
+          </div>
+
+          {
+            nowBuilding && (
+              <div class="row">
+                <span class="rail branch start">
+                  <span class="curve" />
+                  <span class="dot wip b" />
+                </span>
+                <div class="body card wip-card">
+                  <span class="ref feat">feat/{nowBuilding.id}</span>
+                  <a class="msg" href={`/projects/${nowBuilding.id}`}>
+                    {nowBuilding.data.title}
+                  </a>
+                  <p class="desc">{nowBuilding.data.description}</p>
+                  <div class="prog">
+                    <span>
+                      <i style="width:77%" />
+                    </span>
+                    <b>77%</b>
+                  </div>
+                  <span class="rowmeta">
+                    <b class="sha">{hash(nowBuilding.id)}</b> · in progress · {ago(nowBuilding.data.startDate)}
+                  </span>
+                </div>
+              </div>
+            )
+          }
+
+          <!-- projects -->
+          <div class="row sect">
+            <span class="rail"><span class="dot merge"></span></span>
+            <div class="body">
+              <span class="sect-t">Merged: <b>feature branches</b></span>
+              <span class="sect-r">{projects.length} total</span>
+            </div>
+          </div>
+
+          {
+            commits.map((p) => (
+              <div class="row">
+                <span class="rail branch start">
+                  <span class="curve" />
+                  <span class="dot b" />
+                </span>
+                <div class="body card">
+                  <span class="ref feat">feat/{p.id}</span>
+                  <a class="msg" href={`/projects/${p.id}`}>
+                    {p.data.title}
+                  </a>
+                  <p class="desc">{p.data.description}</p>
+                  <span class="chips">
+                    {p.data.techStack.slice(0, 4).map((t) => (
+                      <i>{t}</i>
+                    ))}
+                  </span>
+                  <span class="rowmeta">
+                    <b class="sha">{hash(p.id)}</b> · {(p.data.category ?? "misc").toLowerCase()} · {yr(p.data.startDate)} · {ago(p.data.startDate)}
+                  </span>
+                </div>
+              </div>
+            ))
+          }
+
+          <!-- docs -->
+          <div class="row sect">
+            <span class="rail"><span class="dot merge"></span></span>
+            <div class="body">
+              <span class="sect-t">Branch: <b>docs/writing</b></span>
+              <span class="sect-r">{posts.length} commits</span>
+            </div>
+          </div>
+
+          {
+            docs.map((p) => (
+              <div class="row">
+                <span class="rail branch">
+                  <span class="dot b small" />
+                </span>
+                <div class="body slim">
+                  <a class="msg sm" href={`/blog/${p.id}`}>
+                    docs: {p.data.title}
+                  </a>
+                  <span class="rowmeta">
+                    <b class="sha">{hash(p.id)}</b> · {p.data.category.toLowerCase()} · {ago(p.data.publishedAt)}
+                  </span>
+                </div>
+              </div>
+            ))
+          }
+
+          <!-- infra -->
+          <div class="row sect">
+            <span class="rail"><span class="dot merge"></span></span>
+            <div class="body">
+              <span class="sect-t">Branch: <b>infra/homelab</b></span>
+              <span class="sect-r ok">all checks passing</span>
+            </div>
+          </div>
+
+          {
+            labEntries.map((e) => (
+              <div class="row">
+                <span class="rail branch">
+                  <span class="dot b small ok" />
+                </span>
+                <div class="body slim">
+                  <span class="msg sm">
+                    chore(infra): {e.id} — {e.title}
+                  </span>
+                  <span class="rowmeta">
+                    <b class="sha">{hash(e.id)}</b> · {e.stack.slice(0, 3).join(", ").toLowerCase()} · {e.access.replace("-", " ")}
+                  </span>
+                </div>
+              </div>
+            ))
+          }
+
+          <!-- reverts -->
+          <div class="row sect">
+            <span class="rail"><span class="dot revert"></span></span>
+            <div class="body">
+              <span class="sect-t">Reverts: <b>cursed knowledge</b></span>
+              <span class="sect-r warn">{curses.length} open issues</span>
+            </div>
+          </div>
+
+          {
+            curses.slice(0, 4).map((c) => (
+              <div class="row">
+                <span class="rail branch">
+                  <span class="dot b small revert" />
+                </span>
+                <div class="body slim">
+                  <span class="msg sm rv">revert: {c.title}</span>
+                  <span class="rowmeta">
+                    severity {c.severity} · {c.project.toLowerCase()} · {c.date}
+                  </span>
+                </div>
+              </div>
+            ))
+          }
+
+          <!-- initial commit -->
+          <div class="row last">
+            <span class="rail"><span class="dot init"></span></span>
+            <div class="body">
+              <span class="msg sm">Initial commit</span>
+              <span class="rowmeta"><b class="sha">0000001</b> · 2019 · where it all started</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- ── SIDEBAR ── -->
+      <aside class="side">
+        <div class="sb">
+          <h3>About</h3>
+          <p>Backends, developer tooling, and a trading bot on a shelf. Everything documented, including the failures.</p>
+          <ul class="sb-l">
+            <li><span class="lang js"></span> TypeScript</li>
+            <li><span class="lang cs"></span> C# / .NET</li>
+            <li><span class="lang py"></span> Python</li>
+            <li><span class="lang sql"></span> SQL</li>
+          </ul>
+        </div>
+        <div class="sb">
+          <h3>Topics</h3>
+          <span class="topics">
+            {["backend", "devtools", "azure", "fintech", "self-hosted", "trading", "dotnet", "typescript"].map((t) => <i>{t}</i>)}
+          </span>
+        </div>
+        <div class="sb">
+          <h3>Contact</h3>
+          <a class="sb-mail" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+          <nav class="sb-n">
+            <a href="#">GitHub</a><a href="#">LinkedIn</a><a href="#">Twitter</a><a href="/rss.xml">RSS</a>
+          </nav>
+        </div>
+      </aside>
+    </div>
+  </div>
+</PreviewShell>
+
+<style>
+  .gh {
+    --bg: #0d1117;
+    --pan: #161b22;
+    --line: #30363d;
+    --fg: #e6edf3;
+    --mut: #8b949e;
+    --blue: #58a6ff;
+    --grn: #3fb950;
+    --prp: #a371f7;
+    --red: #f85149;
+    --yel: #d29922;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+  .gh :global(a) {
+    text-decoration: none;
+  }
+  .sha {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--mut);
+    font-weight: 500;
+  }
+
+  /* ── repo head ── */
+  .repohead {
+    border-bottom: 1px solid var(--line);
+    background: var(--pan);
+    padding: 14px 20px 0;
+  }
+  .rh-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+  .rh-path {
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+  .owner {
+    color: var(--blue);
+  }
+  .repo {
+    color: var(--blue);
+    font-weight: 600;
+  }
+  .sep {
+    color: var(--mut);
+  }
+  .vis {
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--mut);
+  }
+  .rh-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ghbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: #21262d;
+    color: var(--fg);
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+  .ghbtn b {
+    padding-left: 7px;
+    margin-left: 2px;
+    border-left: 1px solid var(--line);
+    color: var(--mut);
+  }
+  .ghbtn:hover {
+    border-color: #6e7681;
+  }
+  .ghbtn.primary {
+    background: #238636;
+    border-color: #2ea043;
+    color: #fff;
+  }
+  .ghbtn.primary:hover {
+    background: #2ea043;
+  }
+  .rh-tabs {
+    display: flex;
+    gap: 6px;
+    max-width: 1240px;
+    margin: 14px auto 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .rh-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    color: var(--fg);
+    font-size: 13.5px;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .tab i {
+    font-style: normal;
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #30363d;
+    color: var(--mut);
+  }
+  .tab:hover {
+    border-bottom-color: #6e7681;
+  }
+  .tab.on {
+    font-weight: 600;
+    border-bottom-color: #f78166;
+  }
+
+  /* ── layout ── */
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 22px 20px 34px;
+    display: grid;
+    gap: 26px;
+  }
+  @media (min-width: 1000px) {
+    .wrap {
+      grid-template-columns: 1fr 292px;
+      gap: 32px;
+    }
+  }
+
+  /* ── file cards ── */
+  .filecard {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .fc-h {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 9px 16px;
+    background: var(--pan);
+    border-bottom: 1px solid var(--line);
+  }
+  .fc-t {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .fc-r {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    color: var(--mut);
+  }
+  .fc-b {
+    padding: 22px 24px 24px;
+  }
+
+  /* ── readme ── */
+  .readme h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .readme h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--line);
+  }
+  .rd-sub {
+    font-size: 13px;
+    color: var(--mut);
+    margin: 10px 0 14px;
+  }
+  .readme p {
+    font-size: 14.5px;
+    line-height: 1.72;
+    color: #c9d1d9;
+    max-width: 72ch;
+  }
+  .readme code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    background: rgba(110, 118, 129, 0.25);
+    padding: 1px 6px;
+    border-radius: 5px;
+  }
+  .rd-l li {
+    font-size: 14px;
+    padding: 5px 0 5px 18px;
+    position: relative;
+    color: #c9d1d9;
+  }
+  .rd-l li::before {
+    content: "-";
+    position: absolute;
+    left: 2px;
+    color: var(--mut);
+  }
+  .rd-l b {
+    color: var(--fg);
+  }
+  .rd-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 20px;
+  }
+  .bdg {
+    display: inline-flex;
+    border-radius: 5px;
+    overflow: hidden;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+  }
+  .bdg i {
+    font-style: normal;
+    padding: 3px 9px;
+    background: #30363d;
+    color: #c9d1d9;
+  }
+  .bdg b {
+    padding: 3px 9px;
+    background: var(--blue);
+    color: #06101d;
+    font-weight: 600;
+  }
+  .bdg.alt b {
+    background: var(--yel);
+  }
+  .bdg.grn b {
+    background: var(--grn);
+  }
+  .bdg.prp b {
+    background: var(--prp);
+  }
+  .rd-acts {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+  }
+
+  /* ── heatmap ── */
+  .heatwrap {
+    padding: 18px 20px 16px;
+  }
+  .heat {
+    display: grid;
+    grid-template-rows: repeat(7, 11px);
+    grid-auto-flow: column;
+    grid-auto-columns: 11px;
+    gap: 3px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+  }
+  .heat::-webkit-scrollbar {
+    display: none;
+  }
+  .heat i,
+  .heat-legend i {
+    display: block;
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+  }
+  .h0 {
+    background: #161b22;
+    box-shadow: inset 0 0 0 1px rgba(110, 118, 129, 0.18);
+  }
+  .h1 {
+    background: #0e4429;
+  }
+  .h2 {
+    background: #006d32;
+  }
+  .h3 {
+    background: #26a641;
+  }
+  .h4 {
+    background: #39d353;
+  }
+  .heat-legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: flex-end;
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--mut);
+  }
+  .heat-legend span {
+    margin: 0 4px;
+  }
+
+  /* ── git log ── */
+  .log {
+    margin-top: 6px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 68px 1fr;
+    gap: 0 8px;
+  }
+  .rail {
+    position: relative;
+    min-height: 100%;
+  }
+  .rail::before {
+    content: "";
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--line);
+  }
+  .row.last .rail::before {
+    bottom: 50%;
+  }
+  .rail.branch::after {
+    content: "";
+    position: absolute;
+    left: 44px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--line);
+  }
+  .rail.start::after {
+    top: 24px;
+  }
+  .curve {
+    position: absolute;
+    left: 20px;
+    top: 0;
+    width: 26px;
+    height: 26px;
+    border-left: 2px solid var(--line);
+    border-bottom: 2px solid var(--line);
+    border-bottom-left-radius: 13px;
+  }
+  .dot {
+    position: absolute;
+    left: 14px;
+    top: 16px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--bg);
+    box-shadow: 0 0 0 2px var(--mut);
+    z-index: 2;
+  }
+  .dot.b {
+    left: 38px;
+    top: 20px;
+  }
+  .dot.small {
+    width: 10px;
+    height: 10px;
+    left: 40px;
+    top: 14px;
+  }
+  .dot.head {
+    background: var(--blue);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.28);
+  }
+  .dot.merge {
+    background: var(--prp);
+    box-shadow: 0 0 0 3px rgba(163, 113, 247, 0.24);
+  }
+  .dot.wip {
+    background: var(--yel);
+    box-shadow: 0 0 0 3px rgba(210, 153, 34, 0.26);
+  }
+  .dot.ok {
+    background: var(--grn);
+    box-shadow: 0 0 0 2px rgba(63, 185, 80, 0.5);
+  }
+  .dot.revert {
+    background: var(--red);
+    box-shadow: 0 0 0 2px rgba(248, 81, 73, 0.5);
+  }
+  .dot.init {
+    background: var(--mut);
+  }
+
+  .body {
+    padding: 12px 0 14px;
+    min-width: 0;
+  }
+  .body.slim {
+    padding: 9px 0;
+  }
+  .headrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ref {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--mut);
+  }
+  .head-ref {
+    color: var(--blue);
+    border-color: rgba(88, 166, 255, 0.4);
+    background: rgba(88, 166, 255, 0.1);
+  }
+  .origin {
+    color: var(--red);
+    border-color: rgba(248, 81, 73, 0.35);
+    background: rgba(248, 81, 73, 0.08);
+  }
+  .feat {
+    color: var(--grn);
+    border-color: rgba(63, 185, 80, 0.35);
+    background: rgba(63, 185, 80, 0.08);
+  }
+  .card {
+    background: var(--pan);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px 14px;
+    margin: 8px 0;
+  }
+  .wip-card {
+    border-color: rgba(210, 153, 34, 0.45);
+  }
+  .msg {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: 8px;
+    color: var(--fg);
+  }
+  a.msg:hover {
+    color: var(--blue);
+  }
+  .msg.sm {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 0;
+  }
+  .msg.rv {
+    color: #ffb4ae;
+  }
+  .desc {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--mut);
+    margin: 6px 0 10px;
+    max-width: 74ch;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  .chips i {
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(110, 118, 129, 0.18);
+    color: var(--mut);
+  }
+  .rowmeta {
+    display: block;
+    font-size: 11.5px;
+    color: var(--mut);
+    margin-top: 4px;
+  }
+  .prog {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 10px;
+  }
+  .prog > span {
+    flex: 1;
+    height: 6px;
+    border-radius: 6px;
+    background: #21262d;
+    overflow: hidden;
+  }
+  .prog i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--yel), var(--grn));
+  }
+  .prog b {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    color: var(--mut);
+  }
+  .sect .body {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 20px 0 10px;
+  }
+  .sect-t {
+    font-size: 13px;
+    color: var(--mut);
+  }
+  .sect-t b {
+    color: var(--prp);
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 500;
+  }
+  .sect-r {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    color: var(--mut);
+  }
+  .sect-r.ok {
+    color: var(--grn);
+  }
+  .sect-r.warn {
+    color: var(--red);
+  }
+
+  /* ── sidebar ── */
+  .sb {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sb:last-child {
+    border-bottom: 0;
+  }
+  .sb h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .sb p {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--mut);
+  }
+  .sb-l {
+    margin-top: 14px;
+  }
+  .sb-l li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 12.5px;
+    color: var(--mut);
+  }
+  .lang {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+  .js {
+    background: #3178c6;
+  }
+  .cs {
+    background: #178600;
+  }
+  .py {
+    background: #3572a5;
+  }
+  .sql {
+    background: #e38c00;
+  }
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .topics i {
+    font-style: normal;
+    font-size: 11.5px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(56, 139, 253, 0.15);
+    color: var(--blue);
+  }
+  .sb-mail {
+    display: inline-block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    color: var(--blue);
+    word-break: break-word;
+  }
+  .sb-mail:hover {
+    text-decoration: underline;
+  }
+  .sb-n {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--mut);
+  }
+  .sb-n a:hover {
+    color: var(--blue);
+  }
+</style>

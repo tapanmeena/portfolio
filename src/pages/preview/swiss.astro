@@ -1,0 +1,816 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const index = projects.slice(0, 8);
+const writing = posts.slice(0, 6);
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const yr = (d: Date) => new Date(d).getFullYear();
+const numDate = (d: Date) => `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
+
+const stats = [
+  { n: String(projects.length), l: "projects documented" },
+  { n: String(posts.length), l: "writeups published" },
+  { n: "06", l: "years professional" },
+  { n: String(labEntries.length), l: "services self-hosted" },
+];
+const today = new Date();
+---
+
+<PreviewShell
+  title="10 · swiss — theme mockup"
+  active="swiss"
+  bg="#ffffff"
+  fg="#111111"
+  fontHref="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@400;600&display=swap"
+>
+  <div class="sw">
+    <div class="guides" aria-hidden="true">
+      <div class="g-inner">{Array.from({ length: 12 }).map(() => <span />)}</div>
+    </div>
+
+    <div class="doc">
+      <!-- ── HEADER ── -->
+      <header class="hd">
+        <a class="hd-mark" href="/">tapan meena</a>
+        <nav class="hd-nav">
+          <a href="#" class="on">index</a>
+          <a href="#">work</a>
+          <a href="#">writing</a>
+          <a href="#">trading</a>
+          <a href="#">lab</a>
+          <a href="#">contact</a>
+        </nav>
+        <span class="hd-meta">{numDate(today)}</span>
+      </header>
+
+      <!-- ── HERO ── -->
+      <section class="hero">
+        <div class="hero-t">
+          <h1>
+            Backend systems,<br />developer tools,<br />and the <span class="red">notes</span><br />that came with them.
+          </h1>
+        </div>
+        <div class="hero-m">
+          <p class="hm-k">Profile</p>
+          <p class="hm-v">
+            Senior software engineer and project lead, Hyderabad. Six years building data-heavy platforms in .NET and TypeScript; nights spent on
+            developer tooling and a Raspberry&nbsp;Pi that trades the NSE unattended.
+          </p>
+          <p class="hm-k">Availability</p>
+          <p class="hm-v">Open to consulting on backend architecture, broker &amp; API integrations, and internal tooling.</p>
+          <a class="hm-cta" href="/contact">Start a conversation →</a>
+        </div>
+      </section>
+
+      <hr class="rule red-rule" />
+
+      <!-- ── STATS ── -->
+      <section class="stats">
+        {
+          stats.map((s, i) => (
+            <div class="st">
+              <span class="st-i">{pad2(i + 1)}</span>
+              <span class="st-n">{s.n}</span>
+              <span class="st-l">{s.l}</span>
+            </div>
+          ))
+        }
+      </section>
+
+      <hr class="rule" />
+
+      <!-- ── CURRENT ── -->
+      {
+        nowBuilding && (
+          <section class="block">
+            <div class="bl-n">
+              <span class="sec-num">01</span>
+              <span class="sec-t">Current</span>
+            </div>
+            <div class="bl-b cur">
+              <h2 class="cur-t">{nowBuilding.data.title}</h2>
+              <p class="cur-d">{nowBuilding.data.description}</p>
+              <dl class="cur-s">
+                <div>
+                  <dt>Started</dt>
+                  <dd>{yr(nowBuilding.data.startDate)}</dd>
+                </div>
+                <div>
+                  <dt>Field</dt>
+                  <dd>{nowBuilding.data.category ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt>Stack</dt>
+                  <dd>{nowBuilding.data.techStack.slice(0, 4).join(", ")}</dd>
+                </div>
+                <div>
+                  <dt>State</dt>
+                  <dd class="red">In progress</dd>
+                </div>
+              </dl>
+              <a class="lnk" href={`/projects/${nowBuilding.id}`}>
+                Read the case notes →
+              </a>
+            </div>
+          </section>
+        )
+      }
+
+      <hr class="rule" />
+
+      <!-- ── INDEX ── -->
+      <section class="block">
+        <div class="bl-n">
+          <span class="sec-num">02</span>
+          <span class="sec-t">Index of work</span>
+        </div>
+        <div class="bl-b">
+          <ul class="ix">
+            <li class="ix-h">
+              <span>No.</span>
+              <span>Title</span>
+              <span class="hide-s">Field</span>
+              <span class="hide-s">Stack</span>
+              <span class="ta-r">Year</span>
+            </li>
+            {
+              index.map((p, i) => (
+                <li>
+                  <a href={`/projects/${p.id}`}>
+                    <span class="ix-n">{pad2(i + 1)}</span>
+                    <span class="ix-t">{p.data.title}</span>
+                    <span class="ix-c hide-s">{p.data.category ?? "—"}</span>
+                    <span class="ix-s hide-s">{p.data.techStack.slice(0, 3).join(", ")}</span>
+                    <span class="ix-y ta-r">{yr(p.data.startDate)}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <a class="lnk" href="/projects">Complete index, {projects.length} entries →</a>
+        </div>
+      </section>
+
+      <hr class="rule" />
+
+      <!-- ── WRITING ── -->
+      <section class="block">
+        <div class="bl-n">
+          <span class="sec-num">03</span>
+          <span class="sec-t">Writing</span>
+        </div>
+        <div class="bl-b">
+          <ul class="wr">
+            {
+              writing.map((p) => (
+                <li>
+                  <a href={`/blog/${p.id}`}>
+                    <span class="wr-c">{p.data.category}</span>
+                    <h3 class="wr-t">{p.data.title}</h3>
+                    <p class="wr-d">{p.data.description}</p>
+                    <span class="wr-m">{numDate(new Date(p.data.publishedAt))}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <hr class="rule" />
+
+      <!-- ── LAB ── -->
+      <section class="block">
+        <div class="bl-n">
+          <span class="sec-num">04</span>
+          <span class="sec-t">Infrastructure</span>
+        </div>
+        <div class="bl-b">
+          <ul class="lab">
+            {
+              labEntries.map((e, i) => (
+                <li>
+                  <span class="lb-n">{pad2(i + 1)}</span>
+                  <span class="lb-t">{e.title}</span>
+                  <span class="lb-d">{e.description}</span>
+                  <span class="lb-s">{e.stack.slice(0, 3).join(", ")}</span>
+                  <span class="lb-a ta-r">{e.access.replace("-", " ")}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <hr class="rule" />
+
+      <!-- ── ERRATA ── -->
+      <section class="block">
+        <div class="bl-n">
+          <span class="sec-num">05</span>
+          <span class="sec-t">Errata</span>
+        </div>
+        <div class="bl-b">
+          <ul class="er">
+            {
+              curses.slice(0, 3).map((c) => (
+                <li>
+                  <span class="er-s">Sev. {c.severity}</span>
+                  <p class="er-t">{c.title}</p>
+                  <span class="er-m">
+                    {c.project}, {c.date}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+          <a class="lnk" href="/cursed-knowledge">All {curses.length} corrections →</a>
+        </div>
+      </section>
+
+      <hr class="rule red-rule" />
+
+      <!-- ── FOOTER ── -->
+      <footer class="ft">
+        <div class="ft-l">
+          <p class="ft-k">Correspondence</p>
+          <a class="ft-mail" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+        </div>
+        <div class="ft-r">
+          <div>
+            <p class="ft-k">Elsewhere</p>
+            <nav class="ft-n">
+              <a href="#">GitHub</a>
+              <a href="#">LinkedIn</a>
+              <a href="#">Twitter</a>
+              <a href="/rss.xml">RSS</a>
+            </nav>
+          </div>
+          <div>
+            <p class="ft-k">Colophon</p>
+            <p class="ft-v">Set in Archivo. Built with Astro. Twelve-column grid, 4&nbsp;px baseline. No trackers.</p>
+          </div>
+          <div>
+            <p class="ft-k">Location</p>
+            <p class="ft-v">Hyderabad, India<br />17.3850° N, 78.4867° E<br />UTC+05:30</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+</PreviewShell>
+
+<style>
+  .sw {
+    --bg: #ffffff;
+    --ink: #111111;
+    --mut: #8c8c8c;
+    --line: #dcdcdc;
+    --red: #e2231a;
+    position: relative;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Archivo", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    overflow-x: hidden;
+  }
+  .sw :global(a) {
+    text-decoration: none;
+  }
+  .red {
+    color: var(--red);
+  }
+  .ta-r {
+    text-align: right;
+  }
+  .hide-s {
+    display: none;
+  }
+  @media (min-width: 940px) {
+    .hide-s {
+      display: block;
+    }
+  }
+
+  .guides {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    padding: 0 28px;
+  }
+  .g-inner {
+    max-width: 1240px;
+    height: 100%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+  }
+  .g-inner span {
+    background: rgba(226, 35, 26, 0.035);
+  }
+
+  .doc {
+    position: relative;
+    z-index: 2;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ── header ── */
+  .hd {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 22px 0 18px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .hd-mark {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .hd-nav {
+    display: flex;
+    gap: 24px;
+  }
+  .hd-nav a {
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--mut);
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+  }
+  .hd-nav a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--red);
+  }
+  .hd-nav a.on {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+  .hd-meta {
+    font-family: "Archivo Narrow", sans-serif;
+    font-size: 12px;
+    color: var(--mut);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── hero ── */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 34px;
+    padding: 68px 0 60px;
+  }
+  @media (min-width: 940px) {
+    .hero {
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+    .hero-t {
+      grid-column: 1 / span 8;
+    }
+    .hero-m {
+      grid-column: 9 / span 4;
+      padding-top: 10px;
+    }
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6.6vw, 5.1rem);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+  .hm-k {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mut);
+    padding-bottom: 6px;
+    margin-top: 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hm-k:first-child {
+    margin-top: 0;
+  }
+  .hm-v {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #333;
+    padding-top: 10px;
+  }
+  .hm-cta {
+    display: inline-block;
+    margin-top: 22px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--red);
+    border-bottom: 1px solid var(--red);
+    padding-bottom: 2px;
+  }
+  .hm-cta:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+
+  .rule {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0;
+  }
+  .red-rule {
+    border-top: 2px solid var(--red);
+  }
+
+  /* ── stats ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 34px 0;
+  }
+  @media (min-width: 720px) {
+    .stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .st-i {
+    display: block;
+    font-family: "Archivo Narrow", sans-serif;
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 0.1em;
+  }
+  .st-n {
+    display: block;
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin: 8px 0 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .st-l {
+    display: block;
+    font-size: 12px;
+    color: var(--mut);
+    letter-spacing: 0.01em;
+  }
+
+  /* ── blocks ── */
+  .block {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 52px 0 56px;
+  }
+  @media (min-width: 940px) {
+    .block {
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+    .bl-n {
+      grid-column: 1 / span 3;
+    }
+    .bl-b {
+      grid-column: 4 / span 9;
+    }
+  }
+  .bl-n {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .sec-num {
+    font-family: "Archivo Narrow", sans-serif;
+    font-size: 12px;
+    color: var(--red);
+    letter-spacing: 0.1em;
+  }
+  .sec-t {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* current */
+  .cur-t {
+    font-size: clamp(1.7rem, 3.6vw, 2.6rem);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+  }
+  .cur-d {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #333;
+    max-width: 62ch;
+    margin-top: 14px;
+  }
+  .cur-s {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 20px;
+    margin: 26px 0 20px;
+  }
+  @media (min-width: 720px) {
+    .cur-s {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .cur-s > div {
+    border-top: 1px solid var(--ink);
+    padding: 9px 0;
+  }
+  .cur-s dt {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mut);
+  }
+  .cur-s dd {
+    font-size: 13.5px;
+    margin-top: 5px;
+  }
+  .lnk {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 2px;
+  }
+  .lnk:hover {
+    color: var(--red);
+    border-bottom-color: var(--red);
+  }
+
+  /* index */
+  .ix {
+    border-top: 1px solid var(--ink);
+    margin-bottom: 22px;
+  }
+  .ix li {
+    border-bottom: 1px solid var(--line);
+  }
+  .ix-h,
+  .ix li a {
+    display: grid;
+    grid-template-columns: 34px 1fr 56px;
+    gap: 20px;
+    padding: 12px 0;
+    align-items: baseline;
+  }
+  @media (min-width: 940px) {
+    .ix-h,
+    .ix li a {
+      grid-template-columns: 44px minmax(0, 3fr) 2fr 3fr 60px;
+    }
+  }
+  .ix-h {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mut);
+    border-bottom: 1px solid var(--line);
+  }
+  .ix li a:hover .ix-t {
+    color: var(--red);
+  }
+  .ix-n,
+  .ix-y {
+    font-family: "Archivo Narrow", sans-serif;
+    font-size: 12px;
+    color: var(--mut);
+    font-variant-numeric: tabular-nums;
+  }
+  .ix-t {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+  .ix-c,
+  .ix-s {
+    font-size: 12.5px;
+    color: var(--mut);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* writing */
+  .wr {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border-top: 1px solid var(--ink);
+  }
+  @media (min-width: 760px) {
+    .wr {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 20px;
+    }
+  }
+  @media (min-width: 1100px) {
+    .wr {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .wr li {
+    border-bottom: 1px solid var(--line);
+  }
+  .wr a {
+    display: block;
+    padding: 18px 0 22px;
+    padding-right: 20px;
+  }
+  .wr-c {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .wr-t {
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.24;
+    letter-spacing: -0.02em;
+    margin: 10px 0 8px;
+  }
+  .wr a:hover .wr-t {
+    color: var(--red);
+  }
+  .wr-d {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--mut);
+  }
+  .wr-m {
+    display: block;
+    margin-top: 12px;
+    font-family: "Archivo Narrow", sans-serif;
+    font-size: 12px;
+    color: var(--mut);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* lab */
+  .lab {
+    border-top: 1px solid var(--ink);
+  }
+  .lab li {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 4px 20px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  @media (min-width: 940px) {
+    .lab li {
+      grid-template-columns: 44px 2fr 4fr 2.4fr 1.4fr;
+    }
+  }
+  .lb-n {
+    font-family: "Archivo Narrow", sans-serif;
+    font-size: 12px;
+    color: var(--red);
+  }
+  .lb-t {
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .lb-d,
+  .lb-s,
+  .lb-a {
+    grid-column: 2;
+    font-size: 12.5px;
+    color: var(--mut);
+    line-height: 1.55;
+  }
+  @media (min-width: 940px) {
+    .lb-d {
+      grid-column: 3;
+    }
+    .lb-s {
+      grid-column: 4;
+    }
+    .lb-a {
+      grid-column: 5;
+    }
+  }
+  .lb-a {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 11px;
+  }
+
+  /* errata */
+  .er {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    border-top: 1px solid var(--ink);
+    padding-top: 20px;
+    margin-bottom: 22px;
+  }
+  @media (min-width: 860px) {
+    .er {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .er-s {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .er-t {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+    margin: 10px 0 8px;
+    padding-right: 20px;
+  }
+  .er-m {
+    font-size: 12px;
+    color: var(--mut);
+  }
+
+  /* footer */
+  .ft {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 34px;
+    padding: 46px 0 40px;
+  }
+  @media (min-width: 940px) {
+    .ft {
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+    .ft-l {
+      grid-column: 1 / span 5;
+    }
+    .ft-r {
+      grid-column: 6 / span 7;
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .ft-r {
+    display: grid;
+    gap: 26px;
+  }
+  .ft-k {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mut);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .ft-mail {
+    display: inline-block;
+    font-size: clamp(1.15rem, 2.6vw, 1.85rem);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    word-break: break-word;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 3px;
+  }
+  .ft-mail:hover {
+    color: var(--red);
+    border-bottom-color: var(--red);
+  }
+  .ft-n {
+    display: grid;
+    gap: 5px;
+    font-size: 13px;
+  }
+  .ft-n a:hover {
+    color: var(--red);
+  }
+  .ft-v {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--mut);
+  }
+</style>

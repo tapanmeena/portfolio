@@ -1,0 +1,870 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+import { MousePointer2, Frame, PenTool, Type, MessageSquare, Hand, Plus, Minus, Share2 } from "@lucide/astro";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const cards = projects.filter((p) => p.id !== nowBuilding?.id).slice(0, 3);
+const stickies = posts.slice(0, 4);
+
+const yr = (d: Date) => new Date(d).getFullYear();
+const stickyColor = ["#ffe27a", "#b7ecb0", "#ffc7d9", "#bcd9ff"];
+const tilt = [-0.9, 0.7, -0.5, 1.1];
+---
+
+<PreviewShell
+  title="13 · canvas — theme mockup"
+  active="canvas"
+  bg="#eff0f2"
+  fg="#1b1c1f"
+  fontHref="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+>
+  <div class="cv">
+    <div class="dots" aria-hidden="true"></div>
+
+    <!-- ── TOOLBAR ── -->
+    <header class="toolbar">
+      <span class="tb-logo">TM</span>
+      <span class="tb-file">
+        <b>tapanmeena.com</b>
+        <i>Drafts / Portfolio v3</i>
+      </span>
+      <span class="tools">
+        <button class="tool on" type="button" aria-label="Move"><MousePointer2 size={15} /></button>
+        <button class="tool" type="button" aria-label="Hand"><Hand size={15} /></button>
+        <button class="tool" type="button" aria-label="Frame"><Frame size={15} /></button>
+        <button class="tool" type="button" aria-label="Pen"><PenTool size={15} /></button>
+        <button class="tool" type="button" aria-label="Text"><Type size={15} /></button>
+        <button class="tool" type="button" aria-label="Comment"><MessageSquare size={15} /></button>
+      </span>
+      <span class="tb-right">
+        <span class="avatars">
+          <i class="av a1">TM</i>
+          <i class="av a2">+3</i>
+        </span>
+        <a class="share" href="/contact"><Share2 size={13} /> Share</a>
+      </span>
+    </header>
+
+    <!-- ── CANVAS ── -->
+    <div class="board">
+      <svg class="wires" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M32,20 C46,20 46,40 60,40"></path>
+        <path d="M32,24 C40,24 40,62 52,62"></path>
+        <path d="M70,46 C78,46 78,66 84,66"></path>
+      </svg>
+
+      <!-- hero frame -->
+      <section class="node hero" style="--tilt:-0.4deg">
+        <span class="flabel">Frame 01 — Hero</span>
+        <div class="box">
+          <span class="handles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <p class="kick">PORTFOLIO / 2026</p>
+          <h1>
+            I build the systems<br />other systems <em>depend on.</em>
+          </h1>
+          <p class="lede">
+            Senior software engineer in Hyderabad. Scalable backends, developer tooling, and a Raspberry&nbsp;Pi that trades the NSE while I sleep.
+          </p>
+          <div class="acts">
+            <a class="cbtn" href="/projects">View the work</a>
+            <a class="cbtn ghost" href="/blog">Read the writing</a>
+          </div>
+          <ul class="statrow">
+            <li><b>{projects.length}</b><span>projects</span></li>
+            <li><b>{posts.length}</b><span>writeups</span></li>
+            <li><b>6+</b><span>years</span></li>
+            <li><b>{labEntries.length}</b><span>services</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- now building -->
+      {
+        nowBuilding && (
+          <section class="node now" style="--tilt:0.8deg">
+            <span class="flabel">Component — NowBuilding</span>
+            <div class="box">
+              <span class="handles" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+              <span class="chip live">
+                <i class="dot" /> In progress
+              </span>
+              <h2>{nowBuilding.data.title}</h2>
+              <p>{nowBuilding.data.description}</p>
+              <div class="prog">
+                <span>
+                  <i style="width:77%" />
+                </span>
+                <b>77%</b>
+              </div>
+              <a class="clink" href={`/projects/${nowBuilding.id}`}>
+                Open project →
+              </a>
+            </div>
+          </section>
+        )
+      }
+
+      <!-- project cards -->
+      {
+        cards.map((p, i) => (
+          <section class:list={["node", `proj p${i + 1}`]} style={`--tilt:${tilt[i]}deg`}>
+            <span class="flabel">Card — {p.id}</span>
+            <a class="box" href={`/projects/${p.id}`}>
+              <span class="handles" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+              <span class="chip">{(p.data.category ?? "project").toLowerCase()}</span>
+              <h3>{p.data.title}</h3>
+              <p>{p.data.description}</p>
+              <span class="cfoot">
+                <span>{p.data.techStack.slice(0, 3).join(" · ")}</span>
+                <span>{yr(p.data.startDate)}</span>
+              </span>
+            </a>
+          </section>
+        ))
+      }
+
+      <!-- sticky notes -->
+      <section class="node notes">
+        <span class="flabel">Group — Writing</span>
+        <ul class="stickies">
+          {
+            stickies.map((p, i) => (
+              <li style={`--c:${stickyColor[i % 4]};--tilt:${tilt[i % 4] * 2}deg`}>
+                <a href={`/blog/${p.id}`}>
+                  <b>{p.data.title}</b>
+                  <i>{p.data.category.toLowerCase()}</i>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- lab -->
+      <section class="node lab" style="--tilt:-0.6deg">
+        <span class="flabel">Frame 04 — Infrastructure</span>
+        <div class="box">
+          <span class="handles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <h3>The machine room</h3>
+          <ul class="labs">
+            {
+              labEntries.map((e) => (
+                <li>
+                  <span class="led" style={`--c:${e.accent}`} />
+                  <b>{e.title}</b>
+                  <span>{e.access.replace("-", " ")}</span>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="note">self-hosted on a shelf · uptime is a hobby</p>
+        </div>
+      </section>
+
+      <!-- comments -->
+      <section class="node comments">
+        <span class="flabel">Comments — 4 unresolved</span>
+        <ul class="cmts">
+          {
+            curses.slice(0, 3).map((c) => (
+              <li>
+                <span class="pin">{c.severity}</span>
+                <span class="bub">
+                  <b>{c.project}</b>
+                  <span>{c.title}</span>
+                  <i>{c.date} · unresolved</i>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <!-- contact -->
+      <section class="node contact" style="--tilt:0.5deg">
+        <span class="flabel">Frame 06 — Contact</span>
+        <div class="box">
+          <span class="handles" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <h3>Building something difficult?</h3>
+          <p>Backend architecture, broker &amp; API integrations, developer tooling. I reply within a day.</p>
+          <a class="cbtn" href="mailto:tapanmeena1998@gmail.com">tapanmeena1998@gmail.com</a>
+          <nav class="clinks">
+            <a href="#">GitHub</a><a href="#">LinkedIn</a><a href="#">Twitter</a><a href="/rss.xml">RSS</a>
+          </nav>
+        </div>
+      </section>
+
+      <!-- collaborator cursors -->
+      <span class="cursor c1" aria-hidden="true"><MousePointer2 size={16} /><b>recruiter</b></span>
+      <span class="cursor c2" aria-hidden="true"><MousePointer2 size={16} /><b>future me</b></span>
+    </div>
+
+    <!-- ── ZOOM ── -->
+    <div class="zoom">
+      <button type="button" aria-label="Zoom out"><Minus size={13} /></button>
+      <span>68%</span>
+      <button type="button" aria-label="Zoom in"><Plus size={13} /></button>
+    </div>
+  </div>
+</PreviewShell>
+
+<style>
+  .cv {
+    --canvas: #eff0f2;
+    --ink: #1b1c1f;
+    --mut: #7a7d85;
+    --line: #dfe1e5;
+    --blue: #0d99ff;
+    --pink: #ff4d97;
+    position: relative;
+    min-height: 100vh;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  .cv :global(a) {
+    text-decoration: none;
+  }
+  .dots {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, #c9ccd2 1.2px, transparent 1.3px);
+    background-size: 22px 22px;
+  }
+
+  /* ── toolbar ── */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 14px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    flex-wrap: wrap;
+  }
+  .tb-logo {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #ff4d97, #0d99ff);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .tb-file b {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tb-file i {
+    display: block;
+    font-style: normal;
+    font-size: 11px;
+    color: var(--mut);
+  }
+  .tools {
+    display: flex;
+    gap: 2px;
+    margin: 0 auto;
+    background: #f4f5f7;
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .tool {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 28px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #55585f;
+    cursor: pointer;
+  }
+  .tool:hover {
+    background: #e7e9ec;
+  }
+  .tool.on {
+    background: var(--blue);
+    color: #fff;
+  }
+  .tb-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .avatars {
+    display: flex;
+  }
+  .av {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 9.5px;
+    font-weight: 700;
+    font-style: normal;
+    color: #fff;
+    border: 2px solid #fff;
+    margin-left: -7px;
+  }
+  .av:first-child {
+    margin-left: 0;
+  }
+  .a1 {
+    background: #0d99ff;
+  }
+  .a2 {
+    background: #8b5cf6;
+  }
+  .share {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    border-radius: 7px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+  .share:hover {
+    background: #0b86e0;
+  }
+
+  /* ── board ── */
+  .board {
+    position: relative;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 20px 50px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 34px 22px;
+    align-items: start;
+  }
+  @media (min-width: 1000px) {
+    .board {
+      grid-template-columns: repeat(12, 1fr);
+      gap: 40px 22px;
+      padding: 52px 20px 60px;
+    }
+    .hero {
+      grid-column: span 7;
+    }
+    .now {
+      grid-column: span 5;
+    }
+    .proj {
+      grid-column: span 4;
+    }
+    .notes {
+      grid-column: span 7;
+    }
+    .lab {
+      grid-column: span 5;
+    }
+    .comments {
+      grid-column: span 5;
+    }
+    .contact {
+      grid-column: span 7;
+    }
+  }
+
+  .wires {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  @media (min-width: 1100px) {
+    .wires {
+      display: block;
+    }
+  }
+  .wires path {
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 1.5;
+    stroke-dasharray: 7 5;
+    opacity: 0.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .node {
+    position: relative;
+    z-index: 2;
+    transform: rotate(var(--tilt, 0deg));
+  }
+  .flabel {
+    display: block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    color: var(--blue);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  .box {
+    position: relative;
+    display: block;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 24px 24px 22px;
+    box-shadow: 0 4px 14px -6px rgba(20, 24, 40, 0.16);
+    color: var(--ink);
+    height: 100%;
+    transition:
+      box-shadow 0.16s ease,
+      border-color 0.16s ease;
+  }
+  .node:hover .box {
+    border-color: var(--blue);
+    box-shadow:
+      0 0 0 1px var(--blue),
+      0 10px 26px -10px rgba(13, 153, 255, 0.4);
+  }
+  .handles i {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    background: #fff;
+    border: 1.5px solid var(--blue);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.16s ease;
+  }
+  .node:hover .handles i {
+    opacity: 1;
+  }
+  .handles i:nth-child(1) {
+    top: -4px;
+    left: -4px;
+  }
+  .handles i:nth-child(2) {
+    top: -4px;
+    right: -4px;
+  }
+  .handles i:nth-child(3) {
+    bottom: -4px;
+    left: -4px;
+  }
+  .handles i:nth-child(4) {
+    bottom: -4px;
+    right: -4px;
+  }
+
+  /* ── hero ── */
+  .kick {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    color: var(--mut);
+  }
+  .hero h1 {
+    font-size: clamp(1.9rem, 4.4vw, 3.1rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    margin: 12px 0 14px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--blue);
+  }
+  .lede {
+    font-size: 0.98rem;
+    line-height: 1.62;
+    color: #4c505a;
+    max-width: 48ch;
+  }
+  .acts {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin: 20px 0 22px;
+  }
+  .cbtn {
+    display: inline-block;
+    padding: 9px 17px;
+    border-radius: 8px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .cbtn:hover {
+    background: var(--blue);
+  }
+  .cbtn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .cbtn.ghost:hover {
+    background: #f4f5f7;
+    color: var(--ink);
+  }
+  .statrow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .statrow b {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .statrow span {
+    font-size: 11.5px;
+    color: var(--mut);
+  }
+
+  /* ── chips / now ── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f0f1f4;
+    color: var(--mut);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .chip.live {
+    background: #e6f8ee;
+    color: #12784a;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #16a35c;
+  }
+  .now h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 12px 0 8px;
+  }
+  .now p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #4c505a;
+  }
+  .prog {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 14px;
+  }
+  .prog > span {
+    flex: 1;
+    height: 6px;
+    border-radius: 6px;
+    background: #eceef1;
+    overflow: hidden;
+  }
+  .prog i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #0d99ff, #8b5cf6);
+  }
+  .prog b {
+    font-size: 12px;
+    color: var(--mut);
+  }
+  .clink {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--blue);
+  }
+
+  /* ── project cards ── */
+  .proj h3 {
+    font-size: 1.16rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 11px 0 7px;
+  }
+  .proj p {
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: #4c505a;
+  }
+  .cfoot {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 11px;
+    border-top: 1px solid var(--line);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    color: var(--mut);
+  }
+
+  /* ── stickies ── */
+  .stickies {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (min-width: 620px) {
+    .stickies {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .stickies li {
+    background: var(--c);
+    border-radius: 3px;
+    transform: rotate(var(--tilt));
+    box-shadow: 0 6px 16px -8px rgba(20, 24, 40, 0.45);
+    transition: transform 0.16s ease;
+  }
+  .stickies li:hover {
+    transform: rotate(0deg) translateY(-3px);
+  }
+  .stickies a {
+    display: block;
+    padding: 16px 14px 14px;
+    min-height: 124px;
+    color: #2b2a17;
+  }
+  .stickies b {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .stickies i {
+    display: block;
+    font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    margin-top: 9px;
+    opacity: 0.62;
+  }
+
+  /* ── lab ── */
+  .lab h3,
+  .contact h3 {
+    font-size: 1.16rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .labs {
+    margin: 14px 0 12px;
+  }
+  .labs li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 0;
+    border-bottom: 1px solid #f0f1f4;
+    font-size: 0.88rem;
+  }
+  .labs b {
+    flex: 1;
+    font-weight: 500;
+  }
+  .labs span:last-child {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--mut);
+  }
+  .led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c);
+    flex: none;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--mut);
+  }
+
+  /* ── comments ── */
+  .cmts li {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .pin {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50% 50% 50% 2px;
+    background: var(--pink);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .bub {
+    display: block;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 11px 14px 12px;
+    box-shadow: 0 4px 12px -6px rgba(20, 24, 40, 0.18);
+  }
+  .bub b {
+    display: block;
+    font-size: 11.5px;
+    color: var(--mut);
+    font-weight: 600;
+  }
+  .bub > span {
+    display: block;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin: 5px 0 7px;
+  }
+  .bub i {
+    font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    color: var(--pink);
+  }
+
+  /* ── contact ── */
+  .contact p {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: #4c505a;
+    margin: 10px 0 18px;
+    max-width: 52ch;
+  }
+  .clinks {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--mut);
+  }
+  .clinks a:hover {
+    color: var(--blue);
+  }
+
+  /* ── cursors ── */
+  .cursor {
+    position: absolute;
+    display: none;
+    align-items: flex-start;
+    z-index: 5;
+    pointer-events: none;
+  }
+  @media (min-width: 1100px) {
+    .cursor {
+      display: flex;
+    }
+  }
+  .cursor b {
+    margin: 12px 0 0 -2px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .c1 {
+    top: 27%;
+    left: 58%;
+    color: #0d99ff;
+  }
+  .c1 b {
+    background: #0d99ff;
+  }
+  .c2 {
+    top: 63%;
+    left: 22%;
+    color: #ff4d97;
+  }
+  .c2 b {
+    background: #ff4d97;
+  }
+
+  /* ── zoom ── */
+  .zoom {
+    position: fixed;
+    right: 16px;
+    bottom: 84px;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 7px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    box-shadow: 0 6px 18px -8px rgba(20, 24, 40, 0.35);
+    font-size: 12px;
+    color: #55585f;
+  }
+  .zoom button {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .zoom button:hover {
+    background: #f0f1f4;
+  }
+  .zoom span {
+    min-width: 38px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stickies li {
+      transition: none !important;
+    }
+  }
+</style>

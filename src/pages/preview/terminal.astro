@@ -1,0 +1,821 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+const nowBuilding = projects.find((p) => p.id === "cultbot") ?? projects.find((p) => p.data.status === "in-progress") ?? projects[0];
+const listed = projects.slice(0, 7);
+const logged = posts.slice(0, 5);
+
+const ansi: Record<string, string> = {
+  Fintech: "grn",
+  "Web Apps": "blu",
+  "Web Development": "blu",
+  "Mobile Apps": "mag",
+  "Desktop Apps": "cyn",
+  "CLI Tools": "yel",
+  Libraries: "mag",
+  Games: "red",
+  "ML/AI": "mag",
+  "IoT/Security": "cyn",
+};
+
+const mon = (d: Date) => d.toLocaleString("en-US", { month: "short" });
+const stamp = (d: Date) => `${mon(d)} ${String(d.getDate()).padStart(2, " ")}  ${d.getFullYear()}`;
+const iso = (d: Date) => d.toISOString().slice(0, 19).replace("T", " ");
+const size = (s: string) => `${(s.length * 1.7).toFixed(1)}K`;
+
+const boot = [
+  { t: "ok", m: "mounting /dev/workshop on /" },
+  { t: "ok", m: `loading ${projects.length} project manifests` },
+  { t: "ok", m: `indexing ${posts.length} writeups` },
+  { t: "ok", m: "machine-room.service — 5 units active" },
+  { t: "warn", m: `${curses.length} cursed findings quarantined` },
+];
+---
+
+<PreviewShell
+  title="01 · terminal — theme mockup"
+  active="terminal"
+  bg="#080b0a"
+  fg="#c8d5cb"
+  fontHref="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,400&display=swap"
+>
+  <div class="crt">
+    <div class="scan" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <div class="shellwin">
+      <!-- ── window chrome / nav ── -->
+      <div class="chrome">
+        <div class="dots" aria-hidden="true"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+        <span class="wtitle">tapan@workshop — ~/ — zsh — 132×48</span>
+        <nav class="tabs">
+          <a class="tab on" href="#">~</a>
+          <a class="tab" href="#">projects</a>
+          <a class="tab" href="#">writing</a>
+          <a class="tab" href="#">trading</a>
+          <a class="tab" href="#">cursed</a>
+          <a class="tab" href="#">about</a>
+        </nav>
+      </div>
+
+      <div class="screen">
+        <!-- ── boot ── -->
+        <section class="boot" aria-label="Boot log">
+          {
+            boot.map((b) => (
+              <p class="bl">
+                <span class:list={["tag", b.t]}>[{b.t === "ok" ? " ok " : "warn"}]</span> {b.m}
+              </p>
+            ))
+          }
+        </section>
+
+        <!-- ── whoami ── -->
+        <section class="blk">
+          <p class="cmd">
+            <span class="ps1">tapan@workshop</span>
+            <span class="pwd">~</span>
+            <span class="sig">%</span>
+            <span class="typed">whoami --verbose</span>
+          </p>
+          <pre
+            class="banner">{`  ████████╗ █████╗ ██████╗  █████╗ ███╗   ██╗
+  ╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗████╗  ██║
+     ██║   ███████║██████╔╝███████║██╔██╗ ██║
+     ██║   ██╔══██║██╔═══╝ ██╔══██║██║╚██╗██║
+     ██║   ██║  ██║██║     ██║  ██║██║ ╚████║
+     ╚═╝   ╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝`}</pre>
+          <div class="kvs">
+            <p><span class="k">role</span><span class="v">project lead · senior software engineer</span></p>
+            <p><span class="k">org</span><span class="v">maq software</span></p>
+            <p><span class="k">loc</span><span class="v">hyderabad, in · <span class="dim">utc+05:30</span></span></p>
+            <p><span class="k">does</span><span class="v">scalable backends · developer tooling · a raspberry pi that trades</span></p>
+            <p><span class="k">motto</span><span class="v grn">"they autocomplete; I take the blame."</span></p>
+          </div>
+        </section>
+
+        <!-- ── now ── -->
+        {
+          nowBuilding && (
+            <section class="blk">
+              <p class="cmd">
+                <span class="ps1">tapan@workshop</span> <span class="pwd">~</span> <span class="sig">%</span> cat NOW.md
+              </p>
+              <div class="box">
+                <div class="boxtop">
+                  <span class="bt-l">┌─</span>
+                  <span class="bt-t">
+                    currently building <b class="yel">{nowBuilding.data.title}</b>
+                  </span>
+                  <span class="bt-r" />
+                </div>
+                <div class="boxin">
+                  <p class="desc">{nowBuilding.data.description}</p>
+                  <div class="bar">
+                    <span class="bar-fill">████████████████████</span>
+                    <span class="bar-rest">░░░░░░</span>
+                    <span class="bar-pct">77%</span>
+                    <span class="dim"> · in-progress · commit 4h ago</span>
+                  </div>
+                  <p class="chips">
+                    {nowBuilding.data.techStack.slice(0, 6).map((t) => (
+                      <span class="chip">{t}</span>
+                    ))}
+                  </p>
+                </div>
+                <div class="boxbot" aria-hidden="true">
+                  └────────────────────────────────────────────────────────────────────
+                </div>
+              </div>
+            </section>
+          )
+        }
+
+        <!-- ── ls projects ── -->
+        <section class="blk">
+          <p class="cmd">
+            <span class="ps1">tapan@workshop</span>
+            <span class="pwd">~</span>
+            <span class="sig">%</span> ls -lh --sort=time ~/projects
+          </p>
+          <p class="total dim">total {projects.length} · {projects.filter((p) => p.data.status === "in-progress").length} running</p>
+          <ul class="ls">
+            {
+              listed.map((p) => (
+                <li>
+                  <a class="row" href={`/projects/${p.id}`}>
+                    <span class="perm dim">{p.data.status === "in-progress" ? "drwxr-xr-x" : "dr-xr-xr-x"}</span>
+                    <span class="own dim">tapan staff</span>
+                    <span class="sz dim">{size(p.data.description)}</span>
+                    <span class="dt dim">{stamp(new Date(p.data.startDate))}</span>
+                    <span class:list={["nm", ansi[p.data.category ?? ""] ?? "cyn"]}>
+                      {p.id}
+                      <span class="slash">/</span>
+                    </span>
+                    <span class="cat dim">{(p.data.category ?? "misc").toLowerCase()}</span>
+                    {p.data.status === "in-progress" && <span class="live grn">● live</span>}
+                    <span class="hint">{p.data.description}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="more dim">… <a href="/projects" class="lnk">cd ~/projects</a> to see all {projects.length}</p>
+        </section>
+
+        <!-- ── tail writing log ── -->
+        <section class="blk">
+          <p class="cmd">
+            <span class="ps1">tapan@workshop</span>
+            <span class="pwd">~</span>
+            <span class="sig">%</span> tail -f /var/log/writing.log
+          </p>
+          <ul class="tail">
+            {
+              logged.map((p) => (
+                <li>
+                  <a class="trow" href={`/blog/${p.id}`}>
+                    <span class="ts dim">{iso(new Date(p.data.publishedAt))}</span>
+                    <span class="lvl">INFO</span>
+                    <span class="src cyn">[{p.data.category.toLowerCase()}]</span>
+                    <span class="msg">{p.data.title}</span>
+                  </a>
+                </li>
+              ))
+            }
+            <li class="waiting dim">^C to stop following<span class="cursor" aria-hidden="true"></span></li>
+          </ul>
+        </section>
+
+        <!-- ── systemctl ── -->
+        <section class="blk">
+          <p class="cmd">
+            <span class="ps1">tapan@workshop</span>
+            <span class="pwd">~</span>
+            <span class="sig">%</span> systemctl status machine-room.target
+          </p>
+          <ul class="units">
+            {
+              labEntries.map((e) => (
+                <li class="unit">
+                  <span class:list={["led", e.access === "restricted" ? "amb" : "grn"]}>●</span>
+                  <span class="uname">{e.id}.service</span>
+                  <span class="ustate dim">
+                    loaded · <span class={e.access === "restricted" ? "yel" : "grn"}>active (running)</span>
+                  </span>
+                  <span class="udesc dim">{e.description}</span>
+                  <span class="ustack dim">{e.stack.slice(0, 3).join(" · ").toLowerCase()}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <!-- ── cursed ── -->
+        <section class="blk">
+          <p class="cmd">
+            <span class="ps1">tapan@workshop</span>
+            <span class="pwd">~</span>
+            <span class="sig">%</span> grep -rn "SEV" /var/log/cursed.log | head -3
+          </p>
+          <ul class="curse">
+            {
+              curses.slice(0, 3).map((c) => (
+                <li>
+                  <span class:list={["sev", `s${c.severity}`]}>SEV-{c.severity}</span>
+                  <span class="cdate dim">{c.date}</span>
+                  <span class="cproj yel">{c.project.toLowerCase()}</span>
+                  <span class="ctxt">{c.title}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <!-- ── contact / exit ── -->
+        <section class="blk">
+          <p class="cmd">
+            <span class="ps1">tapan@workshop</span>
+            <span class="pwd">~</span>
+            <span class="sig">%</span> mail -s "hello" tapan
+          </p>
+          <div class="cta">
+            <a class="btn" href="mailto:tapanmeena1998@gmail.com">↵ compose message</a>
+            <a class="btn ghost" href="https://github.com/tapanmeena">gh · tapanmeena</a>
+            <a class="btn ghost" href="/rss.xml">rss · subscribe</a>
+          </div>
+          <p class="cmd last">
+            <span class="ps1">tapan@workshop</span>
+            <span class="pwd">~</span>
+            <span class="sig">%</span>
+            <span class="cursor block" aria-hidden="true"></span>
+          </p>
+        </section>
+      </div>
+
+      <div class="statusbar">
+        <span class="sb grn">NORMAL</span>
+        <span class="sb">~/index.astro</span>
+        <span class="sb dim">utf-8 · lf · astro</span>
+        <span class="sb-sp"></span>
+        <span class="sb dim">git:(main) ✓</span>
+        <span class="sb dim">{projects.length}P · {posts.length}W</span>
+        <span class="sb grn">100%</span>
+      </div>
+    </div>
+  </div>
+</PreviewShell>
+
+<style>
+  .crt {
+    --bg: #080b0a;
+    --fg: #c8d5cb;
+    --dim: #5d7367;
+    --grn: #4ade80;
+    --yel: #fbbf24;
+    --cyn: #22d3ee;
+    --mag: #f472b6;
+    --blu: #60a5fa;
+    --red: #f87171;
+    --line: #1b2822;
+    position: relative;
+    min-height: 100vh;
+    padding: 22px 16px 8px;
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.75;
+    background: radial-gradient(120% 90% at 50% -10%, #0f1714 0%, #080b0a 55%, #050706 100%), var(--bg);
+  }
+  .scan {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.024) 0 1px, transparent 1px 3px);
+    mix-blend-mode: overlay;
+  }
+  .vignette {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 49;
+    background: radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  }
+
+  .shellwin {
+    max-width: 1180px;
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(6, 10, 8, 0.72);
+    box-shadow:
+      0 0 0 1px rgba(74, 222, 128, 0.05),
+      0 40px 90px -30px rgba(0, 0, 0, 0.9);
+  }
+
+  /* ── chrome ── */
+  .chrome {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(#0e1512, #0a100d);
+    flex-wrap: wrap;
+  }
+  .dots {
+    display: flex;
+    gap: 6px;
+  }
+  .dots i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: block;
+  }
+  .d1 {
+    background: #ff5f57;
+  }
+  .d2 {
+    background: #febc2e;
+  }
+  .d3 {
+    background: #28c840;
+  }
+  .wtitle {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.02em;
+  }
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 3px 11px;
+    font-size: 11.5px;
+    color: var(--dim);
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: 0.15s ease;
+  }
+  .tab:hover {
+    color: var(--fg);
+    background: rgba(74, 222, 128, 0.06);
+  }
+  .tab.on {
+    color: var(--grn);
+    border-color: rgba(74, 222, 128, 0.3);
+    background: rgba(74, 222, 128, 0.08);
+  }
+
+  .screen {
+    padding: 20px 22px 26px;
+  }
+  @media (min-width: 800px) {
+    .screen {
+      padding: 26px 34px 34px;
+    }
+  }
+
+  /* ── ansi helpers ── */
+  .dim {
+    color: var(--dim);
+  }
+  .grn {
+    color: var(--grn);
+  }
+  .yel {
+    color: var(--yel);
+  }
+  .cyn {
+    color: var(--cyn);
+  }
+  .mag {
+    color: var(--mag);
+  }
+  .blu {
+    color: var(--blu);
+  }
+  .red {
+    color: var(--red);
+  }
+
+  /* ── boot ── */
+  .boot {
+    margin-bottom: 26px;
+  }
+  .bl {
+    font-size: 12px;
+    color: var(--dim);
+  }
+  .tag {
+    color: var(--grn);
+  }
+  .tag.warn {
+    color: var(--yel);
+  }
+
+  .blk {
+    margin: 0 0 34px;
+  }
+  .cmd {
+    margin-bottom: 8px;
+    color: var(--fg);
+    word-break: break-word;
+  }
+  .cmd.last {
+    margin: 0;
+  }
+  .ps1 {
+    color: var(--grn);
+    font-weight: 700;
+  }
+  .pwd {
+    color: var(--cyn);
+  }
+  .sig {
+    color: var(--mag);
+  }
+  .typed {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 0;
+    animation: type 1.4s steps(18, end) 0.2s both;
+  }
+  @keyframes type {
+    from {
+      width: 0;
+    }
+    to {
+      width: 17ch;
+    }
+  }
+
+  .banner {
+    font-family: inherit;
+    font-size: clamp(6px, 1.35vw, 12px);
+    line-height: 1.12;
+    color: var(--grn);
+    text-shadow: 0 0 18px rgba(74, 222, 128, 0.35);
+    margin: 14px 0 18px;
+    overflow-x: auto;
+  }
+
+  .kvs p {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    gap: 10px;
+  }
+  .kvs .k {
+    color: var(--dim);
+  }
+  .kvs .k::after {
+    content: " ─";
+    opacity: 0.4;
+  }
+
+  /* ── box ── */
+  .box {
+    margin-top: 4px;
+  }
+  .boxtop {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--line);
+  }
+  .bt-t {
+    color: var(--dim);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .bt-r {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+    margin-top: -6px;
+  }
+  .boxin {
+    border-left: 1px solid var(--line);
+    padding: 10px 0 10px 16px;
+  }
+  .boxbot {
+    color: var(--line);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .desc {
+    color: var(--fg);
+    max-width: 74ch;
+  }
+  .bar {
+    margin: 10px 0 8px;
+    letter-spacing: -0.06em;
+  }
+  .bar-fill {
+    color: var(--grn);
+  }
+  .bar-rest {
+    color: var(--line);
+  }
+  .bar-pct {
+    color: var(--yel);
+    margin-left: 10px;
+    letter-spacing: 0;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-size: 11px;
+    padding: 1px 8px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    color: var(--dim);
+  }
+
+  /* ── ls ── */
+  .total {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .ls .row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 12px;
+    padding: 5px 8px;
+    margin: 0 -8px;
+    text-decoration: none;
+    color: var(--fg);
+    border-radius: 3px;
+    transition: background 0.14s ease;
+  }
+  .ls .row:hover {
+    background: rgba(74, 222, 128, 0.07);
+  }
+  .perm,
+  .own,
+  .sz,
+  .dt,
+  .cat,
+  .live {
+    font-size: 11.5px;
+  }
+  .perm,
+  .own,
+  .sz {
+    display: none;
+  }
+  .nm {
+    font-weight: 700;
+  }
+  .slash {
+    color: var(--dim);
+    font-weight: 400;
+  }
+  .hint {
+    grid-column: 1 / -1;
+    color: var(--dim);
+    font-size: 11.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (min-width: 900px) {
+    .ls .row {
+      grid-template-columns: 96px 92px 52px 108px 200px 100px 62px;
+      align-items: baseline;
+    }
+    .perm,
+    .own,
+    .sz {
+      display: block;
+    }
+    .hint {
+      display: none;
+    }
+    .ls .row:hover .cat {
+      color: var(--fg);
+    }
+  }
+  .more {
+    margin-top: 6px;
+    font-size: 12px;
+  }
+  .lnk {
+    color: var(--cyn);
+    text-decoration: none;
+    border-bottom: 1px dotted currentColor;
+  }
+
+  /* ── tail ── */
+  .tail .trow {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 10px;
+    padding: 4px 8px;
+    margin: 0 -8px;
+    color: var(--fg);
+    text-decoration: none;
+    border-radius: 3px;
+  }
+  .tail .trow:hover {
+    background: rgba(34, 211, 238, 0.07);
+  }
+  .ts,
+  .lvl,
+  .src {
+    font-size: 11.5px;
+  }
+  .lvl {
+    color: var(--blu);
+    display: none;
+  }
+  .msg {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 900px) {
+    .tail .trow {
+      grid-template-columns: 168px 44px 128px 1fr;
+      align-items: baseline;
+    }
+    .lvl {
+      display: block;
+    }
+    .msg {
+      grid-column: auto;
+    }
+  }
+  .waiting {
+    padding: 6px 0 0;
+    font-size: 12px;
+  }
+
+  /* ── units ── */
+  .unit {
+    display: grid;
+    grid-template-columns: 14px 1fr;
+    gap: 2px 10px;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .led.grn {
+    color: var(--grn);
+  }
+  .led.amb {
+    color: var(--yel);
+  }
+  .uname {
+    font-weight: 700;
+  }
+  .ustate,
+  .udesc,
+  .ustack {
+    grid-column: 2;
+    font-size: 11.5px;
+  }
+  .udesc {
+    max-width: 84ch;
+  }
+  @media (min-width: 900px) {
+    .unit {
+      grid-template-columns: 14px 210px 200px 1fr;
+    }
+    .ustate {
+      grid-column: 3;
+    }
+    .udesc {
+      grid-column: 4;
+    }
+    .ustack {
+      grid-column: 4;
+      opacity: 0.65;
+    }
+  }
+
+  /* ── cursed ── */
+  .curse li {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 2px 10px;
+    padding: 5px 0;
+  }
+  .sev {
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .s1 {
+    color: var(--yel);
+  }
+  .s2 {
+    color: #fb923c;
+  }
+  .s3 {
+    color: var(--red);
+  }
+  .cdate,
+  .cproj {
+    font-size: 11.5px;
+  }
+  @media (min-width: 900px) {
+    .curse li {
+      grid-template-columns: 60px 68px 130px 1fr;
+      align-items: baseline;
+    }
+  }
+
+  /* ── cta ── */
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0 22px;
+  }
+  .btn {
+    padding: 6px 16px;
+    border: 1px solid var(--grn);
+    color: var(--grn);
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 12.5px;
+    transition: 0.16s ease;
+  }
+  .btn:hover {
+    background: var(--grn);
+    color: #06110b;
+    box-shadow: 0 0 22px -4px rgba(74, 222, 128, 0.55);
+  }
+  .btn.ghost {
+    border-color: var(--line);
+    color: var(--dim);
+  }
+  .btn.ghost:hover {
+    border-color: var(--cyn);
+    color: #06110b;
+    background: var(--cyn);
+    box-shadow: none;
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 15px;
+    background: var(--grn);
+    vertical-align: -3px;
+    margin-left: 4px;
+    animation: blink 1.05s step-end infinite;
+  }
+  .cursor.block {
+    width: 9px;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* ── status bar ── */
+  .statusbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 6px 16px;
+    border-top: 1px solid var(--line);
+    background: #0a100d;
+    font-size: 11px;
+    flex-wrap: wrap;
+  }
+  .sb-sp {
+    flex: 1;
+  }
+  .sb.grn {
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .typed,
+    .cursor {
+      animation: none !important;
+      width: auto !important;
+    }
+  }
+</style>

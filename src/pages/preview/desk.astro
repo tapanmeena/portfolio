@@ -1,0 +1,919 @@
+---
+import PreviewShell from "@components/preview/PreviewShell.astro";
+import { getCollection } from "astro:content";
+import { getPublishedProjects } from "@utils/projects";
+import { labEntries } from "@data/lab";
+import { curses } from "@data/curses";
+
+const allProjects = await getCollection("projects");
+const projects = getPublishedProjects(allProjects);
+const allPosts = await getCollection("blog");
+const posts = allPosts.filter((p) => !p.data.draft).sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+
+// Deterministic pseudo-values so the "market data" is stable across builds.
+const hash = (s: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h);
+};
+const chg = (id: string) => ((hash(id) % 1900) - 700) / 100;
+const spark = (id: string) => Array.from({ length: 16 }, (_, i) => 22 + ((hash(id + i) % 78) as number));
+
+const ticker = (t: string) =>
+  t
+    .replace(/[^a-zA-Z]/g, "")
+    .slice(0, 4)
+    .toUpperCase()
+    .padEnd(4, "X");
+
+const monitored = projects.slice(0, 10);
+const news = posts.slice(0, 6);
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const hhmm = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+const dmy = (d: Date) => `${pad2(d.getDate())} ${d.toLocaleString("en-US", { month: "short" }).toUpperCase()}`;
+
+const byYear = projects.reduce<Record<string, number>>((acc, p) => {
+  const y = String(new Date(p.data.startDate).getFullYear());
+  acc[y] = (acc[y] ?? 0) + 1;
+  return acc;
+}, {});
+const years = Object.keys(byYear).sort();
+const maxYear = Math.max(...Object.values(byYear));
+
+const fkeys = ["F1 HELP", "F2 WORK", "F3 BLOG", "F4 DESK", "F5 LAB", "F6 CURS", "F7 ABT", "F8 MSG"];
+const now = new Date();
+---
+
+<PreviewShell
+  title="06 · desk — theme mockup"
+  active="desk"
+  bg="#050505"
+  fg="#e8e8e8"
+  fontHref="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;700&family=Inter+Tight:wght@400;600;700&display=swap"
+>
+  <div class="desk">
+    <!-- ── COMMAND BAR ── -->
+    <header class="cmdbar">
+      <span class="brand">TPMN<span class="brand-sub">&lt;GO&gt;</span></span>
+      <label class="cmdin">
+        <span class="cmd-prompt">CMD</span>
+        <input type="text" value="TPMN US <EQUITY> DES" readonly aria-label="Command line" />
+        <span class="cmd-go">&lt;GO&gt;</span>
+      </label>
+      <span class="clock">
+        <b>{hhmm(now)}</b>
+        <i>IST</i>
+      </span>
+    </header>
+
+    <nav class="fbar">
+      {
+        fkeys.map((k, i) => (
+          <a href="#" class:list={["fk", { on: i === 1 }]}>
+            {k}
+          </a>
+        ))
+      }
+    </nav>
+
+    <!-- ── TAPE ── -->
+    <div class="tape" aria-hidden="true">
+      <div class="tape-t">
+        {
+          [0, 1].map(() => (
+            <span class="tape-set">
+              {projects.map((p) => {
+                const c = chg(p.id);
+                return (
+                  <span class="tp">
+                    <b>{ticker(p.data.title)}</b>
+                    <i class={c >= 0 ? "up" : "dn"}>
+                      {c >= 0 ? "▲" : "▼"} {Math.abs(c).toFixed(2)}%
+                    </i>
+                  </span>
+                );
+              })}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- ── PANEL GRID ── -->
+    <div class="board">
+      <!-- profile -->
+      <section class="panel p-des">
+        <header class="ph">
+          <span class="ph-t">TPMN US <i>EQUITY</i> — DES</span>
+          <span class="ph-r">1 / 4</span>
+        </header>
+        <div class="pb">
+          <h1 class="des-name">TAPAN MEENA</h1>
+          <p class="des-sub">SR SOFTWARE ENGINEER / PROJECT LEAD · MAQ SOFTWARE · HYDERABAD IN</p>
+          <div class="quote">
+            <span class="q-px">6.0<i>YR</i></span>
+            <span class="q-chg up">▲ 1.00 (+20.0%)</span>
+            <span class="q-note">EXPERIENCE · LAST UPDATED {dmy(now)}</span>
+          </div>
+          <dl class="fund">
+            <div><dt>SECTOR</dt><dd>BACKEND / PLATFORM</dd></div>
+            <div><dt>SUB-IND</dt><dd>DEV TOOLING · FINTECH</dd></div>
+            <div><dt>STACK</dt><dd>.NET · TS · AZURE · SQL</dd></div>
+            <div><dt>PROJECTS</dt><dd>{projects.length} LISTED</dd></div>
+            <div><dt>RESEARCH</dt><dd>{posts.length} NOTES PUBLISHED</dd></div>
+            <div><dt>STATUS</dt><dd class="up">OPEN TO MANDATES</dd></div>
+          </dl>
+          <p class="des-body">
+            Builds scalable backends, developer tooling and one Raspberry&nbsp;Pi that trades the NSE unattended. Every position below is documented —
+            entry, thesis, and the parts that went wrong.
+          </p>
+        </div>
+      </section>
+
+      <!-- monitor -->
+      <section class="panel p-mon">
+        <header class="ph">
+          <span class="ph-t">PROJECT MONITOR — WATCHLIST</span>
+          <span class="ph-r">{monitored.length} / {projects.length}</span>
+        </header>
+        <div class="pb pb-flush">
+          <table class="mon">
+            <thead>
+              <tr>
+                <th>TKR</th>
+                <th>NAME</th>
+                <th class="hide-sm">SECTOR</th>
+                <th class="num">CHG</th>
+                <th class="hide-sm">TREND</th>
+                <th>STAT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                monitored.map((p) => {
+                  const c = chg(p.id);
+                  const live = p.data.status === "in-progress";
+                  return (
+                    <tr>
+                      <td class="tk">{ticker(p.data.title)}</td>
+                      <td class="nm">
+                        <a href={`/projects/${p.id}`}>{p.data.title}</a>
+                      </td>
+                      <td class="sec hide-sm">{(p.data.category ?? "MISC").toUpperCase()}</td>
+                      <td class:list={["num", c >= 0 ? "up" : "dn"]}>
+                        {c >= 0 ? "+" : "−"}
+                        {Math.abs(c).toFixed(2)}
+                      </td>
+                      <td class="hide-sm">
+                        <span class="spark">
+                          {spark(p.id).map((h) => (
+                            <i class={c >= 0 ? "up" : "dn"} style={`height:${h}%`} />
+                          ))}
+                        </span>
+                      </td>
+                      <td>
+                        <span class:list={["stat", live ? "live" : "done"]}>{live ? "ACTV" : "CLSD"}</span>
+                      </td>
+                    </tr>
+                  );
+                })
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- news -->
+      <section class="panel p-news">
+        <header class="ph">
+          <span class="ph-t">NEWS — RESEARCH NOTES</span>
+          <span class="ph-r blink">LIVE</span>
+        </header>
+        <div class="pb pb-flush">
+          <ul class="news">
+            {
+              news.map((p) => (
+                <li>
+                  <a href={`/blog/${p.id}`}>
+                    <span class="nw-d">{dmy(new Date(p.data.publishedAt))}</span>
+                    <span class="nw-s">{p.data.category.toUpperCase().slice(0, 9)}</span>
+                    <span class="nw-t">{p.data.title}</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <!-- infra -->
+      <section class="panel p-inf">
+        <header class="ph">
+          <span class="ph-t">INFRA — MACHINE ROOM</span>
+          <span class="ph-r up">ALL UP</span>
+        </header>
+        <div class="pb">
+          <ul class="inf">
+            {
+              labEntries.map((e) => {
+                const load = 30 + (hash(e.id) % 55);
+                return (
+                  <li>
+                    <span class="if-n">{e.title}</span>
+                    <span class="if-bar">
+                      <i style={`width:${load}%`} class={load > 70 ? "hot" : ""} />
+                    </span>
+                    <span class="if-v">{load}%</span>
+                  </li>
+                );
+              })
+            }
+          </ul>
+        </div>
+      </section>
+
+      <!-- histogram -->
+      <section class="panel p-hist">
+        <header class="ph">
+          <span class="ph-t">SHIPPED / YEAR</span>
+          <span class="ph-r">GP</span>
+        </header>
+        <div class="pb">
+          <div class="hist">
+            {
+              years.map((y) => (
+                <span class="hb">
+                  <i style={`height:${(byYear[y] / maxYear) * 100}%`} />
+                  <b>{byYear[y]}</b>
+                  <em>'{y.slice(2)}</em>
+                </span>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- alerts -->
+      <section class="panel p-alert">
+        <header class="ph">
+          <span class="ph-t">ALERTS — DEFECT REGISTER</span>
+          <span class="ph-r dn">{curses.length}</span>
+        </header>
+        <div class="pb pb-flush">
+          <ul class="alerts">
+            {
+              curses.slice(0, 4).map((c) => (
+                <li>
+                  <span class:list={["sev", `s${c.severity}`]}>SEV{c.severity}</span>
+                  <span class="al-b">
+                    <b>{c.project.toUpperCase()}</b>
+                    <span>{c.title}</span>
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      <!-- contact -->
+      <section class="panel p-msg">
+        <header class="ph">
+          <span class="ph-t">MSG — CONTACT DESK</span>
+          <span class="ph-r">OPEN</span>
+        </header>
+        <div class="pb">
+          <p class="msg-l">Backend architecture · broker &amp; API integrations · developer tooling.</p>
+          <dl class="fund msg-f">
+            <div><dt>DESK HRS</dt><dd>09:00 — 20:00 IST, MON–FRI</dd></div>
+            <div><dt>RESPONSE</dt><dd class="up">&lt; 24H ON WEEKDAYS</dd></div>
+            <div><dt>ENGAGE</dt><dd>ADVISORY · BUILD · CODE REVIEW</dd></div>
+            <div><dt>NOTICE</dt><dd>2 WEEKS FOR NEW MANDATES</dd></div>
+          </dl>
+          <div class="msg-a">
+            <a class="gobtn" href="mailto:tapanmeena1998@gmail.com">SEND MESSAGE &lt;GO&gt;</a>
+            <a class="gobtn ghost" href="#">GITHUB</a>
+            <a class="gobtn ghost" href="#">LINKEDIN</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── STATUS ── -->
+    <footer class="sbar">
+      <span class="up">● CONNECTED</span>
+      <span>TPMN &lt;EQUITY&gt;</span>
+      <span class="hide-sm">HYDERABAD · IST</span>
+      <span class="sp"></span>
+      <span class="hide-sm">DATA DELAYED BY ONE CAREER</span>
+      <span>{dmy(now)} {hhmm(now)}</span>
+    </footer>
+  </div>
+</PreviewShell>
+
+<style>
+  .desk {
+    --bg: #050505;
+    --pan: #0c0c0c;
+    --line: #262626;
+    --amb: #ff9d00;
+    --cyn: #26c6f5;
+    --up: #00e07a;
+    --dn: #ff4d4d;
+    --mut: #7d7d7d;
+    --fg: #e8e8e8;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Roboto Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+    padding-bottom: 8px;
+  }
+  .desk :global(a) {
+    text-decoration: none;
+  }
+  .up {
+    color: var(--up);
+  }
+  .dn {
+    color: var(--dn);
+  }
+  .hide-sm {
+    display: none;
+  }
+  @media (min-width: 860px) {
+    .hide-sm {
+      display: table-cell;
+    }
+    .sbar .hide-sm {
+      display: inline;
+    }
+  }
+
+  /* ── command bar ── */
+  .cmdbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 12px;
+    background: #000;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .brand {
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--amb);
+    font-size: 14px;
+  }
+  .brand-sub {
+    color: var(--mut);
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  .cmdin {
+    flex: 1;
+    min-width: 220px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--line);
+    background: #111;
+    padding: 4px 8px;
+  }
+  .cmd-prompt {
+    color: var(--amb);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+  }
+  .cmdin input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+  }
+  .cmd-go {
+    color: var(--cyn);
+    font-size: 10.5px;
+  }
+  .clock {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+  .clock b {
+    color: var(--amb);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  .clock i {
+    font-style: normal;
+    font-size: 10px;
+    color: var(--mut);
+  }
+
+  /* ── function keys ── */
+  .fbar {
+    display: flex;
+    gap: 1px;
+    background: var(--line);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .fbar::-webkit-scrollbar {
+    display: none;
+  }
+  .fk {
+    flex: 1;
+    text-align: center;
+    padding: 5px 10px;
+    background: #0f0f0f;
+    color: var(--mut);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .fk:hover {
+    background: #1b1b1b;
+    color: var(--fg);
+  }
+  .fk.on {
+    background: var(--amb);
+    color: #000;
+    font-weight: 700;
+  }
+
+  /* ── tape ── */
+  .tape {
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+    background: #000;
+    padding: 5px 0;
+  }
+  .tape-t {
+    display: flex;
+    width: max-content;
+    animation: run 40s linear infinite;
+  }
+  .tape-set {
+    display: flex;
+  }
+  @keyframes run {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  .tp {
+    display: inline-flex;
+    gap: 7px;
+    padding: 0 18px;
+    border-right: 1px solid #1a1a1a;
+    white-space: nowrap;
+    font-size: 11.5px;
+  }
+  .tp b {
+    color: var(--fg);
+    letter-spacing: 0.06em;
+  }
+  .tp i {
+    font-style: normal;
+  }
+
+  /* ── board ── */
+  .board {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px;
+  }
+  @media (min-width: 980px) {
+    .board {
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .p-des {
+      grid-column: span 4;
+    }
+    .p-mon {
+      grid-column: span 8;
+    }
+    .p-news {
+      grid-column: span 5;
+    }
+    .p-inf {
+      grid-column: span 4;
+    }
+    .p-hist {
+      grid-column: span 3;
+    }
+    .p-alert {
+      grid-column: span 7;
+    }
+    .p-msg {
+      grid-column: span 5;
+    }
+  }
+  .panel {
+    border: 1px solid var(--line);
+    background: var(--pan);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .ph {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 10px;
+    background: #151515;
+    border-bottom: 1px solid var(--line);
+  }
+  .ph-t {
+    color: var(--cyn);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ph-t i {
+    font-style: normal;
+    color: var(--mut);
+  }
+  .ph-r {
+    font-size: 10px;
+    color: var(--mut);
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+  .blink {
+    color: var(--dn);
+    animation: bl 1.4s step-end infinite;
+  }
+  @keyframes bl {
+    50% {
+      opacity: 0.25;
+    }
+  }
+  .pb {
+    padding: 12px;
+    flex: 1;
+  }
+  .pb-flush {
+    padding: 0;
+  }
+
+  /* ── DES ── */
+  .des-name {
+    font-family: "Inter Tight", sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--amb);
+  }
+  .des-sub {
+    font-size: 10.5px;
+    color: var(--mut);
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+    line-height: 1.6;
+  }
+  .quote {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 14px 0;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .q-px {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+  }
+  .q-px i {
+    font-style: normal;
+    font-size: 0.8rem;
+    color: var(--mut);
+    margin-left: 3px;
+  }
+  .q-chg {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .q-note {
+    width: 100%;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    color: var(--mut);
+  }
+  .fund > div {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 10px;
+    padding: 4px 0;
+    border-bottom: 1px dotted #1e1e1e;
+    font-size: 11px;
+  }
+  .fund dt {
+    color: var(--mut);
+    letter-spacing: 0.1em;
+  }
+  .fund dd {
+    letter-spacing: 0.04em;
+  }
+  .des-body {
+    margin-top: 12px;
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: #b5b5b5;
+  }
+
+  /* ── monitor ── */
+  .mon {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .mon th {
+    text-align: left;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    color: var(--mut);
+    font-weight: 400;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--line);
+    background: #101010;
+  }
+  .mon td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #171717;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .mon tbody tr:hover {
+    background: #161616;
+  }
+  .tk {
+    color: var(--amb);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .nm {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .nm a:hover {
+    color: var(--cyn);
+  }
+  .sec {
+    color: var(--mut);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+  }
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .spark {
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    height: 18px;
+    width: 74px;
+  }
+  .spark i {
+    flex: 1;
+    display: block;
+    opacity: 0.75;
+  }
+  .spark i.up {
+    background: var(--up);
+  }
+  .spark i.dn {
+    background: var(--dn);
+  }
+  .stat {
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    padding: 1px 6px;
+    border: 1px solid currentColor;
+  }
+  .stat.live {
+    color: var(--up);
+  }
+  .stat.done {
+    color: var(--mut);
+  }
+
+  /* ── news ── */
+  .news li {
+    border-bottom: 1px solid #171717;
+  }
+  .news a {
+    display: grid;
+    grid-template-columns: 62px 82px 1fr;
+    gap: 10px;
+    padding: 7px 10px;
+    align-items: baseline;
+  }
+  .news a:hover {
+    background: #161616;
+  }
+  .nw-d {
+    color: var(--amb);
+    font-size: 10.5px;
+  }
+  .nw-s {
+    color: var(--mut);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+  }
+  .nw-t {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .news a:hover .nw-t {
+    color: var(--cyn);
+  }
+
+  /* ── infra ── */
+  .inf li {
+    display: grid;
+    grid-template-columns: 1fr 100px 36px;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 11.5px;
+  }
+  .if-n {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .if-bar {
+    height: 8px;
+    background: #1a1a1a;
+    display: block;
+  }
+  .if-bar i {
+    display: block;
+    height: 100%;
+    background: var(--up);
+  }
+  .if-bar i.hot {
+    background: var(--amb);
+  }
+  .if-v {
+    text-align: right;
+    color: var(--mut);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── histogram ── */
+  .hist {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 128px;
+  }
+  .hb {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+    gap: 3px;
+  }
+  .hb i {
+    width: 100%;
+    background: linear-gradient(var(--cyn), #0d5a73);
+    display: block;
+    min-height: 3px;
+  }
+  .hb b {
+    font-size: 10px;
+    color: var(--fg);
+  }
+  .hb em {
+    font-style: normal;
+    font-size: 9.5px;
+    color: var(--mut);
+  }
+
+  /* ── alerts ── */
+  .alerts li {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 10px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #171717;
+    align-items: start;
+  }
+  .sev {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    padding: 1px 5px;
+    border: 1px solid currentColor;
+    text-align: center;
+  }
+  .s1 {
+    color: var(--amb);
+  }
+  .s2 {
+    color: #ff7a29;
+  }
+  .s3 {
+    color: var(--dn);
+  }
+  .al-b b {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--mut);
+    margin-bottom: 3px;
+  }
+  .al-b span {
+    font-size: 11.5px;
+    line-height: 1.45;
+  }
+
+  /* ── msg ── */
+  .msg-l {
+    font-size: 11.5px;
+    color: #b5b5b5;
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+  .msg-f {
+    margin-bottom: 16px;
+  }
+  .msg-f > div {
+    grid-template-columns: 96px 1fr;
+  }
+  .msg-a {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .gobtn {
+    padding: 6px 14px;
+    background: var(--amb);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .gobtn:hover {
+    background: #ffb949;
+  }
+  .gobtn.ghost {
+    background: transparent;
+    color: var(--mut);
+    border: 1px solid var(--line);
+    font-weight: 400;
+  }
+  .gobtn.ghost:hover {
+    color: var(--cyn);
+    border-color: var(--cyn);
+  }
+
+  /* ── status bar ── */
+  .sbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 5px 12px;
+    margin: 0 8px;
+    border: 1px solid var(--line);
+    background: #000;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--mut);
+    flex-wrap: wrap;
+  }
+  .sbar .sp {
+    flex: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tape-t,
+    .blink {
+      animation: none !important;
+    }
+  }
+</style>
