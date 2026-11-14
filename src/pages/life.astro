@@ -1,0 +1,915 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import {
+  openGymStats,
+  buildHeatmap52w,
+  formatCalendarDay,
+  readingShelf,
+  playingShelf,
+} from "@data/life";
+
+const pageDescription =
+  "Training consistency exported from a self-hosted openGym instance, plus books and games on the nightstand when the laptop lid closes.";
+
+const { months, cells, latestTrained } = buildHeatmap52w(openGymStats);
+const ytdYear = openGymStats.syncedAt.slice(0, 4);
+
+const clientPayload = JSON.stringify({
+  windows: {
+    ytd: {
+      sessions: openGymStats.windows.ytd.sessions.toLocaleString(),
+      sessionsK: `sessions (${ytdYear} ytd)`,
+      sessionsSub: `avg ${openGymStats.windows.ytd.avgPerWeek} / week`,
+      sets: openGymStats.windows.ytd.sets.toLocaleString(),
+      tonnage: openGymStats.windows.ytd.tonnage.toLocaleString(),
+      tonnageSub: `~${openGymStats.windows.ytd.avgTonnage} t / session`,
+    },
+    "90d": {
+      sessions: openGymStats.windows.d90.sessions.toLocaleString(),
+      sessionsK: "sessions (90d)",
+      sessionsSub: `avg ${openGymStats.windows.d90.avgPerWeek} / week`,
+      sets: openGymStats.windows.d90.sets.toLocaleString(),
+      tonnage: openGymStats.windows.d90.tonnage.toLocaleString(),
+      tonnageSub: `~${openGymStats.windows.d90.avgTonnage} t / session`,
+    },
+  },
+});
+
+const syncedLabel = formatCalendarDay(openGymStats.syncedAt, false);
+const latestDateShort = latestTrained ? formatCalendarDay(latestTrained.date, false) : null;
+
+const today = new Date();
+const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+const datelineDate = today
+  .toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
+  .toLowerCase();
+---
+
+<BaseLayout pageTitle="Life Off-Screen — Tapan Meena" description={pageDescription}>
+  <div class="page">
+    <!-- ─────────── DATELINE ─────────── -->
+    <p class="dateline">
+      <span class="dl-issue">vol.&nbsp;01</span>
+      <span class="dl-sep">·</span>
+      <span>section&nbsp;F&nbsp;//&nbsp;off-screen</span>
+      <span class="dl-sep">·</span>
+      <span>{datelineDay}, {datelineDate}</span>
+      <span class="dl-spacer"></span>
+      <span class="sync-badge" id="sync-badge">
+        <span class="sync-dot" aria-hidden="true"></span>
+        <span id="sync-label">opengym · snapshot {syncedLabel} ({openGymStats.sourceHost})</span>
+      </span>
+    </p>
+
+    <!-- ─────────── MASTHEAD ─────────── -->
+    <header class="mast">
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+      <h1 class="mast-title">
+        <span class="mast-pre">field notes from</span>
+        <span class="mast-main">life off-screen</span>
+      </h1>
+      <p class="mast-by">
+        <span>iron moved</span>
+        <span class="dl-sep">·</span>
+        <span>pages turned</span>
+        <span class="dl-sep">·</span>
+        <span>logged on <strong>self-hosted hardware</strong>, stripped for public view</span>
+      </p>
+      <div class="rule" aria-hidden="true">
+        <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
+      </div>
+    </header>
+
+    <!-- ─────────── INTRO ─────────── -->
+    <section class="intro" aria-label="Overview">
+      <p class="lede">
+        Most of this site documents software running on a Raspberry Pi in the next room. This section is the ledger for the operator — training
+        consistency exported from a self-hosted <a href="https://opengym.ch" target="_blank" rel="noopener noreferrer">openGym</a> instance, and
+        whatever is sitting on the nightstand when the laptop lid closes.
+      </p>
+      <ul class="jump-links">
+        <li>
+          <a href="#training"><span class="jump-num">§01</span>the iron ledger (opengym)</a>
+        </li>
+        <li>
+          <a href="#nightstand"><span class="jump-num">§02</span>nightstand &amp; backlog</a>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ─────────── § 01 THE IRON LEDGER (OPENGYM) ─────────── -->
+    <section class="block" id="training" aria-labelledby="iron-heading">
+      <header class="block-head">
+        <h2 id="iron-heading"><span class="bh-mark">§</span> the iron ledger</h2>
+
+        <div class="ledger-controls" aria-label="Display controls">
+          <div class="ctl-group" role="group" aria-label="Time window">
+            <span class="ctl-label">window</span>
+            <button class="ctl-btn active" data-window="ytd" type="button">{ytdYear} ytd</button>
+            <button class="ctl-btn" data-window="90d" type="button">90 days</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- 4-Cell Stat Strip -->
+      <ul class="stats" aria-label="Training summary">
+        <li class="stat">
+          <span class="stat-v" id="st-sessions">{openGymStats.windows.ytd.sessions.toLocaleString()}</span>
+          <span class="stat-k" id="st-sessions-k">sessions ({ytdYear} ytd)</span>
+          <span class="stat-sub" id="st-sessions-sub">avg {openGymStats.windows.ytd.avgPerWeek} / week</span>
+        </li>
+        <li class="stat">
+          <span class="stat-v">
+            <span id="st-streak">{openGymStats.streak.currentWeeks}</span><span class="stat-unit">wks</span>
+          </span>
+          <span class="stat-k">active streak</span>
+          <span class="stat-sub" id="st-streak-sub">
+            ≥ {openGymStats.streak.minPerWeek}x / wk · best {openGymStats.streak.bestWeeks} wks
+          </span>
+        </li>
+        <li class="stat">
+          <span class="stat-v" id="st-sets">{openGymStats.windows.ytd.sets.toLocaleString()}</span>
+          <span class="stat-k">working sets</span>
+          <span class="stat-sub">warm-up sets excluded</span>
+        </li>
+        <li class="stat">
+          <span class="stat-v">
+            <span id="st-tonnage">{openGymStats.windows.ytd.tonnage.toLocaleString()}</span><span class="stat-unit">t</span>
+          </span>
+          <span class="stat-k">volume moved</span>
+          <span class="stat-sub" id="st-tonnage-sub">~{openGymStats.windows.ytd.avgTonnage} t / session</span>
+        </li>
+      </ul>
+
+      <!-- 52-Week Activity Heatmap -->
+      <div class="heatmap-wrap">
+        <div class="heatmap-top">
+          <span class="heatmap-kicker">
+            <strong>52-week consistency</strong> · <span id="hm-active-count">{openGymStats.activeDays52w}</span> active days in rolling year · dot
+            marks pr session
+          </span>
+          <span class="heatmap-legend" aria-hidden="true">
+            <span>rest</span>
+            <span class="leg-cell lv-0"></span>
+            <span class="leg-cell lv-1"></span>
+            <span class="leg-cell lv-2"></span>
+            <span class="leg-cell lv-3"></span>
+            <span>heavy</span>
+          </span>
+        </div>
+
+        <div class="heatmap-scroll">
+          <div class="heatmap-months" aria-hidden="true">
+            <span></span>
+            {months.map((m) => <span>{m}</span>)}
+          </div>
+          <div class="heatmap-body">
+            <div class="heatmap-days" aria-hidden="true">
+              <span></span>
+              <span>mon</span>
+              <span></span>
+              <span>wed</span>
+              <span></span>
+              <span>fri</span>
+              <span></span>
+            </div>
+            <div class="heatmap-grid" id="hm-grid" role="grid" aria-label="52-week workout consistency">
+              {
+                cells.map((cell) => (
+                  <button
+                    type="button"
+                    class:list={["hm-cell", { "is-future": cell.isFuture }]}
+                    data-date={cell.date}
+                    data-label={cell.labelDate}
+                    data-lv={cell.level}
+                    data-trained={cell.trained ? "1" : "0"}
+                    data-routine={cell.routine ?? ""}
+                    data-sets={cell.sets}
+                    data-mins={cell.durationMin ?? ""}
+                    data-pr={cell.prs > 0 ? "1" : "0"}
+                    data-prs={cell.prs}
+                    disabled={cell.isFuture}
+                    aria-label={
+                      cell.isFuture
+                        ? `${cell.labelDate}: upcoming`
+                        : cell.trained
+                          ? `${cell.labelDate}: ${cell.routine}, ${cell.sets} sets`
+                          : `${cell.labelDate}: rest day`
+                    }
+                  />
+                ))
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="heatmap-readout" id="hm-readout" aria-live="polite">
+          <span id="hm-readout-left">hover any square to inspect date &amp; routine (timestamps rounded to calendar day)</span>
+          {
+            latestTrained && (
+              <span id="hm-readout-right">
+                latest //{" "}
+                <b>
+                  {latestDateShort} · {latestTrained.routine?.toLowerCase()} · {latestTrained.sets} sets
+                </b>
+                {latestTrained.prs > 0 && (
+                  <span class="pr-chip">
+                    {" "}
+                    ★ {latestTrained.prs} PR{latestTrained.prs === 1 ? "" : "s"}
+                  </span>
+                )}
+              </span>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── § 02 NIGHTSTAND & BACKLOG ─────────── -->
+    <section class="block" id="nightstand" aria-labelledby="shelf-heading">
+      <header class="block-head">
+        <h2 id="shelf-heading"><span class="bh-mark">§</span> nightstand &amp; backlog</h2>
+        <span class="block-meta">— slow media, zero infinite scroll</span>
+      </header>
+
+      <div class="shelf-grid">
+        <div>
+          <div class="subhead">
+            <h3>reading</h3>
+            <span>paper &amp; kindle</span>
+          </div>
+          <ul class="shelf-list">
+            {
+              readingShelf.map((item) => (
+                <li class="shelf-item">
+                  <div>
+                    <span class="shelf-title">{item.title}</span>
+                    <span class="shelf-by">{item.meta}</span>
+                  </div>
+                  <span class:list={["shelf-status", { active: item.active }]}>
+                    {item.active ? `● ${item.status}` : item.status}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div>
+          <div class="subhead">
+            <h3>playing</h3>
+            <span>via beat-the-backlog</span>
+          </div>
+          <ul class="shelf-list">
+            {
+              playingShelf.map((item) => (
+                <li class="shelf-item">
+                  <div>
+                    <span class="shelf-title">{item.title}</span>
+                    <span class="shelf-by">{item.meta}</span>
+                  </div>
+                  <span class:list={["shelf-status", { active: item.active }]}>
+                    {item.active ? `● ${item.status}` : item.status}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script is:inline define:vars={{ clientPayload }}>
+    const cfg = JSON.parse(clientPayload);
+    let windows = cfg.windows;
+
+    const leftOut = document.getElementById("hm-readout-left");
+    const rightOut = document.getElementById("hm-readout-right");
+
+    function renderReadout(btn) {
+      if (!leftOut || !rightOut || btn.disabled) return;
+      const label = btn.getAttribute("data-label") || "";
+      const trained = btn.getAttribute("data-trained") === "1";
+
+      leftOut.textContent = "";
+      rightOut.textContent = "";
+
+      const dateStrong = document.createElement("b");
+      dateStrong.textContent = label;
+      leftOut.appendChild(dateStrong);
+
+      if (trained) {
+        const routine = (btn.getAttribute("data-routine") || "session").toLowerCase();
+        const sets = btn.getAttribute("data-sets") || "0";
+        const mins = btn.getAttribute("data-mins");
+        const prs = parseInt(btn.getAttribute("data-prs") || "0", 10);
+
+        leftOut.appendChild(document.createTextNode(" · " + routine));
+
+        const setsStrong = document.createElement("b");
+        setsStrong.textContent = sets + " sets";
+        rightOut.appendChild(setsStrong);
+        if (mins) {
+          rightOut.appendChild(document.createTextNode(" · " + mins + " min"));
+        }
+        if (prs > 0) {
+          const prSpan = document.createElement("span");
+          prSpan.className = "pr-chip";
+          prSpan.textContent = " ★ " + prs + (prs === 1 ? " PR" : " PRs");
+          rightOut.appendChild(prSpan);
+        }
+      } else {
+        leftOut.appendChild(document.createTextNode(" · rest / recovery day"));
+        rightOut.textContent = "off-rack";
+      }
+    }
+
+    document.querySelectorAll("#hm-grid .hm-cell").forEach((btn) => {
+      btn.addEventListener("mouseenter", () => renderReadout(btn));
+      btn.addEventListener("focus", () => renderReadout(btn));
+    });
+
+    function applyWindow(key) {
+      const d = windows[key];
+      if (!d) return;
+      const s = document.getElementById("st-sessions");
+      const sk = document.getElementById("st-sessions-k");
+      const ss = document.getElementById("st-sessions-sub");
+      const st = document.getElementById("st-sets");
+      const tn = document.getElementById("st-tonnage");
+      const ts = document.getElementById("st-tonnage-sub");
+      if (s) s.textContent = d.sessions;
+      if (sk) sk.textContent = d.sessionsK;
+      if (ss) ss.textContent = d.sessionsSub;
+      if (st) st.textContent = d.sets;
+      if (tn) tn.textContent = d.tonnage;
+      if (ts) ts.textContent = d.tonnageSub;
+    }
+
+    document.querySelectorAll("[data-window]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-window]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        applyWindow(btn.getAttribute("data-window"));
+      });
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  @reference "tailwindcss";
+
+  .page {
+    --color-gym: #10b981;
+    --color-pr: #d97706;
+    --heat-0: #edf2f7;
+    --heat-1: #c6f6d5;
+    --heat-2: #68d391;
+    --heat-3: #2f855a;
+    --heat-pr: #d97706;
+
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 5rem;
+    color: var(--color-text);
+  }
+
+  :global(.dark) .page {
+    --color-gym: #34d399;
+    --color-pr: #fbbf24;
+    --heat-0: #232d3d;
+    --heat-1: #1e463a;
+    --heat-2: #1f7a5c;
+    --heat-3: #34d399;
+    --heat-pr: #fbbf24;
+  }
+
+  /* ─── Shared broadsheet atoms (rule, dateline, mast) ─── */
+  .rule {
+    display: flex;
+    align-items: center;
+    margin: 0.4rem 0;
+  }
+  .rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+  .rule-tick {
+    width: 1px;
+    height: 8px;
+    background: var(--color-text);
+    opacity: 0.85;
+  }
+
+  .dateline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0 0 0.6rem;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    letter-spacing: 0.04em;
+  }
+  .dl-issue {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .dl-sep {
+    opacity: 0.5;
+  }
+  .dl-spacer {
+    flex: 1;
+    min-width: 8px;
+  }
+
+  .sync-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: var(--color-muted);
+  }
+  .sync-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-gym);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    animation: syncPulse 2.2s infinite;
+  }
+  @keyframes syncPulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    }
+    70% {
+      box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+    }
+  }
+
+  /* ─── Masthead ─── */
+  .mast {
+    margin-bottom: 1.5rem;
+  }
+  .mast-title {
+    text-align: center;
+    margin: 0.85rem 0 0.55rem;
+    line-height: 1;
+    font-family: "Merriweather", Georgia, serif;
+  }
+  .mast-pre {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 0.72rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 0.7rem;
+  }
+  .mast-main {
+    display: inline-block;
+    font-weight: 700;
+    font-style: italic;
+    font-size: clamp(2.1rem, 5.6vw, 3.6rem);
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    line-height: 1.05;
+  }
+  .mast-by {
+    text-align: center;
+    margin: 0.4rem 0 0.65rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    color: var(--color-muted);
+    letter-spacing: 0.03em;
+  }
+  .mast-by strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  /* ─── Intro ─── */
+  .intro {
+    padding: 0.4rem 0 1.2rem;
+  }
+  .lede {
+    font-family: "Merriweather", Georgia, serif;
+    font-size: 1.04rem;
+    line-height: 1.72;
+    color: var(--color-text);
+    margin: 0 0 0.9rem;
+    max-width: 66ch;
+  }
+  .lede a {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-border);
+  }
+  .lede a:hover {
+    color: var(--color-accent);
+    text-decoration-color: var(--color-accent);
+  }
+
+  .jump-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+  }
+  .jump-links a {
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .jump-links a:hover {
+    color: var(--color-accent);
+  }
+  .jump-num {
+    color: var(--color-border);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  /* ─── Section blocks ─── */
+  .block {
+    margin: 2.2rem 0 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .block-head h2 {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1.48rem;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--color-text);
+  }
+  .bh-mark {
+    color: var(--color-accent);
+    font-style: normal;
+    font-weight: 400;
+    opacity: 0.85;
+    margin-right: 0.22em;
+  }
+  .block-meta {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .ledger-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+  }
+  .ctl-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ctl-label {
+    color: var(--color-muted);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-right: 2px;
+  }
+  .ctl-btn {
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease,
+      background 0.15s ease;
+  }
+  .ctl-btn:hover {
+    color: var(--color-text);
+    border-color: var(--color-muted);
+  }
+  .ctl-btn.active {
+    color: var(--color-bg);
+    background: var(--color-text);
+    border-color: var(--color-text);
+    font-weight: 600;
+  }
+
+  /* ─── 4-Cell Stat Strip ─── */
+  .stats {
+    list-style: none;
+    margin: 0 0 1.4rem;
+    padding: 0.95rem 0;
+    border-top: 1px dashed var(--color-border);
+    border-bottom: 1px dashed var(--color-border);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.9rem 1.4rem;
+    font-family: ui-monospace, monospace;
+  }
+  @media (min-width: 600px) {
+    .stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-v {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .stat-unit {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    margin-left: 2px;
+  }
+  .stat-k {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-top: 2px;
+  }
+  .stat-sub {
+    font-size: 0.68rem;
+    color: var(--color-muted);
+    opacity: 0.85;
+  }
+
+  /* ─── 52-Week Consistency Heatmap ─── */
+  .heatmap-wrap {
+    margin: 0;
+    padding: 1rem 1.1rem 0.85rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+  .heatmap-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 12px;
+    margin-bottom: 0.7rem;
+    font-family: ui-monospace, monospace;
+  }
+  .heatmap-kicker {
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .heatmap-kicker strong {
+    color: var(--color-text);
+  }
+  .heatmap-legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.64rem;
+    color: var(--color-muted);
+  }
+  .leg-cell {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border-radius: 1px;
+  }
+  .leg-cell.lv-0 {
+    background: var(--heat-0);
+  }
+  .leg-cell.lv-1 {
+    background: var(--heat-1);
+  }
+  .leg-cell.lv-2 {
+    background: var(--heat-2);
+  }
+  .leg-cell.lv-3 {
+    background: var(--heat-3);
+  }
+
+  .heatmap-scroll {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .heatmap-months {
+    display: grid;
+    grid-template-columns: 24px repeat(52, minmax(11px, 1fr));
+    gap: 3px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 4px;
+    min-width: 680px;
+  }
+  .heatmap-body {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 3px;
+    min-width: 680px;
+  }
+  .heatmap-days {
+    display: grid;
+    grid-template-rows: repeat(7, 11px);
+    gap: 3px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.56rem;
+    color: var(--color-muted);
+    line-height: 11px;
+  }
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(52, minmax(11px, 1fr));
+    grid-template-rows: repeat(7, 11px);
+    grid-auto-flow: column;
+    gap: 3px;
+  }
+  .hm-cell {
+    width: 100%;
+    height: 11px;
+    border-radius: 1px;
+    background: var(--heat-0);
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.1s ease;
+  }
+  .hm-cell.is-future {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .hm-cell:not(.is-future):hover,
+  .hm-cell:not(.is-future):focus-visible {
+    transform: scale(1.28);
+    outline: 1px solid var(--color-text);
+    z-index: 2;
+  }
+  .hm-cell[data-lv="1"] {
+    background: var(--heat-1);
+  }
+  .hm-cell[data-lv="2"] {
+    background: var(--heat-2);
+  }
+  .hm-cell[data-lv="3"] {
+    background: var(--heat-3);
+  }
+  .hm-cell[data-pr="1"]::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--heat-pr);
+  }
+
+  .heatmap-readout {
+    margin-top: 0.65rem;
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--color-border);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 12px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+  }
+  .heatmap-readout b {
+    color: var(--color-text);
+  }
+  .pr-chip,
+  :global(.pr-chip) {
+    color: var(--color-pr);
+    font-weight: 700;
+  }
+
+  /* ─── § 02 Nightstand & Backlog ─── */
+  .subhead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--color-border);
+    font-family: ui-monospace, monospace;
+  }
+  .subhead h3 {
+    margin: 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    font-weight: 700;
+  }
+  .subhead span {
+    font-size: 0.66rem;
+    color: var(--color-muted);
+  }
+
+  .shelf-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.4rem 2.4rem;
+  }
+  @media (min-width: 720px) {
+    .shelf-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .shelf-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .shelf-item {
+    padding: 0.65rem 0;
+    border-bottom: 1px dashed var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .shelf-item:last-child {
+    border-bottom: 0;
+  }
+  .shelf-title {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--color-text);
+    display: block;
+  }
+  .shelf-by {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    color: var(--color-muted);
+  }
+  .shelf-status {
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  .shelf-status.active {
+    color: var(--color-gym);
+    font-weight: 600;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sync-dot,
+    .hm-cell {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>

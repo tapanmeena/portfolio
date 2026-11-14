@@ -1,0 +1,79 @@
+{
+  "syncedAt": "2026-11-14",
+  "sourceHost": "arcadia",
+  "fingerprint": "sha256:726032f8223ca42f",
+  "unit": "kg",
+  "streak": {
+    "currentWeeks": 2,
+    "bestWeeks": 2,
+    "minPerWeek": 3
+  },
+  "activeDays52w": 7,
+  "windows": {
+    "ytd": {
+      "sessions": 7,
+      "avgPerWeek": 2.7,
+      "sets": 208,
+      "tonnage": 16.2,
+      "avgTonnage": 2.32
+    },
+    "d90": {
+      "sessions": 7,
+      "avgPerWeek": 2.7,
+      "sets": 208,
+      "tonnage": 16.2,
+      "avgTonnage": 2.32
+    }
+  },
+  "days": [
+    {
+      "date": "2026-10-28",
+      "routine": "Legs",
+      "sets": 40,
+      "durationMin": 74,
+      "prs": 5
+    },
+    {
+      "date": "2026-10-29",
+      "routine": "Arms + Abs",
+      "sets": 39,
+      "durationMin": 94,
+      "prs": 7
+    },
+    {
+      "date": "2026-10-30",
+      "routine": "Upper Volume",
+      "sets": 35,
+      "durationMin": 69,
+      "prs": 6
+    },
+    {
+      "date": "2026-11-03",
+      "routine": "Arms + Abs",
+      "sets": 43,
+      "durationMin": 91,
+      "prs": 7
+    },
+    {
+      "date": "2026-11-04",
+      "routine": "Push",
+      "sets": 15,
+      "durationMin": 33,
+      "prs": 3
+    },
+    {
+      "date": "2026-11-05",
+      "routine": "Home Workout + Arms + Abs",
+      "sets": 21,
+      "durationMin": 15,
+      "prs": 0
+    },
+    {
+      "date": "2026-11-08",
+      "routine": "Home Workout",
+      "sets": 15,
+      "durationMin": null,
+      "prs": 0
+    }
+  ]
+}

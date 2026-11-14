@@ -6,13 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "astro dev",
+    "prebuild": "node scripts/fetch-opengym.mjs",
     "build": "astro build",
+    "sync:opengym": "node scripts/sync-opengym.mjs",
     "vd": "vercel deploy --prod"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@11.16.0",
+  "packageManager": "pnpm@12.18.0",
   "dependencies": {
     "@astrojs/check": "^0.9.9",
     "@astrojs/markdown-remark": "^7.2.1",
