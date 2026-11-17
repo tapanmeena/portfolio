@@ -1,28 +1,28 @@
 {
-  "syncedAt": "2026-11-14",
+  "syncedAt": "2026-11-17",
   "sourceHost": "arcadia",
-  "fingerprint": "sha256:726032f8223ca42f",
+  "fingerprint": "sha256:edf112fd3eb6ad5f",
   "unit": "kg",
   "streak": {
-    "currentWeeks": 2,
+    "currentWeeks": 0,
     "bestWeeks": 2,
     "minPerWeek": 3
   },
-  "activeDays52w": 7,
+  "activeDays52w": 9,
   "windows": {
     "ytd": {
-      "sessions": 7,
-      "avgPerWeek": 2.7,
-      "sets": 208,
+      "sessions": 9,
+      "avgPerWeek": 3,
+      "sets": 251,
       "tonnage": 16.2,
-      "avgTonnage": 2.32
+      "avgTonnage": 1.81
     },
     "d90": {
-      "sessions": 7,
-      "avgPerWeek": 2.7,
-      "sets": 208,
+      "sessions": 9,
+      "avgPerWeek": 3,
+      "sets": 251,
       "tonnage": 16.2,
-      "avgTonnage": 2.32
+      "avgTonnage": 1.81
     }
   },
   "days": [
@@ -73,6 +73,20 @@
       "routine": "Home Workout",
       "sets": 15,
       "durationMin": null,
+      "prs": 0
+    },
+    {
+      "date": "2026-11-14",
+      "routine": "Home Workout",
+      "sets": 19,
+      "durationMin": 42,
+      "prs": 0
+    },
+    {
+      "date": "2026-11-17",
+      "routine": "Home Workout",
+      "sets": 24,
+      "durationMin": 39,
       "prs": 0
     }
   ]

@@ -4,7 +4,6 @@ import { authors } from "@data/authors";
 
 const currentYear = new Date().getFullYear();
 const author = authors["tapan-meena"];
-const buildDate = new Date().toISOString().slice(0, 10);
 
 const browse = [
   { href: "/", label: "home", abbr: "00" },
@@ -121,21 +120,13 @@ const socialLinks = socials.filter((s) => s.href);
       </section>
     </div>
 
-    <!-- Status / dateline strip -->
+    <!-- Publication line -->
     <div class="status">
-      <span class="status-cell">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span>vol.&nbsp;01</span>
-      </span>
-      <span class="dot">·</span>
-      <span class="status-cell">build&nbsp;<b>{buildDate}</b></span>
-      <span class="dot">·</span>
-      <span class="status-cell">node&nbsp;<b>20</b></span>
-      <span class="status-cell status-grow">
-        © {currentYear}
-        {author.name} ·
-        <em>crafted in vim, deployed on a friday</em>
-      </span>
+      <p class="status-copy">
+        <span class="status-copyright">© {currentYear} {author.name}</span>
+        <span class="status-divider" aria-hidden="true">·</span>
+        <span class="status-tagline">notes, experiments &amp; things shipped</span>
+      </p>
       <button id="back-to-top" class="status-top" type="button" aria-label="Back to top">
         <ArrowUp size={11} /> top
       </button>
@@ -333,12 +324,11 @@ const socialLinks = socials.filter((s) => s.href);
     color: var(--color-accent);
   }
 
-  /* ─── Status strip ─── */
+  /* ─── Publication line ─── */
   .status {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 4px 8px;
+    gap: 1rem;
     padding: 0.9rem 0 0;
     margin-top: 0.5rem;
     border-top: 1px solid var(--color-border);
@@ -347,52 +337,36 @@ const socialLinks = socials.filter((s) => s.href);
     color: var(--color-muted);
     letter-spacing: 0.04em;
   }
-  .status-cell {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-width: 0;
-  }
-  .status-cell b {
-    color: var(--color-text);
-    font-weight: 700;
-  }
-  .status-grow {
+  .status-copy {
+    display: flex;
     flex: 1;
-    min-width: 8px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    min-width: 0;
+    margin: 0;
   }
-  .status-grow em {
-    font-style: italic;
+  .status-copyright {
+    color: var(--color-text);
+  }
+  .status-divider {
+    color: var(--color-border);
   }
   @media (max-width: 640px) {
     .status {
+      align-items: flex-start;
       font-size: 0.65rem;
     }
-    .status-grow {
-      flex: 1 1 100%;
-      order: 5;
+    .status-divider {
+      display: none;
     }
-  }
-  .status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #16a34a;
-    display: inline-block;
-    box-shadow: 0 0 0 0 #16a34a;
-    animation: footPulse 2s infinite;
-  }
-  @keyframes footPulse {
-    0%,
-    100% {
-      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5);
-    }
-    70% {
-      box-shadow: 0 0 0 5px rgba(22, 163, 74, 0);
+    .status-tagline {
+      flex-basis: 100%;
     }
   }
   .status-top {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 4px;
     padding: 3px 8px;
@@ -410,11 +384,5 @@ const socialLinks = socials.filter((s) => s.href);
   .status-top:hover {
     color: var(--color-text);
     border-color: var(--color-text);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .status-dot {
-      animation: none !important;
-    }
   }
 </style>
