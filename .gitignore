@@ -25,5 +25,6 @@ pnpm-debug.log*
 
 # sync cache
 .opengym-sync.hash
+.tome-sync.hash
 
 .env*

@@ -2,41 +2,298 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import {
   openGymStats,
-  buildHeatmap52w,
+  tomeStats,
+  latestLifeSyncIso,
+  buildUnifiedHeatmap52w,
+  computeSpineDimensions,
   formatCalendarDay,
-  readingShelf,
+  formatShortMonthDay,
+  formatDurationMinutes,
+  formatWordCountCompact,
+  formatHalfStars,
   playingShelf,
 } from "@data/life";
 
 const pageDescription =
-  "Training consistency exported from a self-hosted openGym instance, plus books and games on the nightstand when the laptop lid closes.";
+  "Training consistency from self-hosted openGym, reading telemetry and shelves from Tome, and slow media in rotation off-screen.";
 
-const { months, cells, latestTrained } = buildHeatmap52w(openGymStats);
-const ytdYear = openGymStats.syncedAt.slice(0, 4);
+const {
+  anchorIso,
+  months,
+  cells,
+  combinedActiveDays52w,
+  ytdCombinedDays,
+  ytdDualDays,
+  ytdElapsedDays,
+  d90CombinedDays,
+  d90DualDays,
+  latestActive,
+} = buildUnifiedHeatmap52w(openGymStats, tomeStats);
+
+const ytdYear = anchorIso.slice(0, 4);
+const clearedGamesCount = playingShelf.filter((g) => g.status === "cleared").length;
+const ytdPctOfYear = Math.round((ytdCombinedDays / ytdElapsedDays) * 100);
+const d90PctOfWindow = Math.round((d90CombinedDays / 90) * 100);
+
+const activeDevices = [
+  ...new Set(tomeStats.currentlyReading.map((b) => b.device).filter((d): d is string => Boolean(d))),
+];
+const devicesSubhead =
+  activeDevices.length > 0 ? `synced across ${activeDevices.join(" & ")}` : "synced via tome";
+
+const spineItems = tomeStats.stacks.map((item, idx) => {
+  const { widthPx, heightPct } = computeSpineDimensions(item);
+  const topTag = item.active
+    ? "now"
+    : item.hours >= 1
+      ? `${Math.round(item.hours)}h`
+      : formatWordCountCompact(item.wordCount) ?? item.scaleLabel;
+  return {
+    ...item,
+    widthPx,
+    heightPct,
+    topTag,
+    stars: formatHalfStars(item.rating),
+    dateLabel: item.lastDate ? formatShortMonthDay(item.lastDate) : null,
+    isDefaultSelected: idx === 0,
+  };
+});
+
+const defaultSpine = spineItems[0] ?? null;
+const totalWordsCompact = formatWordCountCompact(tomeStats.totalWordsIndexed);
+const hasMarginalia = tomeStats.marginalia.length > 0;
+
+const ytdDualSuffix =
+  ytdDualDays > 0
+    ? `${ytdDualDays} dual iron+page ${ytdDualDays === 1 ? "day" : "days"}`
+    : `${ytdCombinedDays}/${ytdElapsedDays} calendar days`;
+const d90DualSuffix =
+  d90DualDays > 0
+    ? `${d90DualDays} dual iron+page ${d90DualDays === 1 ? "day" : "days"}`
+    : `${d90CombinedDays}/90 calendar days`;
+
+const initialStats = [
+  {
+    v: ytdCombinedDays.toLocaleString(),
+    u: "days",
+    k: `off-screen active (${ytdYear} ytd)`,
+    sub: `${ytdPctOfYear}% of ${ytdYear} · ${ytdDualSuffix}`,
+    accent: "both",
+  },
+  {
+    v: tomeStats.windows.ytd.hours.toLocaleString(),
+    u: "hrs",
+    k: "pages turned (tome)",
+    sub: `${tomeStats.windows.ytd.activeDays} reading days · ${tomeStats.streak.bestDays}d best streak`,
+    accent: "read",
+  },
+  {
+    v: openGymStats.windows.ytd.tonnage.toLocaleString(),
+    u: "t",
+    k: "iron moved (opengym)",
+    sub: `${openGymStats.windows.ytd.sessions} sessions · ${openGymStats.windows.ytd.sets.toLocaleString()} working sets`,
+    accent: "gym",
+  },
+  {
+    v:
+      clearedGamesCount > 0
+        ? `${tomeStats.windows.ytd.booksFinished} + ${clearedGamesCount}`
+        : tomeStats.windows.ytd.booksFinished.toLocaleString(),
+    u: clearedGamesCount > 0 ? "" : "vols",
+    k: `completed (${ytdYear})`,
+    sub:
+      clearedGamesCount > 0
+        ? `${tomeStats.windows.ytd.booksFinished} volumes read · ${clearedGamesCount} game cleared`
+        : `${tomeStats.windows.ytd.booksFinished} volumes finished in tome`,
+    accent: "both",
+  },
+];
 
 const clientPayload = JSON.stringify({
-  windows: {
-    ytd: {
-      sessions: openGymStats.windows.ytd.sessions.toLocaleString(),
-      sessionsK: `sessions (${ytdYear} ytd)`,
-      sessionsSub: `avg ${openGymStats.windows.ytd.avgPerWeek} / week`,
-      sets: openGymStats.windows.ytd.sets.toLocaleString(),
-      tonnage: openGymStats.windows.ytd.tonnage.toLocaleString(),
-      tonnageSub: `~${openGymStats.windows.ytd.avgTonnage} t / session`,
+  kickers: {
+    combined: {
+      title: "52-week off-screen rhythm",
+      rest: ` · ${combinedActiveDays52w} active days · ★ pr session · ◆ book finished`,
     },
-    "90d": {
-      sessions: openGymStats.windows.d90.sessions.toLocaleString(),
-      sessionsK: "sessions (90d)",
-      sessionsSub: `avg ${openGymStats.windows.d90.avgPerWeek} / week`,
-      sets: openGymStats.windows.d90.sets.toLocaleString(),
-      tonnage: openGymStats.windows.d90.tonnage.toLocaleString(),
-      tonnageSub: `~${openGymStats.windows.d90.avgTonnage} t / session`,
+    iron: {
+      title: "52-week iron consistency",
+      rest: ` · ${openGymStats.activeDays52w} training days · ★ marks pr session`,
+    },
+    pages: {
+      title: "52-week reading consistency",
+      rest: ` · ${tomeStats.activeDays52w} reading days · ◆ marks volume finished`,
+    },
+  },
+  stats: {
+    combined: {
+      ytd: initialStats,
+      "90d": [
+        {
+          v: d90CombinedDays.toLocaleString(),
+          u: "days",
+          k: "off-screen active (90d)",
+          sub: `${d90PctOfWindow}% of window · ${d90DualSuffix}`,
+          accent: "both",
+        },
+        {
+          v: tomeStats.windows.d90.hours.toLocaleString(),
+          u: "hrs",
+          k: "pages turned (90d)",
+          sub: `${tomeStats.windows.d90.activeDays} reading days · ${tomeStats.streak.currentDays}d streak`,
+          accent: "read",
+        },
+        {
+          v: openGymStats.windows.d90.tonnage.toLocaleString(),
+          u: "t",
+          k: "iron moved (90d)",
+          sub: `${openGymStats.windows.d90.sessions} sessions · avg ${openGymStats.windows.d90.avgPerWeek} / week`,
+          accent: "gym",
+        },
+        {
+          v: tomeStats.windows.d90.booksFinished.toLocaleString(),
+          u: tomeStats.windows.d90.booksFinished === 1 ? "vol" : "vols",
+          k: "finished (90d)",
+          sub:
+            tomeStats.windows.d90.pagesTurned > 0
+              ? `${tomeStats.windows.d90.pagesTurned.toLocaleString()} live e-ink/web pages`
+              : `${tomeStats.windows.d90.sessions} reading sessions`,
+          accent: "read",
+        },
+      ],
+    },
+    iron: {
+      ytd: [
+        {
+          v: openGymStats.windows.ytd.sessions.toLocaleString(),
+          u: "",
+          k: `sessions (${ytdYear} ytd)`,
+          sub: `avg ${openGymStats.windows.ytd.avgPerWeek} / week`,
+          accent: "gym",
+        },
+        {
+          v: openGymStats.streak.currentWeeks.toLocaleString(),
+          u: "wks",
+          k: "active streak",
+          sub: `≥ ${openGymStats.streak.minPerWeek}x / wk · best ${openGymStats.streak.bestWeeks} wks`,
+          accent: "gym",
+        },
+        {
+          v: openGymStats.windows.ytd.sets.toLocaleString(),
+          u: "",
+          k: "working sets",
+          sub: "warm-up sets excluded",
+          accent: "gym",
+        },
+        {
+          v: openGymStats.windows.ytd.tonnage.toLocaleString(),
+          u: "t",
+          k: "volume moved",
+          sub: `~${openGymStats.windows.ytd.avgTonnage} t / session`,
+          accent: "gym",
+        },
+      ],
+      "90d": [
+        {
+          v: openGymStats.windows.d90.sessions.toLocaleString(),
+          u: "",
+          k: "sessions (90d)",
+          sub: `avg ${openGymStats.windows.d90.avgPerWeek} / week`,
+          accent: "gym",
+        },
+        {
+          v: openGymStats.streak.currentWeeks.toLocaleString(),
+          u: "wks",
+          k: "active streak",
+          sub: `≥ ${openGymStats.streak.minPerWeek}x / wk · best ${openGymStats.streak.bestWeeks} wks`,
+          accent: "gym",
+        },
+        {
+          v: openGymStats.windows.d90.sets.toLocaleString(),
+          u: "",
+          k: "working sets (90d)",
+          sub: "warm-up sets excluded",
+          accent: "gym",
+        },
+        {
+          v: openGymStats.windows.d90.tonnage.toLocaleString(),
+          u: "t",
+          k: "volume moved (90d)",
+          sub: `~${openGymStats.windows.d90.avgTonnage} t / session`,
+          accent: "gym",
+        },
+      ],
+    },
+    pages: {
+      ytd: [
+        {
+          v: tomeStats.windows.ytd.hours.toLocaleString(),
+          u: "hrs",
+          k: `reading time (${ytdYear} ytd)`,
+          sub: `avg ~${tomeStats.windows.ytd.avgHoursPerWeek} hrs / week`,
+          accent: "read",
+        },
+        {
+          v: tomeStats.streak.currentDays.toLocaleString(),
+          u: "days",
+          k: "reading streak",
+          sub: `best ${tomeStats.streak.bestDays} days · ${tomeStats.rolloverHour}am rollover`,
+          accent: "read",
+        },
+        {
+          v: tomeStats.windows.ytd.activeDays.toLocaleString(),
+          u: "days",
+          k: `active days (${ytdYear})`,
+          sub: `${tomeStats.windows.ytd.sessions.toLocaleString()} sittings logged`,
+          accent: "read",
+        },
+        {
+          v: tomeStats.windows.ytd.booksFinished.toLocaleString(),
+          u: "vols",
+          k: "volumes finished",
+          sub: `${tomeStats.libraryCount} books in tome library`,
+          accent: "read",
+        },
+      ],
+      "90d": [
+        {
+          v: tomeStats.windows.d90.hours.toLocaleString(),
+          u: "hrs",
+          k: "reading time (90d)",
+          sub: `avg ~${tomeStats.windows.d90.avgHoursPerWeek} hrs / week`,
+          accent: "read",
+        },
+        {
+          v: tomeStats.streak.currentDays.toLocaleString(),
+          u: "days",
+          k: "reading streak",
+          sub: `best ${tomeStats.streak.bestDays} days · ${tomeStats.rolloverHour}am rollover`,
+          accent: "read",
+        },
+        {
+          v: tomeStats.windows.d90.activeDays.toLocaleString(),
+          u: "days",
+          k: "active days (90d)",
+          sub: `${tomeStats.windows.d90.sessions.toLocaleString()} sittings logged`,
+          accent: "read",
+        },
+        {
+          v: tomeStats.windows.d90.booksFinished.toLocaleString(),
+          u: tomeStats.windows.d90.booksFinished === 1 ? "vol" : "vols",
+          k: "finished (90d)",
+          sub:
+            tomeStats.windows.d90.pagesTurned > 0
+              ? `${tomeStats.windows.d90.pagesTurned.toLocaleString()} live pages turned`
+              : "synced across devices",
+          accent: "read",
+        },
+      ],
     },
   },
 });
 
-const syncedLabel = formatCalendarDay(openGymStats.syncedAt, false);
-const latestDateShort = latestTrained ? formatCalendarDay(latestTrained.date, false) : null;
+const syncedLabel = formatCalendarDay(latestLifeSyncIso, false);
+const sourceHost = tomeStats.sourceHost || openGymStats.sourceHost;
+const latestDateShort = latestActive ? formatCalendarDay(latestActive.date, false) : null;
 
 const today = new Date();
 const datelineDay = today.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
@@ -47,6 +304,21 @@ const datelineDate = today
     year: "numeric",
   })
   .toLowerCase();
+
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function cellAriaLabel(cell: (typeof cells)[number]): string {
+  if (cell.isFuture) return `${cell.labelDate}: upcoming`;
+  const parts: string[] = [];
+  if (cell.trained) parts.push(`${cell.routine}, ${cell.sets} sets`);
+  if (cell.read) {
+    const primary = cell.readTitles[0] ?? "reading";
+    parts.push(`${primary}, ${formatDurationMinutes(cell.readMinutes)}`);
+  }
+  return parts.length > 0 ? `${cell.labelDate}: ${parts.join("; ")}` : `${cell.labelDate}: quiet day`;
+}
 ---
 
 <BaseLayout pageTitle="Life Off-Screen — Tapan Meena" description={pageDescription}>
@@ -60,8 +332,11 @@ const datelineDate = today
       <span>{datelineDay}, {datelineDate}</span>
       <span class="dl-spacer"></span>
       <span class="sync-badge" id="sync-badge">
-        <span class="sync-dot" aria-hidden="true"></span>
-        <span id="sync-label">opengym · snapshot {syncedLabel} ({openGymStats.sourceHost})</span>
+        <span class="sync-dots" aria-hidden="true">
+          <span class="sync-dot" title="openGym"></span>
+          <span class="sync-dot read" title="Tome"></span>
+        </span>
+        <span id="sync-label">opengym + tome · snapshot {syncedLabel} ({sourceHost})</span>
       </span>
     </p>
 
@@ -75,11 +350,11 @@ const datelineDate = today
         <span class="mast-main">life off-screen</span>
       </h1>
       <p class="mast-by">
-        <span>iron moved</span>
+        <span><i class="swatch-inline gym" aria-hidden="true"></i>iron moved</span>
         <span class="dl-sep">·</span>
-        <span>pages turned</span>
+        <span><i class="swatch-inline read" aria-hidden="true"></i>pages turned</span>
         <span class="dl-sep">·</span>
-        <span>logged on <strong>self-hosted hardware</strong>, stripped for public view</span>
+        <span>logged on <strong>{sourceHost}</strong>, stripped for public view</span>
       </p>
       <div class="rule" aria-hidden="true">
         <span class="rule-tick"></span><span class="rule-line"></span><span class="rule-tick"></span>
@@ -89,26 +364,41 @@ const datelineDate = today
     <!-- ─────────── INTRO ─────────── -->
     <section class="intro" aria-label="Overview">
       <p class="lede">
-        Most of this site documents software running on a Raspberry Pi in the next room. This section is the ledger for the operator — training
-        consistency exported from a self-hosted <a href="https://opengym.ch" target="_blank" rel="noopener noreferrer">openGym</a> instance, and
-        whatever is sitting on the nightstand when the laptop lid closes.
+        Most of this site documents software running on a Raspberry Pi in the next room. This page is the ledger for the operator — barbell volume
+        from a self-hosted <a href="https://opengym.ch" target="_blank" rel="noopener noreferrer">openGym</a> instance, reading telemetry and shelves
+        from <a href="https://github.com/bndct-devops/tome" target="_blank" rel="noopener noreferrer">Tome</a>, and whatever is in rotation when the
+        laptop lid closes.
       </p>
       <ul class="jump-links">
         <li>
-          <a href="#training"><span class="jump-num">§01</span>the iron ledger (opengym)</a>
+          <a href="#training"><span class="jump-num">§01</span>the daily ledger (iron + pages)</a>
         </li>
         <li>
-          <a href="#nightstand"><span class="jump-num">§02</span>nightstand &amp; backlog</a>
+          <a href="#nightstand"><span class="jump-num">§02</span>nightstand &amp; stacks (tome)</a>
+        </li>
+        <li>
+          <a href="#backlog"><span class="jump-num">§03</span>{hasMarginalia ? "marginalia & backlog" : "in rotation & backlog"}</a>
         </li>
       </ul>
     </section>
 
-    <!-- ─────────── § 01 THE IRON LEDGER (OPENGYM) ─────────── -->
-    <section class="block" id="training" aria-labelledby="iron-heading">
+    <!-- ─────────── § 01 THE UNIFIED DAILY LEDGER ─────────── -->
+    <section class="block" id="training" aria-labelledby="ledger-heading">
       <header class="block-head">
-        <h2 id="iron-heading"><span class="bh-mark">§</span> the iron ledger</h2>
+        <h2 id="ledger-heading"><span class="bh-mark">§</span> the daily ledger</h2>
 
         <div class="ledger-controls" aria-label="Display controls">
+          <div class="ctl-group" role="group" aria-label="Activity lens">
+            <span class="ctl-label">lens</span>
+            <button class="ctl-btn active" data-lens-btn="combined" type="button">combined</button>
+            <button class="ctl-btn" data-lens-btn="iron" type="button">
+              <i class="swatch-inline gym tight" aria-hidden="true"></i>iron
+            </button>
+            <button class="ctl-btn" data-lens-btn="pages" type="button">
+              <i class="swatch-inline read tight" aria-hidden="true"></i>pages
+            </button>
+          </div>
+
           <div class="ctl-group" role="group" aria-label="Time window">
             <span class="ctl-label">window</span>
             <button class="ctl-btn active" data-window="ytd" type="button">{ytdYear} ytd</button>
@@ -117,50 +407,58 @@ const datelineDate = today
         </div>
       </header>
 
-      <!-- 4-Cell Stat Strip -->
-      <ul class="stats" aria-label="Training summary">
-        <li class="stat">
-          <span class="stat-v" id="st-sessions">{openGymStats.windows.ytd.sessions.toLocaleString()}</span>
-          <span class="stat-k" id="st-sessions-k">sessions ({ytdYear} ytd)</span>
-          <span class="stat-sub" id="st-sessions-sub">avg {openGymStats.windows.ytd.avgPerWeek} / week</span>
-        </li>
-        <li class="stat">
-          <span class="stat-v">
-            <span id="st-streak">{openGymStats.streak.currentWeeks}</span><span class="stat-unit">wks</span>
-          </span>
-          <span class="stat-k">active streak</span>
-          <span class="stat-sub" id="st-streak-sub">
-            ≥ {openGymStats.streak.minPerWeek}x / wk · best {openGymStats.streak.bestWeeks} wks
-          </span>
-        </li>
-        <li class="stat">
-          <span class="stat-v" id="st-sets">{openGymStats.windows.ytd.sets.toLocaleString()}</span>
-          <span class="stat-k">working sets</span>
-          <span class="stat-sub">warm-up sets excluded</span>
-        </li>
-        <li class="stat">
-          <span class="stat-v">
-            <span id="st-tonnage">{openGymStats.windows.ytd.tonnage.toLocaleString()}</span><span class="stat-unit">t</span>
-          </span>
-          <span class="stat-k">volume moved</span>
-          <span class="stat-sub" id="st-tonnage-sub">~{openGymStats.windows.ytd.avgTonnage} t / session</span>
-        </li>
+      <!-- Adaptive 4-Cell Stat Strip -->
+      <ul class="stats" id="stat-strip" aria-label="Off-screen summary">
+        {
+          initialStats.map((st, idx) => (
+            <li class="stat" data-stat-cell={idx} data-accent={st.accent}>
+              <span class="stat-v">
+                <span data-stat-v>{st.v}</span>
+                <span class="stat-unit" data-stat-u hidden={!st.u}>
+                  {st.u}
+                </span>
+              </span>
+              <span class="stat-k" data-stat-k>
+                {st.k}
+              </span>
+              <span class="stat-sub" data-stat-sub>
+                {st.sub}
+              </span>
+            </li>
+          ))
+        }
       </ul>
 
-      <!-- 52-Week Activity Heatmap -->
-      <div class="heatmap-wrap">
+      <!-- Unified 52-Week Consistency Heatmap -->
+      <div class="heatmap-wrap" id="heatmap-wrap" data-lens="combined">
         <div class="heatmap-top">
           <span class="heatmap-kicker">
-            <strong>52-week consistency</strong> · <span id="hm-active-count">{openGymStats.activeDays52w}</span> active days in rolling year · dot
-            marks pr session
+            <strong id="hm-kicker-title">52-week off-screen rhythm</strong>
+            <span id="hm-kicker-rest"> · {combinedActiveDays52w} active days · ★ pr session · ◆ book finished</span>
           </span>
+
           <span class="heatmap-legend" aria-hidden="true">
             <span>rest</span>
-            <span class="leg-cell lv-0"></span>
-            <span class="leg-cell lv-1"></span>
-            <span class="leg-cell lv-2"></span>
-            <span class="leg-cell lv-3"></span>
-            <span>heavy</span>
+            <span class="leg-cell leg-rest"></span>
+            <span class="leg-group leg-gym">
+              <span class="leg-sep">·</span>
+              <span>iron</span>
+              <span class="leg-cell leg-g1"></span>
+              <span class="leg-cell leg-g2"></span>
+              <span class="leg-cell leg-g3"></span>
+            </span>
+            <span class="leg-group leg-read">
+              <span class="leg-sep">·</span>
+              <span>pages</span>
+              <span class="leg-cell leg-r1"></span>
+              <span class="leg-cell leg-r2"></span>
+              <span class="leg-cell leg-r3"></span>
+            </span>
+            <span class="leg-group leg-both">
+              <span class="leg-sep">·</span>
+              <span>both</span>
+              <span class="leg-cell leg-dual"></span>
+            </span>
           </span>
         </div>
 
@@ -179,49 +477,65 @@ const datelineDate = today
               <span>fri</span>
               <span></span>
             </div>
-            <div class="heatmap-grid" id="hm-grid" role="grid" aria-label="52-week workout consistency">
+            <div class="heatmap-grid" id="hm-grid" role="grid" aria-label="52-week off-screen consistency">
               {
-                cells.map((cell) => (
-                  <button
-                    type="button"
-                    class:list={["hm-cell", { "is-future": cell.isFuture }]}
-                    data-date={cell.date}
-                    data-label={cell.labelDate}
-                    data-lv={cell.level}
-                    data-trained={cell.trained ? "1" : "0"}
-                    data-routine={cell.routine ?? ""}
-                    data-sets={cell.sets}
-                    data-mins={cell.durationMin ?? ""}
-                    data-pr={cell.prs > 0 ? "1" : "0"}
-                    data-prs={cell.prs}
-                    disabled={cell.isFuture}
-                    aria-label={
-                      cell.isFuture
-                        ? `${cell.labelDate}: upcoming`
-                        : cell.trained
-                          ? `${cell.labelDate}: ${cell.routine}, ${cell.sets} sets`
-                          : `${cell.labelDate}: rest day`
-                    }
-                  />
-                ))
+                cells.map((cell) => {
+                  const primaryBook = cell.readTitles[0] ?? "";
+                  const extraBooks = cell.readTitles.length > 1 ? cell.readTitles.length - 1 : 0;
+                  const firstFinished = cell.finishedTitles[0] ?? "";
+                  return (
+                    <button
+                      type="button"
+                      class:list={["hm-cell", { "is-future": cell.isFuture }]}
+                      data-date={cell.date}
+                      data-label={cell.labelDate}
+                      data-glv={cell.gymLevel}
+                      data-rlv={cell.readLevel}
+                      data-trained={cell.trained ? "1" : "0"}
+                      data-routine={cell.routine ?? ""}
+                      data-sets={cell.sets}
+                      data-mins={cell.durationMin ?? ""}
+                      data-pr={cell.prs > 0 ? "1" : "0"}
+                      data-prs={cell.prs}
+                      data-read={cell.read ? "1" : "0"}
+                      data-rmins={cell.readMinutes}
+                      data-rpages={cell.readPages}
+                      data-rbook={primaryBook}
+                      data-rextra={extraBooks}
+                      data-fin={cell.finishedTitles.length > 0 ? "1" : "0"}
+                      data-fincount={cell.finishedTitles.length}
+                      data-fintitle={firstFinished}
+                      disabled={cell.isFuture}
+                      aria-label={cellAriaLabel(cell)}
+                    />
+                  );
+                })
               }
             </div>
           </div>
         </div>
 
         <div class="heatmap-readout" id="hm-readout" aria-live="polite">
-          <span id="hm-readout-left">hover any square to inspect date &amp; routine (timestamps rounded to calendar day)</span>
+          <span id="hm-readout-left">hover or click any square to inspect workouts &amp; reading sittings</span>
           {
-            latestTrained && (
+            latestActive && (
               <span id="hm-readout-right">
                 latest //{" "}
                 <b>
-                  {latestDateShort} · {latestTrained.routine?.toLowerCase()} · {latestTrained.sets} sets
+                  {latestDateShort}
+                  {latestActive.trained && ` · ${latestActive.routine?.toLowerCase()} (${latestActive.sets} sets)`}
+                  {latestActive.read && ` · ${formatDurationMinutes(latestActive.readMinutes)} read`}
                 </b>
-                {latestTrained.prs > 0 && (
+                {latestActive.prs > 0 && (
                   <span class="pr-chip">
                     {" "}
-                    ★ {latestTrained.prs} PR{latestTrained.prs === 1 ? "" : "s"}
+                    ★ {latestActive.prs} PR{latestActive.prs === 1 ? "" : "s"}
+                  </span>
+                )}
+                {latestActive.finishedTitles.length > 0 && (
+                  <span class="fin-chip">
+                    {" "}
+                    ◆ finished {latestActive.finishedTitles[0].split(":")[0].toLowerCase()}
                   </span>
                 )}
               </span>
@@ -231,39 +545,205 @@ const datelineDate = today
       </div>
     </section>
 
-    <!-- ─────────── § 02 NIGHTSTAND & BACKLOG ─────────── -->
-    <section class="block" id="nightstand" aria-labelledby="shelf-heading">
+    <!-- ─────────── § 02 NIGHTSTAND & STACKS (TOME) ─────────── -->
+    <section class="block" id="nightstand" aria-labelledby="nightstand-heading">
       <header class="block-head">
-        <h2 id="shelf-heading"><span class="bh-mark">§</span> nightstand &amp; backlog</h2>
+        <h2 id="nightstand-heading"><span class="bh-mark">§</span> on the nightstand &amp; stacks</h2>
+
+        <div class="ledger-controls">
+          <span class="block-meta">tome · {tomeStats.rolloverHour}am ist rollover</span>
+          <div class="ctl-group" role="group" aria-label="Stacks layout">
+            <button class="ctl-btn active" data-shelf-view="spines" type="button">spine rack</button>
+            <button class="ctl-btn" data-shelf-view="table" type="button">table ledger</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="subhead">
+        <h3>currently open</h3>
+        <span>{devicesSubhead}</span>
+      </div>
+
+      {
+        tomeStats.currentlyReading.length > 0 ? (
+          <div class="active-reads">
+            {tomeStats.currentlyReading.map((book, idx) => {
+              const wordsCompact = book.wordCount ? `${book.wordCount.toLocaleString()} words` : null;
+              const leftCompact = formatWordCountCompact(book.wordsLeft);
+              const seriesMeta =
+                book.series && book.seriesIndex !== null
+                  ? `${book.series.toLowerCase()} · #${book.seriesIndex}`
+                  : book.series
+                    ? book.series.toLowerCase()
+                    : book.category;
+              return (
+                <article class="read-card">
+                  <div class="book-plate" aria-hidden="true">
+                    <span>fig. {pad2(idx + 1)}</span>
+                    <strong>{book.progressPct}%</strong>
+                  </div>
+                  <div class="rc-body">
+                    <div class="rc-top">
+                      <span>{seriesMeta}</span>
+                      <span class="rc-live">● reading{book.device ? ` · ${book.device}` : ""}</span>
+                    </div>
+                    <h4 class="rc-title">{book.title}</h4>
+                    <p class="rc-author">
+                      {book.author.toLowerCase()}
+                      {wordsCompact ? ` · ${wordsCompact}` : ""}
+                    </p>
+                    <div class="prog-track" role="progressbar" aria-valuenow={book.progressPct} aria-valuemin={0} aria-valuemax={100}>
+                      <div class="prog-fill" style={`width: ${Math.max(2, book.progressPct)}%`} />
+                    </div>
+                    <div class="rc-foot">
+                      <span>
+                        <b>{book.progressPct}%</b>
+                        {leftCompact ? ` · ~${leftCompact} words left` : ""}
+                      </span>
+                      <span>
+                        {book.estHoursLeft !== null ? `~${book.estHoursLeft}h est` : ""}
+                        {book.estHoursLeft !== null && book.lastReadDate ? " · " : ""}
+                        {book.lastReadDate ? formatShortMonthDay(book.lastReadDate) : ""}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p class="empty-note">— between books right now —</p>
+        )
+      }
+
+      <div class="subhead">
+        <h3>the {ytdYear} stacks</h3>
+        <span>width scaled by word count &amp; hours · series collapsed</span>
+      </div>
+
+      <div class="stacks-box" id="stacks-box" data-view="spines">
+        <div class="spine-shelf" id="spine-shelf" role="group" aria-label="Books logged in Tome">
+          {
+            spineItems.map((sp) => (
+              <button
+                type="button"
+                class:list={["spine", { "is-active": sp.isDefaultSelected }]}
+                style={`width:${sp.widthPx}px;height:${sp.heightPct}%`}
+                data-tone={sp.tone}
+                data-title={sp.title}
+                data-author={sp.author.toLowerCase()}
+                data-category={sp.category}
+                data-hours={sp.hours}
+                data-scale={sp.scaleLabel}
+                data-stars={sp.rating ? sp.stars : ""}
+                data-status={sp.status}
+                data-date={sp.dateLabel ?? ""}
+                aria-label={`${sp.title} by ${sp.author}`}
+              >
+                <span class="spine-hrs">{sp.topTag}</span>
+                <span class="spine-label">{sp.shortTitle}</span>
+                {sp.active ? <span class="spine-dot" title="Currently reading" /> : <span />}
+              </button>
+            ))
+          }
+
+          <div class="bookend" aria-hidden="true">
+            <strong>stack // {ytdYear}</strong>
+            <span>{tomeStats.libraryCount} books in tome</span>
+            {totalWordsCompact && <span>~{totalWordsCompact} words indexed</span>}
+            <span>click spine to inspect</span>
+          </div>
+        </div>
+
+        {
+          defaultSpine && (
+            <div class="spine-detail" id="spine-detail" aria-live="polite">
+              <div>
+                <span class="spine-detail-title" id="sp-title">
+                  {defaultSpine.title}
+                </span>
+                <span id="sp-by">
+                  by {defaultSpine.author.toLowerCase()} · {defaultSpine.category}
+                </span>
+              </div>
+              <div id="sp-meta">
+                <b>{defaultSpine.hours} hrs</b> logged · {defaultSpine.scaleLabel}
+                {defaultSpine.rating && <span class="stars"> · {defaultSpine.stars}</span>}
+                {defaultSpine.dateLabel && <span> · {defaultSpine.dateLabel}</span>}
+              </div>
+            </div>
+          )
+        }
+
+        <div class="table-scroll">
+          <table class="ledger-table">
+            <thead>
+              <tr>
+                <th>title / series</th>
+                <th>author</th>
+                <th>scale</th>
+                <th>logged</th>
+                <th>rating</th>
+                <th>state</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                spineItems.map((sp) => (
+                  <tr>
+                    <td class="t-book">{sp.title}</td>
+                    <td>{sp.author.toLowerCase()}</td>
+                    <td>{sp.scaleLabel}</td>
+                    <td>{sp.hours}h</td>
+                    <td>
+                      <span class="stars">{sp.stars}</span>
+                    </td>
+                    <td>{sp.active ? <span class="tag-read">● reading</span> : sp.status}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── § 03 MARGINALIA & BACKLOG ─────────── -->
+    <section class="block" id="backlog" aria-labelledby="backlog-heading">
+      <header class="block-head">
+        <h2 id="backlog-heading">
+          <span class="bh-mark">§</span> {hasMarginalia ? "marginalia & backlog" : "in rotation & backlog"}
+        </h2>
         <span class="block-meta">— slow media, zero infinite scroll</span>
       </header>
 
-      <div class="shelf-grid">
-        <div>
-          <div class="subhead">
-            <h3>reading</h3>
-            <span>paper &amp; kindle</span>
-          </div>
-          <ul class="shelf-list">
-            {
-              readingShelf.map((item) => (
-                <li class="shelf-item">
-                  <div>
-                    <span class="shelf-title">{item.title}</span>
-                    <span class="shelf-by">{item.meta}</span>
-                  </div>
-                  <span class:list={["shelf-status", { active: item.active }]}>
-                    {item.active ? `● ${item.status}` : item.status}
-                  </span>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
+      <div class:list={["bottom-grid", { "has-marginalia": hasMarginalia }]}>
+        {
+          hasMarginalia && (
+            <div>
+              <div class="subhead">
+                <h3>commonplace // highlights</h3>
+                <span>from shared tome shelves</span>
+              </div>
+              <div class="marginalia-list">
+                {tomeStats.marginalia.slice(0, 3).map((m) => (
+                  <blockquote class="quote-card">
+                    <p class="quote-text">“{m.text}”</p>
+                    <footer class="quote-cite">
+                      — <b>{m.bookTitle}</b> · {m.author.toLowerCase()}
+                      {m.chapter ? ` · ${m.chapter.toLowerCase()}` : ""}
+                      {m.date ? ` · ${formatShortMonthDay(m.date)}` : ""}
+                    </footer>
+                  </blockquote>
+                ))}
+              </div>
+            </div>
+          )
+        }
 
         <div>
           <div class="subhead">
-            <h3>playing</h3>
+            <h3>playing // controller</h3>
             <span>via beat-the-backlog</span>
           </div>
           <ul class="shelf-list">
@@ -288,15 +768,61 @@ const datelineDate = today
 
   <script is:inline define:vars={{ clientPayload }}>
     const cfg = JSON.parse(clientPayload);
-    let windows = cfg.windows;
+    let currentLens = "combined";
+    let currentWindow = "ytd";
 
+    const wrap = document.getElementById("heatmap-wrap");
+    const kickerTitle = document.getElementById("hm-kicker-title");
+    const kickerRest = document.getElementById("hm-kicker-rest");
     const leftOut = document.getElementById("hm-readout-left");
     const rightOut = document.getElementById("hm-readout-right");
 
-    function renderReadout(btn) {
-      if (!leftOut || !rightOut || btn.disabled) return;
+    function fmtMins(mins) {
+      if (!mins || mins <= 0) return "0m";
+      const h = Math.floor(mins / 60);
+      const r = Math.round(mins % 60);
+      if (h <= 0) return r + "m";
+      return r > 0 ? h + "h " + r + "m" : h + "h";
+    }
+
+    function applyStatsAndLens() {
+      if (wrap) wrap.setAttribute("data-lens", currentLens);
+      const k = cfg.kickers[currentLens];
+      if (k && kickerTitle && kickerRest) {
+        kickerTitle.textContent = k.title;
+        kickerRest.textContent = k.rest;
+      }
+
+      const cells = (cfg.stats[currentLens] || {})[currentWindow] || [];
+      cells.forEach((item, idx) => {
+        const li = document.querySelector(`[data-stat-cell="${idx}"]`);
+        if (!li) return;
+        li.setAttribute("data-accent", item.accent);
+        const vEl = li.querySelector("[data-stat-v]");
+        const uEl = li.querySelector("[data-stat-u]");
+        const kEl = li.querySelector("[data-stat-k]");
+        const sEl = li.querySelector("[data-stat-sub]");
+        if (vEl) vEl.textContent = item.v;
+        if (uEl) {
+          uEl.textContent = item.u || "";
+          uEl.hidden = !item.u;
+        }
+        if (kEl) kEl.textContent = item.k;
+        if (sEl) sEl.textContent = item.sub;
+      });
+    }
+
+    function renderReadout(btn, lockSelection) {
+      if (!leftOut || !rightOut || !btn || btn.disabled) return;
+      if (lockSelection) {
+        document.querySelectorAll("#hm-grid .hm-cell.is-selected").forEach((b) => b.classList.remove("is-selected"));
+        btn.classList.add("is-selected");
+      }
+
       const label = btn.getAttribute("data-label") || "";
-      const trained = btn.getAttribute("data-trained") === "1";
+      const trained = btn.getAttribute("data-trained") === "1" && currentLens !== "pages";
+      const read = btn.getAttribute("data-read") === "1" && currentLens !== "iron";
+      const fin = btn.getAttribute("data-fin") === "1" && currentLens !== "iron";
 
       leftOut.textContent = "";
       rightOut.textContent = "";
@@ -305,61 +831,153 @@ const datelineDate = today
       dateStrong.textContent = label;
       leftOut.appendChild(dateStrong);
 
+      let hasActivity = false;
+
       if (trained) {
+        hasActivity = true;
+        leftOut.appendChild(document.createTextNode(" · "));
+        const tag = document.createElement("span");
+        tag.className = "tag-gym";
+        tag.textContent = "iron";
+        leftOut.appendChild(tag);
+
         const routine = (btn.getAttribute("data-routine") || "session").toLowerCase();
         const sets = btn.getAttribute("data-sets") || "0";
         const mins = btn.getAttribute("data-mins");
+        const durSuffix = mins ? ` (${mins}m)` : "";
+        leftOut.appendChild(document.createTextNode(` ${routine} · ${sets} sets${durSuffix}`));
+
         const prs = parseInt(btn.getAttribute("data-prs") || "0", 10);
-
-        leftOut.appendChild(document.createTextNode(" · " + routine));
-
-        const setsStrong = document.createElement("b");
-        setsStrong.textContent = sets + " sets";
-        rightOut.appendChild(setsStrong);
-        if (mins) {
-          rightOut.appendChild(document.createTextNode(" · " + mins + " min"));
-        }
         if (prs > 0) {
           const prSpan = document.createElement("span");
           prSpan.className = "pr-chip";
-          prSpan.textContent = " ★ " + prs + (prs === 1 ? " PR" : " PRs");
+          prSpan.textContent = `★ ${prs} PR${prs === 1 ? "" : "s"}`;
           rightOut.appendChild(prSpan);
         }
-      } else {
-        leftOut.appendChild(document.createTextNode(" · rest / recovery day"));
-        rightOut.textContent = "off-rack";
+      }
+
+      if (read) {
+        leftOut.appendChild(document.createTextNode(hasActivity ? "  //  " : " · "));
+        hasActivity = true;
+        const tag = document.createElement("span");
+        tag.className = "tag-read";
+        tag.textContent = "pages";
+        leftOut.appendChild(tag);
+
+        const rawBook = btn.getAttribute("data-rbook") || "reading";
+        const shortBook = rawBook.length > 38 ? rawBook.slice(0, 36).trimEnd() + "…" : rawBook;
+        const extra = parseInt(btn.getAttribute("data-rextra") || "0", 10);
+        const rmins = parseInt(btn.getAttribute("data-rmins") || "0", 10);
+        const extraSuffix = extra > 0 ? ` +${extra}` : "";
+        leftOut.appendChild(document.createTextNode(` ${shortBook.toLowerCase()}${extraSuffix} · ${fmtMins(rmins)}`));
+      }
+
+      if (fin) {
+        const finCount = parseInt(btn.getAttribute("data-fincount") || "1", 10);
+        const finTitle = (btn.getAttribute("data-fintitle") || "volume").split(":")[0].toLowerCase();
+        if (rightOut.childNodes.length > 0) {
+          rightOut.appendChild(document.createTextNode(" "));
+        }
+        const finSpan = document.createElement("span");
+        finSpan.className = "fin-chip";
+        finSpan.textContent = finCount > 1 ? `◆ finished ${finCount} volumes` : `◆ finished ${finTitle}`;
+        rightOut.appendChild(finSpan);
+      }
+
+      if (!hasActivity && !fin) {
+        const quietNote =
+          currentLens === "iron"
+            ? " · rest / recovery day"
+            : currentLens === "pages"
+              ? " · no logged pages"
+              : " · quiet day (no logged sets or pages)";
+        leftOut.appendChild(document.createTextNode(quietNote));
+        rightOut.textContent = "off-ledger";
       }
     }
 
     document.querySelectorAll("#hm-grid .hm-cell").forEach((btn) => {
-      btn.addEventListener("mouseenter", () => renderReadout(btn));
-      btn.addEventListener("focus", () => renderReadout(btn));
+      btn.addEventListener("mouseenter", () => renderReadout(btn, false));
+      btn.addEventListener("focus", () => renderReadout(btn, false));
+      btn.addEventListener("click", () => renderReadout(btn, true));
     });
 
-    function applyWindow(key) {
-      const d = windows[key];
-      if (!d) return;
-      const s = document.getElementById("st-sessions");
-      const sk = document.getElementById("st-sessions-k");
-      const ss = document.getElementById("st-sessions-sub");
-      const st = document.getElementById("st-sets");
-      const tn = document.getElementById("st-tonnage");
-      const ts = document.getElementById("st-tonnage-sub");
-      if (s) s.textContent = d.sessions;
-      if (sk) sk.textContent = d.sessionsK;
-      if (ss) ss.textContent = d.sessionsSub;
-      if (st) st.textContent = d.sets;
-      if (tn) tn.textContent = d.tonnage;
-      if (ts) ts.textContent = d.tonnageSub;
-    }
+    document.querySelectorAll("[data-lens-btn]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-lens-btn]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentLens = btn.getAttribute("data-lens-btn") || "combined";
+        applyStatsAndLens();
+        const selected = document.querySelector("#hm-grid .hm-cell.is-selected");
+        if (selected) renderReadout(selected, false);
+      });
+    });
 
     document.querySelectorAll("[data-window]").forEach((btn) => {
       btn.addEventListener("click", () => {
         document.querySelectorAll("[data-window]").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
-        applyWindow(btn.getAttribute("data-window"));
+        currentWindow = btn.getAttribute("data-window") || "ytd";
+        applyStatsAndLens();
       });
     });
+
+    // Spine Rack & Table Ledger view switch + spine inspection
+    const stacksBox = document.getElementById("stacks-box");
+    document.querySelectorAll("[data-shelf-view]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-shelf-view]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (stacksBox) stacksBox.setAttribute("data-view", btn.getAttribute("data-shelf-view") || "spines");
+      });
+    });
+
+    function selectSpine(btn) {
+      document.querySelectorAll("#spine-shelf .spine.is-active").forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      const titleEl = document.getElementById("sp-title");
+      const byEl = document.getElementById("sp-by");
+      const metaEl = document.getElementById("sp-meta");
+      if (!titleEl || !byEl || !metaEl) return;
+
+      titleEl.textContent = btn.getAttribute("data-title") || "";
+      byEl.textContent = `by ${btn.getAttribute("data-author") || ""} · ${btn.getAttribute("data-category") || ""}`;
+
+      metaEl.textContent = "";
+      const hrsStrong = document.createElement("b");
+      hrsStrong.textContent = `${btn.getAttribute("data-hours") || "0"} hrs`;
+      metaEl.appendChild(hrsStrong);
+      metaEl.appendChild(document.createTextNode(` logged · ${btn.getAttribute("data-scale") || ""}`));
+
+      const stars = btn.getAttribute("data-stars");
+      if (stars) {
+        metaEl.appendChild(document.createTextNode(" · "));
+        const starSpan = document.createElement("span");
+        starSpan.className = "stars";
+        starSpan.textContent = stars;
+        metaEl.appendChild(starSpan);
+      }
+
+      const dateLabel = btn.getAttribute("data-date");
+      if (dateLabel) {
+        metaEl.appendChild(document.createTextNode(` · ${dateLabel}`));
+      }
+    }
+
+    document.querySelectorAll("#spine-shelf .spine").forEach((btn) => {
+      btn.addEventListener("mouseenter", () => selectSpine(btn));
+      btn.addEventListener("focus", () => selectSpine(btn));
+      btn.addEventListener("click", () => selectSpine(btn));
+    });
+
+    // Support URL hash lens pre-selection (#iron or #pages)
+    if (window.location.hash === "#iron" || window.location.hash === "#pages") {
+      const lensTarget = window.location.hash.slice(1);
+      const btn = document.querySelector(`[data-lens-btn="${lensTarget}"]`);
+      if (btn) btn.click();
+      const ledgerSection = document.getElementById("training");
+      if (ledgerSection) ledgerSection.scrollIntoView({ behavior: "smooth" });
+    }
   </script>
 </BaseLayout>
 
@@ -368,12 +986,19 @@ const datelineDate = today
 
   .page {
     --color-gym: #10b981;
+    --gym-1: #b9f3d4;
+    --gym-2: #48bb78;
+    --gym-3: #226c47;
+
+    --color-read: #b45309;
+    --read-1: #fde6b0;
+    --read-2: #ea9a28;
+    --read-3: #b45309;
+
     --color-pr: #d97706;
-    --heat-0: #edf2f7;
-    --heat-1: #c6f6d5;
-    --heat-2: #68d391;
-    --heat-3: #2f855a;
-    --heat-pr: #d97706;
+    --color-fin: #1a202c;
+    --heat-0: #eaeff5;
+    --surface-subtle: #f4f6f9;
 
     max-width: 1080px;
     margin: 0 auto;
@@ -383,12 +1008,19 @@ const datelineDate = today
 
   :global(.dark) .page {
     --color-gym: #34d399;
+    --gym-1: #1d4438;
+    --gym-2: #1f7a5c;
+    --gym-3: #34d399;
+
+    --color-read: #f59e0b;
+    --read-1: #3e3020;
+    --read-2: #8a5618;
+    --read-3: #f59e0b;
+
     --color-pr: #fbbf24;
+    --color-fin: #f8fafc;
     --heat-0: #232d3d;
-    --heat-1: #1e463a;
-    --heat-2: #1f7a5c;
-    --heat-3: #34d399;
-    --heat-pr: #fbbf24;
+    --surface-subtle: #1e2634;
   }
 
   /* ─── Shared broadsheet atoms (rule, dateline, mast) ─── */
@@ -442,22 +1074,50 @@ const datelineDate = today
     font-size: 0.68rem;
     color: var(--color-muted);
   }
+  .sync-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
   .sync-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: var(--color-gym);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
-    animation: syncPulse 2.2s infinite;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+    animation: syncPulse 2.4s infinite;
+  }
+  .sync-dot.read {
+    background: var(--color-read);
+    animation-delay: 1.2s;
   }
   @keyframes syncPulse {
     0%,
     100% {
-      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+      opacity: 1;
     }
-    70% {
-      box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+    50% {
+      opacity: 0.55;
     }
+  }
+
+  .swatch-inline {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+    margin-right: 5px;
+    vertical-align: middle;
+    transform: translateY(-1px);
+  }
+  .swatch-inline.tight {
+    margin-right: 0;
+  }
+  .swatch-inline.gym {
+    background: var(--color-gym);
+  }
+  .swatch-inline.read {
+    background: var(--color-read);
   }
 
   /* ─── Masthead ─── */
@@ -491,6 +1151,11 @@ const datelineDate = today
     line-height: 1.05;
   }
   .mast-by {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 4px 10px;
     text-align: center;
     margin: 0.4rem 0 0.65rem;
     font-family: ui-monospace, monospace;
@@ -513,7 +1178,7 @@ const datelineDate = today
     line-height: 1.72;
     color: var(--color-text);
     margin: 0 0 0.9rem;
-    max-width: 66ch;
+    max-width: 68ch;
   }
   .lede a {
     color: var(--color-text);
@@ -532,7 +1197,7 @@ const datelineDate = today
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 16px;
+    gap: 6px 18px;
     font-family: ui-monospace, monospace;
     font-size: 0.76rem;
   }
@@ -547,7 +1212,7 @@ const datelineDate = today
   .jump-num {
     color: var(--color-border);
     font-weight: 700;
-    margin-right: 4px;
+    margin-right: 5px;
   }
 
   /* ─── Section blocks ─── */
@@ -555,6 +1220,7 @@ const datelineDate = today
     margin: 2.2rem 0 0;
     padding-top: 1.5rem;
     border-top: 1px solid var(--color-border);
+    scroll-margin-top: 5rem;
   }
   .block-head {
     display: flex;
@@ -584,14 +1250,14 @@ const datelineDate = today
     font-family: ui-monospace, monospace;
     font-size: 0.72rem;
     color: var(--color-muted);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
 
   .ledger-controls {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px 14px;
+    gap: 8px 14px;
     font-family: ui-monospace, monospace;
     font-size: 0.7rem;
   }
@@ -616,6 +1282,9 @@ const datelineDate = today
     padding: 2px 8px;
     cursor: pointer;
     border-radius: 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     transition:
       color 0.15s ease,
       border-color 0.15s ease,
@@ -632,7 +1301,7 @@ const datelineDate = today
     font-weight: 600;
   }
 
-  /* ─── 4-Cell Stat Strip ─── */
+  /* ─── 4-Cell Adaptive Stat Strip ─── */
   .stats {
     list-style: none;
     margin: 0 0 1.4rem;
@@ -644,7 +1313,7 @@ const datelineDate = today
     gap: 0.9rem 1.4rem;
     font-family: ui-monospace, monospace;
   }
-  @media (min-width: 600px) {
+  @media (min-width: 680px) {
     .stats {
       grid-template-columns: repeat(4, 1fr);
     }
@@ -653,23 +1322,34 @@ const datelineDate = today
     display: flex;
     flex-direction: column;
     gap: 2px;
+    padding-left: 0.6rem;
+    border-left: 2px solid var(--color-border);
+  }
+  .stat[data-accent="gym"] {
+    border-left-color: var(--color-gym);
+  }
+  .stat[data-accent="read"] {
+    border-left-color: var(--color-read);
+  }
+  .stat[data-accent="both"] {
+    border-image: linear-gradient(to bottom, var(--color-gym) 50%, var(--color-read) 50%) 1;
   }
   .stat-v {
-    font-size: 1.55rem;
+    font-size: 1.52rem;
     font-weight: 700;
     color: var(--color-text);
     line-height: 1.05;
     letter-spacing: -0.02em;
   }
   .stat-unit {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 500;
     color: var(--color-muted);
-    margin-left: 2px;
+    margin-left: 3px;
   }
   .stat-k {
     font-size: 0.62rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--color-muted);
     margin-top: 2px;
@@ -677,10 +1357,10 @@ const datelineDate = today
   .stat-sub {
     font-size: 0.68rem;
     color: var(--color-muted);
-    opacity: 0.85;
+    opacity: 0.88;
   }
 
-  /* ─── 52-Week Consistency Heatmap ─── */
+  /* ─── Unified 52-Week Heatmap ─── */
   .heatmap-wrap {
     margin: 0;
     padding: 1rem 1.1rem 0.85rem;
@@ -690,15 +1370,15 @@ const datelineDate = today
   .heatmap-top {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 6px 12px;
-    margin-bottom: 0.7rem;
+    margin-bottom: 0.72rem;
     font-family: ui-monospace, monospace;
   }
   .heatmap-kicker {
     font-size: 0.66rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-muted);
   }
@@ -707,28 +1387,59 @@ const datelineDate = today
   }
   .heatmap-legend {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 4px;
-    font-size: 0.64rem;
+    font-size: 0.63rem;
     color: var(--color-muted);
   }
+  .leg-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .leg-sep {
+    opacity: 0.45;
+    margin: 0 2px;
+  }
+  .heatmap-wrap[data-lens="iron"] .leg-read,
+  .heatmap-wrap[data-lens="iron"] .leg-both {
+    display: none;
+  }
+  .heatmap-wrap[data-lens="pages"] .leg-gym,
+  .heatmap-wrap[data-lens="pages"] .leg-both {
+    display: none;
+  }
+
   .leg-cell {
     width: 10px;
     height: 10px;
     display: inline-block;
-    border-radius: 1px;
+    border-radius: 1.5px;
   }
-  .leg-cell.lv-0 {
+  .leg-rest {
     background: var(--heat-0);
   }
-  .leg-cell.lv-1 {
-    background: var(--heat-1);
+  .leg-g1 {
+    background: var(--gym-1);
   }
-  .leg-cell.lv-2 {
-    background: var(--heat-2);
+  .leg-g2 {
+    background: var(--gym-2);
   }
-  .leg-cell.lv-3 {
-    background: var(--heat-3);
+  .leg-g3 {
+    background: var(--gym-3);
+  }
+  .leg-r1 {
+    background: var(--read-1);
+  }
+  .leg-r2 {
+    background: var(--read-2);
+  }
+  .leg-r3 {
+    background: var(--read-3);
+  }
+  .leg-dual {
+    background: linear-gradient(135deg, var(--gym-3) 0 48%, var(--read-3) 52% 100%);
   }
 
   .heatmap-scroll {
@@ -737,7 +1448,7 @@ const datelineDate = today
   }
   .heatmap-months {
     display: grid;
-    grid-template-columns: 24px repeat(52, minmax(11px, 1fr));
+    grid-template-columns: 26px repeat(52, minmax(12px, 1fr));
     gap: 3px;
     font-family: ui-monospace, monospace;
     font-size: 0.58rem;
@@ -745,34 +1456,34 @@ const datelineDate = today
     text-transform: uppercase;
     color: var(--color-muted);
     margin-bottom: 4px;
-    min-width: 680px;
+    min-width: 710px;
   }
   .heatmap-body {
     display: grid;
-    grid-template-columns: 24px 1fr;
+    grid-template-columns: 26px 1fr;
     gap: 3px;
-    min-width: 680px;
+    min-width: 710px;
   }
   .heatmap-days {
     display: grid;
-    grid-template-rows: repeat(7, 11px);
+    grid-template-rows: repeat(7, 12px);
     gap: 3px;
     font-family: ui-monospace, monospace;
     font-size: 0.56rem;
     color: var(--color-muted);
-    line-height: 11px;
+    line-height: 12px;
   }
   .heatmap-grid {
     display: grid;
-    grid-template-columns: repeat(52, minmax(11px, 1fr));
-    grid-template-rows: repeat(7, 11px);
+    grid-template-columns: repeat(52, minmax(12px, 1fr));
+    grid-template-rows: repeat(7, 12px);
     grid-auto-flow: column;
     gap: 3px;
   }
   .hm-cell {
     width: 100%;
-    height: 11px;
-    border-radius: 1px;
+    height: 12px;
+    border-radius: 1.5px;
     background: var(--heat-0);
     border: 0;
     padding: 0;
@@ -781,63 +1492,136 @@ const datelineDate = today
     transition: transform 0.1s ease;
   }
   .hm-cell.is-future {
-    opacity: 0.35;
+    opacity: 0.32;
     cursor: default;
   }
   .hm-cell:not(.is-future):hover,
+  .hm-cell.is-selected,
   .hm-cell:not(.is-future):focus-visible {
-    transform: scale(1.28);
-    outline: 1px solid var(--color-text);
+    transform: scale(1.3);
+    outline: 1.5px solid var(--color-text);
     z-index: 2;
   }
-  .hm-cell[data-lv="1"] {
-    background: var(--heat-1);
+
+  /* Intensity variables per cell */
+  .hm-cell[data-glv="1"] {
+    --cell-g: var(--gym-1);
   }
-  .hm-cell[data-lv="2"] {
-    background: var(--heat-2);
+  .hm-cell[data-glv="2"] {
+    --cell-g: var(--gym-2);
   }
-  .hm-cell[data-lv="3"] {
-    background: var(--heat-3);
+  .hm-cell[data-glv="3"] {
+    --cell-g: var(--gym-3);
   }
+  .hm-cell[data-rlv="1"] {
+    --cell-r: var(--read-1);
+  }
+  .hm-cell[data-rlv="2"] {
+    --cell-r: var(--read-2);
+  }
+  .hm-cell[data-rlv="3"] {
+    --cell-r: var(--read-3);
+  }
+
+  /* Combined lens: single-channel or 45° diagonal split */
+  .heatmap-wrap[data-lens="combined"] .hm-cell:not([data-glv="0"])[data-rlv="0"] {
+    background: var(--cell-g);
+  }
+  .heatmap-wrap[data-lens="combined"] .hm-cell[data-glv="0"]:not([data-rlv="0"]) {
+    background: var(--cell-r);
+  }
+  .heatmap-wrap[data-lens="combined"] .hm-cell:not([data-glv="0"]):not([data-rlv="0"]) {
+    background: linear-gradient(135deg, var(--cell-g) 0 48%, var(--cell-r) 52% 100%);
+  }
+
+  /* Iron-only & Pages-only lenses */
+  .heatmap-wrap[data-lens="iron"] .hm-cell:not([data-glv="0"]) {
+    background: var(--cell-g);
+  }
+  .heatmap-wrap[data-lens="pages"] .hm-cell:not([data-rlv="0"]) {
+    background: var(--cell-r);
+  }
+
+  /* Milestone pips: PR dot (top-right) & Book Finished diamond (bottom-left) */
   .hm-cell[data-pr="1"]::after {
     content: "";
     position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 3px;
-    height: 3px;
+    top: 1.5px;
+    right: 1.5px;
+    width: 3.5px;
+    height: 3.5px;
     border-radius: 50%;
-    background: var(--heat-pr);
+    background: var(--color-pr);
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.45);
+  }
+  .heatmap-wrap[data-lens="pages"] .hm-cell[data-pr="1"]::after {
+    display: none;
+  }
+
+  .hm-cell[data-fin="1"]::before {
+    content: "";
+    position: absolute;
+    bottom: 1.5px;
+    left: 1.5px;
+    width: 3.5px;
+    height: 3.5px;
+    background: var(--color-fin);
+    transform: rotate(45deg);
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.45);
+  }
+  .heatmap-wrap[data-lens="iron"] .hm-cell[data-fin="1"]::before {
+    display: none;
   }
 
   .heatmap-readout {
-    margin-top: 0.65rem;
-    padding-top: 0.55rem;
+    margin-top: 0.7rem;
+    padding-top: 0.58rem;
     border-top: 1px dashed var(--color-border);
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    align-items: baseline;
     gap: 6px 12px;
     font-family: ui-monospace, monospace;
     font-size: 0.7rem;
     color: var(--color-muted);
+    min-height: 1.75rem;
   }
   .heatmap-readout b {
     color: var(--color-text);
+  }
+  .tag-gym,
+  :global(.tag-gym) {
+    color: var(--color-gym);
+    font-weight: 600;
+  }
+  .tag-read,
+  :global(.tag-read) {
+    color: var(--color-read);
+    font-weight: 600;
   }
   .pr-chip,
   :global(.pr-chip) {
     color: var(--color-pr);
     font-weight: 700;
   }
+  .fin-chip,
+  :global(.fin-chip) {
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    padding: 0 5px;
+    border-radius: 2px;
+    font-size: 0.64rem;
+  }
 
-  /* ─── § 02 Nightstand & Backlog ─── */
+  /* ─── § 02 Nightstand & Spine Rack ─── */
   .subhead {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 8px;
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.8rem;
     padding-bottom: 0.45rem;
     border-bottom: 1px solid var(--color-border);
     font-family: ui-monospace, monospace;
@@ -855,16 +1639,340 @@ const datelineDate = today
     color: var(--color-muted);
   }
 
-  .shelf-grid {
+  .active-reads {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.4rem 2.4rem;
+    gap: 1rem;
+    margin-bottom: 1.65rem;
   }
   @media (min-width: 720px) {
-    .shelf-grid {
+    .active-reads {
       grid-template-columns: 1fr 1fr;
     }
   }
+
+  .read-card {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding: 0.95rem 1.05rem;
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 0.9rem;
+    align-items: start;
+  }
+  .book-plate {
+    height: 64px;
+    border: 1px solid var(--color-border);
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--color-read) 20%, var(--color-surface)),
+      var(--surface-subtle)
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.52rem;
+    color: var(--color-muted);
+    text-transform: uppercase;
+  }
+  .book-plate strong {
+    color: var(--color-read);
+    font-size: 0.62rem;
+  }
+  .rc-body {
+    min-width: 0;
+  }
+  .rc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.63rem;
+    color: var(--color-muted);
+    margin-bottom: 0.2rem;
+  }
+  .rc-live {
+    color: var(--color-read);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .rc-title {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1.01rem;
+    color: var(--color-text);
+    margin: 0 0 0.18rem;
+    line-height: 1.28;
+  }
+  .rc-author {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    color: var(--color-muted);
+    margin: 0 0 0.62rem;
+  }
+  .prog-track {
+    width: 100%;
+    height: 4px;
+    background: var(--heat-0);
+    overflow: hidden;
+    margin-bottom: 0.42rem;
+  }
+  .prog-fill {
+    height: 100%;
+    background: var(--color-read);
+  }
+  .rc-foot {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.63rem;
+    color: var(--color-muted);
+  }
+  .rc-foot b {
+    color: var(--color-text);
+  }
+  .empty-note {
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    margin: 0 0 1.5rem;
+  }
+
+  /* Spine Rack & Table Ledger */
+  .stacks-box {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding: 1rem 1.1rem 0.9rem;
+  }
+  .spine-shelf {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 178px;
+    padding: 12px 8px 0;
+    border-bottom: 2px solid var(--color-text);
+    overflow-x: auto;
+  }
+  .spine {
+    position: relative;
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, var(--color-text) 22%, var(--color-border));
+    border-bottom: 0;
+    background: var(--surface-subtle);
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 6px 4px 7px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+    border-radius: 2px 2px 0 0;
+    transition:
+      transform 0.14s ease,
+      border-color 0.14s ease,
+      background 0.14s ease;
+  }
+  .spine:hover,
+  .spine.is-active,
+  .spine:focus-visible {
+    transform: translateY(-5px);
+    border-color: var(--color-read);
+    background: color-mix(in srgb, var(--color-read) 14%, var(--color-surface));
+    outline: none;
+  }
+  .spine[data-tone="plum"] {
+    border-top: 3px solid #a78bfa;
+  }
+  .spine[data-tone="ochre"] {
+    border-top: 3px solid #f59e0b;
+  }
+  .spine[data-tone="teal"] {
+    border-top: 3px solid #14b8a6;
+  }
+  .spine[data-tone="rust"] {
+    border-top: 3px solid #ea580c;
+  }
+  .spine[data-tone="amber"] {
+    border-top: 3px solid var(--color-read);
+  }
+  .spine[data-tone="slate"] {
+    border-top: 3px solid #64748b;
+  }
+  .spine[data-tone="ink"] {
+    border-top: 3px solid #38bdf8;
+  }
+
+  .spine-hrs {
+    font-family: ui-monospace, monospace;
+    font-size: 0.53rem;
+    color: var(--color-muted);
+    letter-spacing: -0.02em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .spine-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 0.67rem;
+    line-height: 1.1;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 112px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .spine-dot {
+    width: 5px;
+    height: 5px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-read);
+  }
+
+  .bookend {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 0 8px 12px;
+    margin-left: 6px;
+    height: 112px;
+    border-left: 2px solid var(--color-border);
+    font-family: ui-monospace, monospace;
+    font-size: 0.6rem;
+    color: var(--color-muted);
+    line-height: 1.55;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .bookend strong {
+    color: var(--color-text);
+    font-size: 0.66rem;
+  }
+
+  .spine-detail {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px 16px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+  }
+  .spine-detail b,
+  :global(#sp-meta b) {
+    color: var(--color-text);
+  }
+  .spine-detail-title {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--color-text);
+    margin-right: 8px;
+  }
+  .stars,
+  :global(.stars) {
+    color: var(--color-read);
+    letter-spacing: 1px;
+  }
+
+  .table-scroll {
+    display: none;
+    overflow-x: auto;
+  }
+  .stacks-box[data-view="table"] .spine-shelf,
+  .stacks-box[data-view="table"] .spine-detail {
+    display: none;
+  }
+  .stacks-box[data-view="table"] .table-scroll {
+    display: block;
+  }
+  .ledger-table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+  }
+  .ledger-table th {
+    text-align: left;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-muted);
+    padding: 0 0.6rem 0.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .ledger-table td {
+    padding: 0.54rem 0.6rem 0.54rem 0;
+    border-bottom: 1px dashed var(--color-border);
+    color: var(--color-muted);
+  }
+  .ledger-table td.t-book {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 0.84rem;
+    color: var(--color-text);
+  }
+  .ledger-table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* ─── § 03 Marginalia & Rotation ─── */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.6rem 2.4rem;
+  }
+  @media (min-width: 760px) {
+    .bottom-grid.has-marginalia {
+      grid-template-columns: 1.08fr 0.92fr;
+    }
+  }
+  .marginalia-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+  .quote-card {
+    border-left: 2px solid var(--color-read);
+    padding: 0.15rem 0 0.15rem 1rem;
+    margin: 0.25rem 0;
+  }
+  .quote-text {
+    font-family: "Merriweather", Georgia, serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.68;
+    color: var(--color-text);
+    margin: 0 0 0.45rem;
+  }
+  .quote-cite {
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    color: var(--color-muted);
+  }
+  .quote-cite b {
+    color: var(--color-text);
+  }
+
   .shelf-list {
     list-style: none;
     margin: 0;
@@ -907,7 +2015,8 @@ const datelineDate = today
 
   @media (prefers-reduced-motion: reduce) {
     .sync-dot,
-    .hm-cell {
+    .hm-cell,
+    .spine {
       animation: none !important;
       transition: none !important;
     }

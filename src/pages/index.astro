@@ -4,7 +4,15 @@ import { getCollection } from "astro:content";
 import { authors } from "@data/authors";
 import { curseStats } from "@data/curses";
 import { labEntries } from "@data/lab";
-import { openGymStats, buildRecentMiniDots, readingShelf, playingShelf } from "@data/life";
+import {
+  openGymStats,
+  tomeStats,
+  latestLifeSyncIso,
+  buildRecentMiniDots,
+  buildRecentReadingMiniDots,
+  readingShelf,
+  playingShelf,
+} from "@data/life";
 import { Github, Linkedin, Twitter, Mail, Rss, ArrowUpRight } from "@lucide/astro";
 import { getPublishedProjects, normalizeTech, isOngoing } from "@utils/projects";
 
@@ -34,9 +42,11 @@ const publicLabEntry = labEntries.find((entry) => entry.access === "public");
 const privateLabEntry = labEntries.find((entry) => entry.id === "personal-media-cloud");
 const restrictedLabEntries = labEntries.filter((entry) => entry.access === "restricted");
 const recentGymDots = buildRecentMiniDots(openGymStats, 14);
+const recentReadDots = buildRecentReadingMiniDots(tomeStats, 14);
+const activeTomeBook = tomeStats.currentlyReading[0] ?? null;
 const currentBook = readingShelf.find((b) => b.active) ?? readingShelf[0];
 const currentGame = playingShelf.find((g) => g.active) ?? playingShelf[0];
-const gymYear = openGymStats.syncedAt.slice(0, 4);
+const lifeYear = latestLifeSyncIso.slice(0, 4);
 const curseYearRange =
   curseStats.earliestYear === curseStats.latestYear ? String(curseStats.earliestYear) : `${curseStats.earliestYear} to ${curseStats.latestYear}`;
 
@@ -494,7 +504,7 @@ const expEntries = experience.map((e) => {
       <div class="machine-teaser">
         <div class="machine-teaser-item">
           <span class="machine-teaser-kicker">the iron ledger · opengym</span>
-          <a class="machine-teaser-link" href="/life#training">
+          <a class="machine-teaser-link" href="/life#iron">
             <span>
               {openGymStats.streak.currentWeeks > 0
                 ? `${openGymStats.windows.ytd.sessions} sessions · ${openGymStats.streak.currentWeeks}w streak`
@@ -505,20 +515,27 @@ const expEntries = experience.map((e) => {
             <span class="life-dots-row" aria-hidden="true">
               {recentGymDots.map((d) => <span class="life-dot" data-lv={d.level} />)}
             </span>
-            <span class="machine-teaser-meta">{openGymStats.windows.ytd.tonnage.toLocaleString()}t ({gymYear})</span>
+            <span class="machine-teaser-meta">{openGymStats.windows.ytd.tonnage.toLocaleString()}t ({lifeYear})</span>
           </div>
         </div>
 
         {
-          currentBook && (
+          (activeTomeBook || currentBook) && (
             <div class="machine-teaser-item">
-              <span class="machine-teaser-kicker">on the nightstand</span>
+              <span class="machine-teaser-kicker">on the nightstand · tome</span>
               <a class="machine-teaser-link life-italic-title" href="/life#nightstand">
-                <span>{currentBook.title}</span>
+                <span>{activeTomeBook ? activeTomeBook.title : currentBook.title}</span>
               </a>
-              <span class="machine-teaser-meta">
-                {currentBook.meta} · {currentBook.status}
-              </span>
+              <div class="life-teaser-dots" aria-label="Last 14 days of reading consistency">
+                <span class="life-dots-row" aria-hidden="true">
+                  {recentReadDots.map((d) => <span class="life-dot read" data-lv={d.level} />)}
+                </span>
+                <span class="machine-teaser-meta">
+                  {activeTomeBook
+                    ? `${activeTomeBook.progressPct}% · ${tomeStats.windows.ytd.hours.toLocaleString()}h (${lifeYear})`
+                    : `${currentBook.meta} · ${currentBook.status}`}
+                </span>
+              </div>
             </div>
           )
         }
@@ -526,8 +543,8 @@ const expEntries = experience.map((e) => {
         {
           currentGame && (
             <div class="machine-teaser-item">
-              <span class="machine-teaser-kicker">backlog</span>
-              <a class="machine-teaser-link life-italic-title" href="/life#nightstand">
+              <span class="machine-teaser-kicker">backlog · controller</span>
+              <a class="machine-teaser-link life-italic-title" href="/life#backlog">
                 <span>{currentGame.title}</span>
               </a>
               <span class="machine-teaser-meta">{currentGame.meta}</span>
@@ -1035,16 +1052,22 @@ const expEntries = experience.map((e) => {
   }
 
   .life-preview {
-    --heat-0: #edf2f7;
-    --heat-1: #c6f6d5;
-    --heat-2: #68d391;
-    --heat-3: #2f855a;
+    --heat-0: #eaeff5;
+    --heat-1: #b9f3d4;
+    --heat-2: #48bb78;
+    --heat-3: #226c47;
+    --read-1: #fde6b0;
+    --read-2: #ea9a28;
+    --read-3: #b45309;
   }
   :global(.dark) .life-preview {
     --heat-0: #232d3d;
-    --heat-1: #1e463a;
+    --heat-1: #1d4438;
     --heat-2: #1f7a5c;
     --heat-3: #34d399;
+    --read-1: #3e3020;
+    --read-2: #8a5618;
+    --read-3: #f59e0b;
   }
   .life-italic-title {
     font-style: italic;
@@ -1074,6 +1097,15 @@ const expEntries = experience.map((e) => {
   }
   .life-dot[data-lv="3"] {
     background: var(--heat-3);
+  }
+  .life-dot.read[data-lv="1"] {
+    background: var(--read-1);
+  }
+  .life-dot.read[data-lv="2"] {
+    background: var(--read-2);
+  }
+  .life-dot.read[data-lv="3"] {
+    background: var(--read-3);
   }
 
   .entries {

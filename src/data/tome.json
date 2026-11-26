@@ -1,0 +1,2817 @@
+{
+  "syncedAt": "2026-11-26",
+  "sourceHost": "arcadia",
+  "fingerprint": "sha256:f4fadfeed427e11e",
+  "timezone": "Asia/Kolkata",
+  "rolloverHour": 4,
+  "libraryCount": 17,
+  "totalWordsIndexed": 1756137,
+  "streak": {
+    "currentDays": 4,
+    "bestDays": 34
+  },
+  "activeDays52w": 252,
+  "windows": {
+    "ytd": {
+      "hours": 396.5,
+      "avgHoursPerWeek": 8.4,
+      "activeDays": 247,
+      "sessions": 343,
+      "booksFinished": 7,
+      "pagesTurned": 434
+    },
+    "d90": {
+      "hours": 26,
+      "avgHoursPerWeek": 2,
+      "activeDays": 46,
+      "sessions": 123,
+      "booksFinished": 1,
+      "pagesTurned": 434
+    }
+  },
+  "currentlyReading": [
+    {
+      "title": "Raavan: Enemy of Aryavarta",
+      "author": "Amish Tripathi",
+      "series": "Ram Chandra",
+      "seriesIndex": 3,
+      "category": "book",
+      "progressPct": 7.4,
+      "wordCount": 95841,
+      "wordsLeft": 88749,
+      "estHoursLeft": 7.1,
+      "device": "cubs",
+      "lastReadDate": "2026-11-25"
+    },
+    {
+      "title": "A Thousand Splendid Suns",
+      "author": "Khaled Hosseini",
+      "series": "The Kite Runner Collection",
+      "seriesIndex": 2,
+      "category": "book",
+      "progressPct": 3.4,
+      "wordCount": 108097,
+      "wordsLeft": 104422,
+      "estHoursLeft": 8.3,
+      "device": "web",
+      "lastReadDate": "2026-11-22"
+    }
+  ],
+  "stacks": [
+    {
+      "id": "lord-of-mysteries-2-circle-of-inevitability-volume-1-cuttlefish-that-loves-diving",
+      "shortTitle": "Circle of Inevitability",
+      "title": "Lord of Mysteries 2: Circle of Inevitability Volume 1",
+      "author": "Cuttlefish That Loves Diving",
+      "category": "light novel · lord of mysteries 2: circle of inevitability #1",
+      "series": "Lord of Mysteries 2: Circle of Inevitability",
+      "volumeCount": 1,
+      "scaleLabel": "#1",
+      "wordCount": null,
+      "hours": 170.1,
+      "status": "finished",
+      "active": false,
+      "progressPct": null,
+      "rating": 3.5,
+      "lastDate": "2026-04-19",
+      "tone": "ochre"
+    },
+    {
+      "id": "lord-of-mysteries",
+      "shortTitle": "Lord of Mysteries",
+      "title": "Lord of Mysteries (7 vols)",
+      "author": "Cuttlefish That Loves Diving",
+      "category": "light novel",
+      "series": "Lord of Mysteries",
+      "volumeCount": 7,
+      "scaleLabel": "7 vols",
+      "wordCount": null,
+      "hours": 87.7,
+      "status": "finished",
+      "active": false,
+      "progressPct": null,
+      "rating": 5,
+      "lastDate": "2026-05-05",
+      "tone": "plum"
+    },
+    {
+      "id": "throne-of-magical-arcana-cuttlefish-that-loves-diving",
+      "shortTitle": "Throne of Magical Arcana",
+      "title": "Throne of Magical Arcana",
+      "author": "Cuttlefish That Loves Diving",
+      "category": "light novel",
+      "series": null,
+      "volumeCount": 1,
+      "scaleLabel": "light novel",
+      "wordCount": null,
+      "hours": 74.4,
+      "status": "logged",
+      "active": false,
+      "progressPct": null,
+      "rating": null,
+      "lastDate": "2026-07-15",
+      "tone": "slate"
+    },
+    {
+      "id": "deep-sea-embers-yuan-tong",
+      "shortTitle": "Deep Sea Embers",
+      "title": "Deep Sea Embers",
+      "author": "Yuan Tong",
+      "category": "light novel",
+      "series": null,
+      "volumeCount": 1,
+      "scaleLabel": "1.15M words",
+      "wordCount": 1152166,
+      "hours": 54.6,
+      "status": "logged",
+      "active": false,
+      "progressPct": null,
+      "rating": null,
+      "lastDate": "2026-10-25",
+      "tone": "teal"
+    },
+    {
+      "id": "sita-warrior-of-mithila-amish-tripathi",
+      "shortTitle": "Sita: Warrior of Mithila",
+      "title": "Sita: Warrior of Mithila",
+      "author": "Amish Tripathi",
+      "category": "book · ram chandra #2",
+      "series": "Ram Chandra",
+      "volumeCount": 1,
+      "scaleLabel": "93.4k words",
+      "wordCount": 93352,
+      "hours": 7.4,
+      "status": "finished",
+      "active": false,
+      "progressPct": null,
+      "rating": 3,
+      "lastDate": "2026-11-25",
+      "tone": "rust"
+    },
+    {
+      "id": "a-thousand-splendid-suns-khaled-hosseini",
+      "shortTitle": "A Thousand Splendid Suns",
+      "title": "A Thousand Splendid Suns",
+      "author": "Khaled Hosseini",
+      "category": "book · the kite runner collection #2",
+      "series": "The Kite Runner Collection",
+      "volumeCount": 1,
+      "scaleLabel": "108.1k words · 3.4%",
+      "wordCount": 108097,
+      "hours": 0.1,
+      "status": "reading",
+      "active": true,
+      "progressPct": 3.4,
+      "rating": null,
+      "lastDate": "2026-11-22",
+      "tone": "amber"
+    },
+    {
+      "id": "raavan-enemy-of-aryavarta-amish-tripathi",
+      "shortTitle": "Raavan",
+      "title": "Raavan: Enemy of Aryavarta",
+      "author": "Amish Tripathi",
+      "category": "book · ram chandra #3",
+      "series": "Ram Chandra",
+      "volumeCount": 1,
+      "scaleLabel": "95.8k words · 7.4%",
+      "wordCount": 95841,
+      "hours": 0,
+      "status": "reading",
+      "active": true,
+      "progressPct": 7.4,
+      "rating": null,
+      "lastDate": "2026-11-25",
+      "tone": "amber"
+    },
+    {
+      "id": "project-hail-mary-andy-weir",
+      "shortTitle": "Project Hail Mary",
+      "title": "Project Hail Mary",
+      "author": "Andy Weir",
+      "category": "book",
+      "series": null,
+      "volumeCount": 1,
+      "scaleLabel": "book",
+      "wordCount": null,
+      "hours": 1.7,
+      "status": "logged",
+      "active": false,
+      "progressPct": null,
+      "rating": null,
+      "lastDate": "2026-03-29",
+      "tone": "rust"
+    },
+    {
+      "id": "system-design-interview-an-insiders-guide-alex-xu",
+      "shortTitle": "System Design",
+      "title": "System Design Interview – An Insider's Guide",
+      "author": "Alex Xu",
+      "category": "book",
+      "series": null,
+      "volumeCount": 1,
+      "scaleLabel": "46.8k words",
+      "wordCount": 46840,
+      "hours": 1,
+      "status": "logged",
+      "active": false,
+      "progressPct": null,
+      "rating": null,
+      "lastDate": "2026-11-01",
+      "tone": "ink"
+    },
+    {
+      "id": "designing-data-intensive-applications-the-big-ideas-behind-reliable-scalable-and-maintainable-systems-martin-kleppmann",
+      "shortTitle": "DDIA",
+      "title": "Designing Data-Intensive Applications",
+      "author": "Martin Kleppmann",
+      "category": "book",
+      "series": null,
+      "volumeCount": 1,
+      "scaleLabel": "259.8k words",
+      "wordCount": 259841,
+      "hours": 0.1,
+      "status": "logged",
+      "active": false,
+      "progressPct": null,
+      "rating": null,
+      "lastDate": "2026-10-09",
+      "tone": "ink"
+    },
+    {
+      "id": "omniscient-readers-viewpoint-web-novel-volume-1-singnsong",
+      "shortTitle": "Omniscient Reader",
+      "title": "Omniscient Reader’s Viewpoint, Volume 1",
+      "author": "singNsong",
+      "category": "light novel · omniscient reader's viewpoint #1",
+      "series": "Omniscient Reader's Viewpoint",
+      "volumeCount": 1,
+      "scaleLabel": "#1",
+      "wordCount": null,
+      "hours": 0,
+      "status": "logged",
+      "active": false,
+      "progressPct": null,
+      "rating": 4.5,
+      "lastDate": "2026-06-08",
+      "tone": "slate"
+    }
+  ],
+  "marginalia": [],
+  "days": [
+    {
+      "date": "2025-12-27",
+      "minutes": 13,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2025-12-28",
+      "minutes": 5,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2025-12-29",
+      "minutes": 6,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2025-12-30",
+      "minutes": 4,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2025-12-31",
+      "minutes": 13,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-01",
+      "minutes": 13,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-02",
+      "minutes": 3,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-03",
+      "minutes": 25,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-04",
+      "minutes": 34,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-05",
+      "minutes": 51,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-06",
+      "minutes": 12,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-07",
+      "minutes": 31,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-08",
+      "minutes": 18,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-09",
+      "minutes": 11,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-10",
+      "minutes": 27,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-11",
+      "minutes": 87,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-12",
+      "minutes": 39,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-13",
+      "minutes": 5,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-14",
+      "minutes": 43,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-15",
+      "minutes": 80,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-16",
+      "minutes": 39,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-17",
+      "minutes": 290,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-18",
+      "minutes": 125,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-19",
+      "minutes": 174,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-20",
+      "minutes": 104,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-21",
+      "minutes": 75,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-22",
+      "minutes": 41,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-23",
+      "minutes": 166,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-24",
+      "minutes": 114,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-25",
+      "minutes": 350,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-26",
+      "minutes": 350,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-27",
+      "minutes": 224,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-28",
+      "minutes": 111,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-29",
+      "minutes": 32,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-01-31",
+      "minutes": 57,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-01",
+      "minutes": 72,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-02",
+      "minutes": 172,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-03",
+      "minutes": 78,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-04",
+      "minutes": 105,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-05",
+      "minutes": 54,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-06",
+      "minutes": 46,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-07",
+      "minutes": 369,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-08",
+      "minutes": 305,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-09",
+      "minutes": 196,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-10",
+      "minutes": 184,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-11",
+      "minutes": 137,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-12",
+      "minutes": 215,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-13",
+      "minutes": 269,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-14",
+      "minutes": 56,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-15",
+      "minutes": 215,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-16",
+      "minutes": 25,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-17",
+      "minutes": 30,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-18",
+      "minutes": 156,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-19",
+      "minutes": 22,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-21",
+      "minutes": 26,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-22",
+      "minutes": 44,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-23",
+      "minutes": 17,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-24",
+      "minutes": 3,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-25",
+      "minutes": 24,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-26",
+      "minutes": 57,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-27",
+      "minutes": 113,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-02-28",
+      "minutes": 398,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-01",
+      "minutes": 312,
+      "sessions": 3,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1",
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-02",
+      "minutes": 252,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-03",
+      "minutes": 153,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-04",
+      "minutes": 294,
+      "sessions": 3,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1",
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-05",
+      "minutes": 210,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-06",
+      "minutes": 196,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-07",
+      "minutes": 151,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-08",
+      "minutes": 79,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-09",
+      "minutes": 25,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-10",
+      "minutes": 17,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-11",
+      "minutes": 123,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-12",
+      "minutes": 174,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-13",
+      "minutes": 206,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-14",
+      "minutes": 181,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-15",
+      "minutes": 226,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-16",
+      "minutes": 90,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-17",
+      "minutes": 83,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-18",
+      "minutes": 337,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-19",
+      "minutes": 81,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-20",
+      "minutes": 55,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-21",
+      "minutes": 333,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-22",
+      "minutes": 129,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-23",
+      "minutes": 223,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-24",
+      "minutes": 91,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-26",
+      "minutes": 15,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-27",
+      "minutes": 100,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1",
+        "Project Hail Mary"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-28",
+      "minutes": 34,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Project Hail Mary"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-29",
+      "minutes": 39,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Project Hail Mary",
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-03-31",
+      "minutes": 4,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-04",
+      "minutes": 225,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-05",
+      "minutes": 119,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-06",
+      "minutes": 111,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-07",
+      "minutes": 217,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-08",
+      "minutes": 138,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-09",
+      "minutes": 347,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-10",
+      "minutes": 78,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler",
+        "Lord of Mysteries, Vol. 4"
+      ],
+      "finishedTitles": [
+        "Lord of Mysteries (Webnovel), Volume 3: Traveler"
+      ]
+    },
+    {
+      "date": "2026-04-11",
+      "minutes": 628,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 4"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-12",
+      "minutes": 130,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 4"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-13",
+      "minutes": 187,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 4"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-14",
+      "minutes": 116,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 4"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-15",
+      "minutes": 197,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 5",
+        "Lord of Mysteries, Vol. 4"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-16",
+      "minutes": 104,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 5"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-17",
+      "minutes": 126,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 5"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-18",
+      "minutes": 531,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 5"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-19",
+      "minutes": 192,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries, Vol. 5",
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ],
+      "finishedTitles": [
+        "Lord of Mysteries 2: Circle of Inevitability Volume 1"
+      ]
+    },
+    {
+      "date": "2026-04-20",
+      "minutes": 238,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 6: Lightseeker",
+        "Lord of Mysteries, Vol. 5"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-21",
+      "minutes": 105,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 6: Lightseeker"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-22",
+      "minutes": 157,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 6: Lightseeker"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-23",
+      "minutes": 69,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 6: Lightseeker"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-24",
+      "minutes": 118,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 6: Lightseeker"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-25",
+      "minutes": 222,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 7: The Hanged Man",
+        "Lord of Mysteries Volume 6: Lightseeker"
+      ],
+      "finishedTitles": [
+        "Lord of Mysteries Volume 6: Lightseeker"
+      ]
+    },
+    {
+      "date": "2026-04-26",
+      "minutes": 127,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 7: The Hanged Man"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-27",
+      "minutes": 60,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 7: The Hanged Man"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-28",
+      "minutes": 72,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 7: The Hanged Man"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-04-29",
+      "minutes": 142,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 8: Fool",
+        "Lord of Mysteries Volume 7: The Hanged Man"
+      ],
+      "finishedTitles": [
+        "Lord of Mysteries Volume 7: The Hanged Man"
+      ]
+    },
+    {
+      "date": "2026-04-30",
+      "minutes": 56,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 8: Fool"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-01",
+      "minutes": 37,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 8: Fool"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-02",
+      "minutes": 176,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries Volume 8: Fool",
+        "Lord of Mysteries: Side Stories"
+      ],
+      "finishedTitles": [
+        "Lord of Mysteries Volume 8: Fool"
+      ]
+    },
+    {
+      "date": "2026-05-03",
+      "minutes": 41,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries: Side Stories"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-04",
+      "minutes": 89,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries: Side Stories"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-05",
+      "minutes": 60,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Lord of Mysteries: Side Stories"
+      ],
+      "finishedTitles": [
+        "Lord of Mysteries: Side Stories"
+      ]
+    },
+    {
+      "date": "2026-05-07",
+      "minutes": 114,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-08",
+      "minutes": 112,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-12",
+      "minutes": 107,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-13",
+      "minutes": 82,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-14",
+      "minutes": 5,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-15",
+      "minutes": 44,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-16",
+      "minutes": 27,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-17",
+      "minutes": 130,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-18",
+      "minutes": 103,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-19",
+      "minutes": 178,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-20",
+      "minutes": 436,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-21",
+      "minutes": 94,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-22",
+      "minutes": 136,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-23",
+      "minutes": 506,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-24",
+      "minutes": 190,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-25",
+      "minutes": 28,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-26",
+      "minutes": 11,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-27",
+      "minutes": 3,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-30",
+      "minutes": 5,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-05-31",
+      "minutes": 7,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-06-03",
+      "minutes": 2,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-06-08",
+      "minutes": 1,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Omniscient Reader’s Viewpoint (Web Novel), Volume 1"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-06-26",
+      "minutes": 9,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-06-28",
+      "minutes": 222,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-06-29",
+      "minutes": 190,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-06-30",
+      "minutes": 41,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-01",
+      "minutes": 29,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-02",
+      "minutes": 230,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-03",
+      "minutes": 291,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-04",
+      "minutes": 407,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-05",
+      "minutes": 162,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-06",
+      "minutes": 74,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-07",
+      "minutes": 42,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-08",
+      "minutes": 40,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-09",
+      "minutes": 10,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-10",
+      "minutes": 43,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-11",
+      "minutes": 24,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-12",
+      "minutes": 105,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-13",
+      "minutes": 61,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-14",
+      "minutes": 130,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-15",
+      "minutes": 20,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Throne of Magical Arcana"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-16",
+      "minutes": 9,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-17",
+      "minutes": 18,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-18",
+      "minutes": 125,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-19",
+      "minutes": 96,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-20",
+      "minutes": 79,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-21",
+      "minutes": 101,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-22",
+      "minutes": 31,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-23",
+      "minutes": 44,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-24",
+      "minutes": 21,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-25",
+      "minutes": 4,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-26",
+      "minutes": 3,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-27",
+      "minutes": 11,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-28",
+      "minutes": 26,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-29",
+      "minutes": 27,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-07-30",
+      "minutes": 25,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-01",
+      "minutes": 15,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-02",
+      "minutes": 53,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-03",
+      "minutes": 9,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-04",
+      "minutes": 7,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-05",
+      "minutes": 16,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-06",
+      "minutes": 9,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-07",
+      "minutes": 23,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-08",
+      "minutes": 81,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-09",
+      "minutes": 107,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-10",
+      "minutes": 56,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-11",
+      "minutes": 22,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-12",
+      "minutes": 44,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-13",
+      "minutes": 155,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-15",
+      "minutes": 46,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-16",
+      "minutes": 73,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-17",
+      "minutes": 37,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-18",
+      "minutes": 39,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-19",
+      "minutes": 9,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-20",
+      "minutes": 74,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-21",
+      "minutes": 34,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-22",
+      "minutes": 201,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-23",
+      "minutes": 161,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-24",
+      "minutes": 93,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-25",
+      "minutes": 91,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-26",
+      "minutes": 130,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-27",
+      "minutes": 27,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-28",
+      "minutes": 6,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-29",
+      "minutes": 30,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-30",
+      "minutes": 10,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-08-31",
+      "minutes": 33,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-01",
+      "minutes": 28,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-02",
+      "minutes": 20,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-03",
+      "minutes": 37,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-04",
+      "minutes": 77,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-05",
+      "minutes": 100,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-06",
+      "minutes": 32,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-07",
+      "minutes": 23,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-08",
+      "minutes": 9,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-09",
+      "minutes": 46,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-10",
+      "minutes": 11,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-12",
+      "minutes": 37,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-14",
+      "minutes": 15,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-15",
+      "minutes": 9,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "System Design Interview – An Insider's Guide",
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-16",
+      "minutes": 9,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-17",
+      "minutes": 14,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "System Design Interview – An Insider's Guide",
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-19",
+      "minutes": 7,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "System Design Interview – An Insider's Guide"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-20",
+      "minutes": 32,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "System Design Interview – An Insider's Guide"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-21",
+      "minutes": 19,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers",
+        "System Design Interview – An Insider's Guide"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-22",
+      "minutes": 31,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-23",
+      "minutes": 4,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-24",
+      "minutes": 5,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-26",
+      "minutes": 2,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-27",
+      "minutes": 34,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-28",
+      "minutes": 43,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-29",
+      "minutes": 51,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-09-30",
+      "minutes": 40,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-01",
+      "minutes": 9,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-02",
+      "minutes": 40,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers",
+        "System Design Interview – An Insider's Guide"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-04",
+      "minutes": 29,
+      "sessions": 3,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers",
+        "Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems",
+        "System Design Interview – An Insider's Guide"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-05",
+      "minutes": 40,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-06",
+      "minutes": 31,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-07",
+      "minutes": 41,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-09",
+      "minutes": 1,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-10",
+      "minutes": 16,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers",
+        "System Design Interview – An Insider's Guide"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-11",
+      "minutes": 28,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-14",
+      "minutes": 25,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-18",
+      "minutes": 18,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-10-20",
+      "minutes": 19,
+      "sessions": 1,
+      "pages": 0,
+      "titles": [
+        "Deep Sea Embers"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-11-20",
+      "minutes": 3,
+      "sessions": 2,
+      "pages": 0,
+      "titles": [
+        "A Thousand Splendid Suns"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-11-22",
+      "minutes": 19,
+      "sessions": 3,
+      "pages": 0,
+      "titles": [
+        "Sita: Warrior of Mithila",
+        "A Thousand Splendid Suns"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-11-23",
+      "minutes": 19,
+      "sessions": 3,
+      "pages": 0,
+      "titles": [
+        "Sita: Warrior of Mithila"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-11-24",
+      "minutes": 96,
+      "sessions": 7,
+      "pages": 0,
+      "titles": [
+        "Sita: Warrior of Mithila"
+      ],
+      "finishedTitles": []
+    },
+    {
+      "date": "2026-11-25",
+      "minutes": 317,
+      "sessions": 52,
+      "pages": 434,
+      "titles": [
+        "Sita: Warrior of Mithila",
+        "Raavan: Enemy of Aryavarta"
+      ],
+      "finishedTitles": [
+        "Sita: Warrior of Mithila"
+      ]
+    }
+  ]
+}
