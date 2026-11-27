@@ -225,8 +225,8 @@ export function summarizeOpenGymState(rawState, todayIso = localIso(new Date()))
     };
   }
 
-  // Weekly streak (weeks with >= 3 sessions, Sunday-aligned).
-  const minPerWeek = 3;
+  // Weekly streak (weeks with at least one session, Sunday-aligned).
+  const minPerWeek = 1;
   const sessionsByWeek = new Map();
   for (const w of valid) {
     const wk = sundayOfWeek(w.date);
@@ -289,10 +289,11 @@ export function summarizeOpenGymState(rawState, todayIso = localIso(new Date()))
 
   const days = [...byDay.values()].sort((a, b) => a.date.localeCompare(b.date));
 
-  // Workout-only fingerprint (excludes syncedAt and rolling window boundaries so rest
-  // days never trigger Gist updates or Vercel builds).
+  // Workout and streak-rule fingerprint (excludes syncedAt and rolling window
+  // boundaries so rest days never trigger Gist updates or Vercel builds).
   const hash = crypto.createHash("sha256");
   hash.update(`unit:${unit}\n`);
+  hash.update(`minPerWeek:${minPerWeek}\n`);
   for (const w of valid) {
     hash.update(
       `${w.date}|${w.routine}|${w.sets}|${w.tonnes.toFixed(3)}|${w.durationMin ?? ""}|${w.prs}\n`,

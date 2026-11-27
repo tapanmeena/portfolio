@@ -1,12 +1,11 @@
 {
   "syncedAt": "2026-11-19",
   "sourceHost": "arcadia",
-  "fingerprint": "sha256:c8dc78022f60392c",
   "unit": "kg",
   "streak": {
-    "currentWeeks": 1,
-    "bestWeeks": 2,
-    "minPerWeek": 3
+    "currentWeeks": 4,
+    "bestWeeks": 4,
+    "minPerWeek": 1
   },
   "activeDays52w": 10,
   "windows": {
