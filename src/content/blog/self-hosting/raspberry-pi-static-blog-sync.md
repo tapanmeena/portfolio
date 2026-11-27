@@ -11,7 +11,7 @@ tags:
   - SQLite
   - Automation
 author: "Tapan Meena"
-draft: true
+draft: false
 ---
 
 I track workouts in OpenGym and reading in
